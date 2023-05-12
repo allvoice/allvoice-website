@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: allvoice-website
+  namespace: allvoice
+spec:
+  selector:
+    matchLabels:
+      app: allvoice-website
+  template:
+    metadata:
+      labels:
+        app: allvoice-website
+    spec:
+      imagePullSecrets:
+      - name: allvoice-artifact-registry
+      containers:
+      - name: allvoice-website
+        image: us-west1-docker.pkg.dev/allvoice/allvoice-docker/allvoice-website:latest
+        resources:
+          limits:
+            cpu: "2000m"
+            memory: "1024Mi"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
