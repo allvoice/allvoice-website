@@ -1,6 +1,6 @@
 import Header from "~/components/Header";
 type Props = {
-  children?: string | JSX.Element | JSX.Element[];
+  children?: ReactNode;
 };
 
 const MainLayout: React.FC<Props> = ({ children }) => {
