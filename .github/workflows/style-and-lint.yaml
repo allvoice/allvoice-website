@@ -1,0 +1,44 @@
+name: Style and Lint Checks
+on: pull_request
+
+env:
+  pnpm-version: 9
+  node-version: 18
+  image: ubuntu-20.04
+
+jobs:
+  style:
+    runs-on: ${{ env.image }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use pnpm ${{ env.pnpm-version }}
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.pnpm-version }}
+      - name: Use Node.js ${{ env.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.node-version }}
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install
+      - name: Check style
+        run: pnpm run style
+
+  lint:
+    runs-on: ${{ env.image }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use pnpm ${{ env.pnpm-version }}
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.pnpm-version }}
+      - name: Use Node.js ${{ env.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.node-version }}
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install
+      - name: Check style
+        run: pnpm run lint

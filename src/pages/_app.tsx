@@ -11,6 +11,7 @@ import {
   RedirectToSignIn,
 } from "@clerk/nextjs";
 import { useRouter } from "next/router";
+import MainLayout from "~/components/MainLayout";
 
 //  List pages you want to be publicly accessible, or leave empty if
 //  every page requires authentication. Use this naming strategy:
@@ -29,14 +30,15 @@ const MyApp: AppType = ({ Component, pageProps }) => {
 
   return (
     <>
-  
       <ClerkProvider {...pageProps}>
         {isPublicPage ? (
           <Component {...pageProps} />
         ) : (
           <>
             <SignedIn>
-              <Component {...pageProps} />
+              <MainLayout>
+                <Component {...pageProps} />
+              </MainLayout>
             </SignedIn>
             <SignedOut>
               <RedirectToSignIn />
