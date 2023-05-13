@@ -2,13 +2,12 @@ name: Style and Lint Checks
 on: pull_request
 
 env:
-  pnpm-version: 9
+  pnpm-version: 8
   node-version: 18
-  image: ubuntu-20.04
 
 jobs:
   style:
-    runs-on: ${{ env.image }}
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
       - name: Use pnpm ${{ env.pnpm-version }}
@@ -26,7 +25,7 @@ jobs:
         run: pnpm run style
 
   lint:
-    runs-on: ${{ env.image }}
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
       - name: Use pnpm ${{ env.pnpm-version }}
