@@ -7,6 +7,10 @@
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
+    "style": "pnpx prettier -l ./src",
+    "lint-fix": "next lint --fix",
+    "style-fix": "pnpx prettier -w ./src",
+    "fix": "pnpm lint-fix && pnpm style-fix",
     "start": "next start"
   },
   "dependencies": {
