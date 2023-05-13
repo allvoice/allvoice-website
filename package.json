@@ -27,6 +27,7 @@
     "next": "^13.4.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-lorem-ipsum": "^1.4.10",
     "superjson": "1.12.2",
     "zod": "^3.21.4"
   },
