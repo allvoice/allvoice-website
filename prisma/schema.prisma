@@ -2,18 +2,81 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider      = "prisma-client-js"
-    binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "mysql"
-  url = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
 model User {
-    id                  String               @id
-    createdAt           DateTime             @default(now())
-    updatedAt           DateTime             @updatedAt
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SeedSound {
+  id          String                 @id @default(uuid())
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  bucketKey   String
+  voiceModels VoiceModelSeedSounds[]
+}
+
+model PreviewSound {
+  id           String     @id @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  bucketKey    String
+  voiceModel   VoiceModel @relation(fields: [voiceModelId], references: [id])
+  voiceModelId String
+
+  @@index([voiceModelId])
+}
+
+model VoiceModel {
+  id            String                 @id @default(uuid())
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  soundFiles    VoiceModelSeedSounds[]
+  previewSounds PreviewSound[]
+
+  voiceId String
+  voice   Voice  @relation(fields: [voiceId], references: [id])
+
+  forkParentId       String?
+  forkParent         VoiceModel?  @relation("VoiceForks", fields: [forkParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  directForkChildren VoiceModel[] @relation("VoiceForks")
+
+  version String
+
+  @@unique([voiceId, version])
+  @@index([forkParentId])
+  @@index([voiceId])
+}
+
+model Voice {
+  id String @id @default(uuid())
+  // likes
+  // comments
+
+  modelVersions VoiceModel[]
+
+  likes Int @db.UnsignedInt // up to ~4 bil
+}
+
+model VoiceModelSeedSounds {
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  voiceModelId String
+  seedSoundId  String
+  voiceModel   VoiceModel @relation(fields: [voiceModelId], references: [id])
+  SeedSound    SeedSound  @relation(fields: [seedSoundId], references: [id])
+
+  @@id([voiceModelId, seedSoundId])
+  @@index([seedSoundId])
+  @@index([voiceModelId])
 }
