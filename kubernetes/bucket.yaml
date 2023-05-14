@@ -5,4 +5,4 @@ metadata:
   namespace: allvoice
 spec:
   generateBucketName: allvoice-bucket
-  storageClassName: rook-ceph-bucket
+  storageClassName: hdd-data-ssd-meta-bucket
