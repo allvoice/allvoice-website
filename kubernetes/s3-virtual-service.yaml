@@ -11,6 +11,6 @@ spec:
   http:
     - route:
         - destination:
-            host: rook-ceph-rgw-ssd-object-store.rook-ceph.svc.cluster.local
+            host: rook-ceph-rgw-hdd-data-ssd-meta-object-store.rook-ceph.svc.cluster.local
             port:
               number: 80
