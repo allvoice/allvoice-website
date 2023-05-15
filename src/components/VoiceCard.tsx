@@ -1,11 +1,11 @@
 import { DocumentDuplicateIcon, HeartIcon } from "@heroicons/react/20/solid";
+import { Voice } from "@prisma/client";
 import { useState } from "react";
 import { username, loremIpsum } from 'react-lorem-ipsum';
 
-type Props = {
-};
 
-const PlayButton: React.FC<Props> = ({ }) => {
+
+const PlayButton: React.FC<{}> = ({ }) => {
     const faces = ["😭", "🤬", "😁", "😐", "😰", "🥴"]
     const face = faces[Math.floor(Math.random() * faces.length)]
     return <div className="p-2 rounded-full border-gray-400 border border-solid shadow text-gray-400 hover:cursor-pointer hover:text-blue-400 hover:border-blue-400">
@@ -14,9 +14,13 @@ const PlayButton: React.FC<Props> = ({ }) => {
     </div>
 }
 
-const SoundCard: React.FC<Props> = ({ }) => {
+type Props = {
+    voice: Voice
+};
+
+const VoiceCard: React.FC<Props> = ({ voice }) => {
     const playCount = Math.floor(Math.random() * 4) + 1;
-    const [favorited, setFavorited] = useState(Math.random() > 0.5);
+    const [favorited, setFavorited] = useState(Math.random() > 0.5); // TODO
     const notFavoritedTheme = "text-gray-400 hover:cursor-pointer hover:text-pink-400";
     const favoritedTheme = "text-pink-400 hover:cursor-pointer hover:text-gray-400";
 
@@ -24,12 +28,12 @@ const SoundCard: React.FC<Props> = ({ }) => {
         className="col-span-1 flex flex-col divide-y divide-gray-200 rounded-lg bg-white shadow"
     >
         <div className="flex flex-1 flex-col p-8">
-            <h1 className="text-xl">{username()}</h1>
+            <h1 className="text-xl">{voice.name}</h1>
             <div className="flex space-x-3 m-2">
-                {Array.from({ length: playCount }, () => <PlayButton />)}
+                {Array.from({ length: playCount }, () => <PlayButton />)  /* TODO */}
             </div>
             <div>
-                {loremIpsum({ p: 1, avgSentencesPerParagraph: 3 })}
+                {loremIpsum({ p: 1, avgSentencesPerParagraph: 3 }) /* TODO */}
             </div>
         </div>
         <div>
@@ -47,7 +51,7 @@ const SoundCard: React.FC<Props> = ({ }) => {
                         className={`relative inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold ${favorited ? favoritedTheme : notFavoritedTheme}`}
                     >
                         <HeartIcon className="h-5 w-5 " aria-hidden="true" />
-                        {favorited ? "Favorited" : "Favorite"}
+                        {voice.likes}
                     </a>
                 </div>
             </div>
@@ -55,4 +59,4 @@ const SoundCard: React.FC<Props> = ({ }) => {
     </li>;
 }
 
-export default SoundCard;
+export default VoiceCard;
