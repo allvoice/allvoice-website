@@ -1,3 +1,4 @@
+# cluster behavior auto-redirects external http requests to https
 apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
@@ -8,14 +9,6 @@ spec:
     istio: ingressgateway
   servers:
     - port:
-        number: 80
-        name: http
-        protocol: HTTP
-      hosts:
-        - "allvoice/*"
-      tls:
-        httpsRedirect: true
-    - port:
         number: 443
         name: https
         protocol: HTTPS
@@ -23,4 +16,5 @@ spec:
         mode: SIMPLE
         credentialName: allvoice-https-certs
       hosts:
-        - "allvoice/*"
+        - "allvoice.ai"
+        - "*.allvoice.ai"
