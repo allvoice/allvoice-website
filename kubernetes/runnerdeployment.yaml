@@ -4,7 +4,7 @@ metadata:
   name: allvoice-github-runnerdeploy
   namespace: allvoice
 spec:
-  replicas: 1
+  replicas: 2
   template:
     spec:
       repository: allvoice/website
