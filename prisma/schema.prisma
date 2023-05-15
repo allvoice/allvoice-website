@@ -16,14 +16,17 @@ model User {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  userLikeJoins UserLikes[]
+  voices        Voice[]
 }
 
 model SeedSound {
-  id          String                 @id @default(uuid())
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
-  bucketKey   String
-  voiceModels VoiceModelSeedSounds[]
+  id              String                 @id @default(uuid())
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  bucketKey       String
+  voiceModelJoins VoiceModelSeedSounds[]
 }
 
 model PreviewSound {
@@ -38,11 +41,11 @@ model PreviewSound {
 }
 
 model VoiceModel {
-  id            String                 @id @default(uuid())
-  createdAt     DateTime               @default(now())
-  updatedAt     DateTime               @updatedAt
-  soundFiles    VoiceModelSeedSounds[]
-  previewSounds PreviewSound[]
+  id             String                 @id @default(uuid())
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  soundFileJoins VoiceModelSeedSounds[]
+  previewSounds  PreviewSound[]
 
   voiceId String
   voice   Voice  @relation(fields: [voiceId], references: [id])
@@ -51,21 +54,61 @@ model VoiceModel {
   forkParent         VoiceModel?  @relation("VoiceForks", fields: [forkParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   directForkChildren VoiceModel[] @relation("VoiceForks")
 
-  version String
+  version                String
+  supportedLanguageJoins VoiceModelSupportedLanguages[]
 
   @@unique([voiceId, version])
   @@index([forkParentId])
   @@index([voiceId])
 }
 
+model VoiceModelSupportedLanguages {
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  languageId   String
+  language     Language   @relation(fields: [languageId], references: [id])
+  voiceModelId String
+  voiceModel   VoiceModel @relation(fields: [voiceModelId], references: [id])
+
+  @@id([languageId, voiceModelId])
+  @@index([voiceModelId])
+  @@index([languageId])
+}
+
+model Language {
+  id                       String                         @id @default(uuid())
+  iso639_1                 String
+  displayName              String
+  supportedVoiceModelJoins VoiceModelSupportedLanguages[]
+}
+
 model Voice {
   id String @id @default(uuid())
-  // likes
-  // comments
+
+  ownerUserId String
+  ownerUser   User   @relation(fields: [ownerUserId], references: [id])
 
   modelVersions VoiceModel[]
 
-  likes Int @db.UnsignedInt // up to ~4 bil
+  name  String
+  likes Int    @db.UnsignedInt // up to ~4 bil
+
+  userLikeJoins UserLikes[]
+
+  @@index([ownerUserId])
+}
+
+model UserLikes {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  voiceId   String
+  voice     Voice    @relation(fields: [voiceId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@id([userId, voiceId])
+  @@index([voiceId])
+  @@index([userId])
 }
 
 model VoiceModelSeedSounds {
@@ -74,7 +117,7 @@ model VoiceModelSeedSounds {
   voiceModelId String
   seedSoundId  String
   voiceModel   VoiceModel @relation(fields: [voiceModelId], references: [id])
-  SeedSound    SeedSound  @relation(fields: [seedSoundId], references: [id])
+  seedSound    SeedSound  @relation(fields: [seedSoundId], references: [id])
 
   @@id([voiceModelId, seedSoundId])
   @@index([seedSoundId])

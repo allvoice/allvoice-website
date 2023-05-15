@@ -7,7 +7,17 @@ import { testUploadGetDelete } from "~/server/s3";
 export const exampleRouter = createTRPCRouter({
   hello: publicProcedure
     .input(z.object({ text: z.string() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      await ctx.prisma.voiceModel.findFirst({
+        include: {
+          supportedLanguageJoins: {
+            include: {
+              language: true,
+            },
+          },
+        },
+      });
+
       await testUploadGetDelete();
       return {
         greeting: `Hello ${input.text}`,

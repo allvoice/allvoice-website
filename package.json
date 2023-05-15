@@ -7,12 +7,12 @@
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
-    "style": "pnpx prettier -l ./src",
+    "style": "prettier -l ./src",
     "lint-fix": "next lint --fix",
-    "style-fix": "pnpx prettier -w ./src",
+    "style-fix": "prettier -w ./src",
     "fix": "pnpm lint-fix && pnpm style-fix",
     "start": "next start",
-    "print-schema": "npx prisma migrate diff --script --from-empty --to-schema-datamodel prisma\\schema.prisma"
+    "print-schema": "prisma migrate diff --script --from-empty --to-schema-datamodel prisma\\schema.prisma"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.332.0",
