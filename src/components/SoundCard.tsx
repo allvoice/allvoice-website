@@ -1,4 +1,4 @@
-import { DocumentDuplicateIcon, EnvelopeIcon, HeartIcon, PhoneIcon, PlayIcon } from "@heroicons/react/20/solid";
+import { DocumentDuplicateIcon, HeartIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
 import { username, loremIpsum } from 'react-lorem-ipsum';
 
@@ -6,7 +6,7 @@ type Props = {
 };
 
 const PlayButton: React.FC<Props> = ({ }) => {
-    const faces = ["😭", "🤬", "😁"]
+    const faces = ["😭", "🤬", "😁", "😐", "😰", "🥴"]
     const face = faces[Math.floor(Math.random() * faces.length)]
     return <div className="p-2 rounded-full border-gray-400 border border-solid shadow text-gray-400 hover:cursor-pointer hover:text-blue-400 hover:border-blue-400">
         {/* <PlayIcon className="h-5 w-5" aria-hidden="true" /> */}
@@ -25,7 +25,7 @@ const SoundCard: React.FC<Props> = ({ }) => {
     >
         <div className="flex flex-1 flex-col p-8">
             <h1 className="text-xl">{username()}</h1>
-            <div className="flex space-x-3 mt-2">
+            <div className="flex space-x-3 m-2">
                 {Array.from({ length: playCount }, () => <PlayButton />)}
             </div>
             <div>
