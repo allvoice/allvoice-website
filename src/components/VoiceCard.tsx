@@ -28,6 +28,7 @@ const VoiceCard: React.FC<Props> = ({ voice }) => {
     <li className="col-span-1 flex flex-col divide-y divide-gray-200 rounded-lg bg-white shadow">
       <div className="flex flex-1 flex-col p-8">
         <h1 className="text-xl">{voice.name}</h1>
+        <h2 className="text-sm">Version {voice?.modelVersions[0]?.version}</h2>
         <div className="my-2 flex space-x-3">
           {voice.modelVersions[0]?.previewSounds.map((preview) => (
             <PlayButton icon={preview.iconEmoji} />
