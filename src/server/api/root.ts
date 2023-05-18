@@ -1,7 +1,7 @@
 import { createTRPCRouter } from "~/server/api/trpc";
 import { exampleRouter } from "~/server/api/routers/example";
-import { voiceRouter } from "./routers/voice";
-import { userRouter } from "./routers/user";
+import { voiceRouter } from "./routers/voices";
+import { userRouter } from "./routers/users";
 
 /**
  * This is the primary router for your server.

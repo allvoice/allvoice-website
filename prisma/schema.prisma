@@ -36,6 +36,7 @@ model PreviewSound {
   bucketKey    String
   voiceModel   VoiceModel @relation(fields: [voiceModelId], references: [id])
   voiceModelId String
+  iconEmoji    String
 
   @@index([voiceModelId])
 }
