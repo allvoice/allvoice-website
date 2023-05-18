@@ -15,26 +15,47 @@ function createMockVoices(n: number, user: User) {
   return data;
 }
 
+const MOST_RECENT_MODEL_VERSION: Prisma.VoiceInclude = {
+  modelVersions: {
+    include: {
+      previewSounds: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 1,
+  },
+};
+
 export const voiceRouter = createTRPCRouter({
   listNewest: publicProcedure.query(async ({ input, ctx }) => {
     // TODO: Probably want to introduce cursor pagination
     const voices = await ctx.prisma.voice.findMany({
       include: {
-        modelVersions: {
-          include: {
-            previewSounds: true,
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 1,
-        },
+        ...MOST_RECENT_MODEL_VERSION,
+      },
+      orderBy: {
+        createdAt: "desc"
       },
       take: 20,
     });
 
     return voices;
   }),
+
+  listMostPopular: publicProcedure.query(async ({ input, ctx }) => {
+    const voices = await ctx.prisma.voice.findMany({
+      include: {
+        ...MOST_RECENT_MODEL_VERSION,
+      },
+      orderBy: {
+        likes: "desc"
+      },
+      take: 20,
+    });
+
+    return voices;
+  })
 
   refreshMock: publicProcedure.query(async ({ input, ctx }) => {
     const user = await ctx.prisma.user.create({
