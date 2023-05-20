@@ -14,6 +14,7 @@ export const env = createEnv({
     AWS_SECRET_ACCESS_KEY: z.string(),
     BUCKET_NAME: z.string(),
     BUCKET_HOST: z.string(),
+    BUCKET_NOTIFICATION_SECRET: z.string(),
   },
 
   /**
@@ -39,5 +40,6 @@ export const env = createEnv({
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
     BUCKET_NAME: process.env.BUCKET_NAME,
     BUCKET_HOST: process.env.BUCKET_HOST,
+    BUCKET_NOTIFICATION_SECRET: process.env.BUCKET_NOTIFICATION_SECRET,
   },
 });

@@ -13,27 +13,37 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   userLikeJoins UserLikes[]
   voices        Voice[]
+  seedSounds    SeedSound[]
 }
 
 model SeedSound {
   id              String                 @id @default(uuid())
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
-  bucketKey       String
+  bucketKey       String                 @unique
+  name            String
+  // uploadComplete signifies if we've received the bucket notification indicating the file has been successfully uploaded
+  uploadComplete  Boolean                @default(false)
   voiceModelJoins VoiceModelSeedSounds[]
+
+  uploaderId String
+  uploader   User   @relation(fields: [uploaderId], references: [id])
+
+  @@index([bucketKey])
+  @@index([uploaderId])
 }
 
 model PreviewSound {
   id           String     @id @default(uuid())
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
-  bucketKey    String
+  bucketKey    String     @unique
   voiceModel   VoiceModel @relation(fields: [voiceModelId], references: [id])
   voiceModelId String
 
