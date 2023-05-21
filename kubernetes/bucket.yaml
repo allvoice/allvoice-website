@@ -3,6 +3,8 @@ kind: ObjectBucketClaim
 metadata:
   name: allvoice-bucket
   namespace: allvoice
+  labels:
+    bucket-notification-uploaded-file-notification: uploaded-file-notification
 spec:
   generateBucketName: allvoice-bucket
   storageClassName: hdd-data-ssd-meta-bucket
