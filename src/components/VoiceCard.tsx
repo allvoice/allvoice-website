@@ -1,7 +1,6 @@
 import { DocumentDuplicateIcon, HeartIcon } from "@heroicons/react/20/solid";
 import { type PreviewSound, type Voice, type VoiceModel } from "@prisma/client";
 import { useState } from "react";
-import { username, loremIpsum } from "react-lorem-ipsum";
 
 const PlayButton: React.FC<{ icon: string }> = ({ icon }) => {
   return (
@@ -18,7 +17,7 @@ type Props = {
 };
 
 const VoiceCard: React.FC<Props> = ({ voice }) => {
-  const [favorited, setFavorited] = useState(Math.random() > 0.5); // TODO
+  const [favorited] = useState(Math.random() > 0.5); // TODO impl based on user
   const notFavoritedTheme =
     "text-gray-400 hover:cursor-pointer hover:text-pink-400";
   const favoritedTheme =
@@ -31,7 +30,7 @@ const VoiceCard: React.FC<Props> = ({ voice }) => {
         <h2 className="text-sm">Version {voice?.modelVersions[0]?.version}</h2>
         <div className="my-2 flex space-x-3">
           {voice.modelVersions[0]?.previewSounds.map((preview) => (
-            <PlayButton icon={preview.iconEmoji} />
+            <PlayButton key={preview.id} icon={preview.iconEmoji} />
           ))}
         </div>
       </div>

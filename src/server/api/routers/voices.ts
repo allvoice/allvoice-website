@@ -1,6 +1,5 @@
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { api } from "~/utils/api";
-import { username, loremIpsum } from "react-lorem-ipsum";
+import { username } from "react-lorem-ipsum";
 import { type Prisma, type User } from "@prisma/client";
 
 function createMockVoices(n: number, user: User) {
@@ -15,27 +14,23 @@ function createMockVoices(n: number, user: User) {
   return data;
 }
 
-const MOST_RECENT_MODEL_VERSION: Prisma.VoiceInclude = {
-  modelVersions: {
-    include: {
-      previewSounds: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 1,
-  },
-};
-
 export const voiceRouter = createTRPCRouter({
-  listNewest: publicProcedure.query(async ({ input, ctx }) => {
+  listNewest: publicProcedure.query(async ({ ctx }) => {
     // TODO: Probably want to introduce cursor pagination
     const voices = await ctx.prisma.voice.findMany({
       include: {
-        ...MOST_RECENT_MODEL_VERSION,
+        modelVersions: {
+          include: {
+            previewSounds: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        },
       },
       orderBy: {
-        createdAt: "desc"
+        createdAt: "desc",
       },
       take: 20,
     });
@@ -43,21 +38,29 @@ export const voiceRouter = createTRPCRouter({
     return voices;
   }),
 
-  listMostPopular: publicProcedure.query(async ({ input, ctx }) => {
+  listMostPopular: publicProcedure.query(async ({ ctx }) => {
     const voices = await ctx.prisma.voice.findMany({
       include: {
-        ...MOST_RECENT_MODEL_VERSION,
+        modelVersions: {
+          include: {
+            previewSounds: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        },
       },
       orderBy: {
-        likes: "desc"
+        likes: "desc",
       },
       take: 20,
     });
 
     return voices;
-  })
+  }),
 
-  refreshMock: publicProcedure.query(async ({ input, ctx }) => {
+  refreshMock: publicProcedure.query(async ({ ctx }) => {
     const user = await ctx.prisma.user.create({
       data: {},
     });
@@ -95,12 +98,13 @@ export const voiceRouter = createTRPCRouter({
         const faces = ["😭", "🤬", "😁", "😐", "😰", "🥴"];
         const previewCount = Math.floor(Math.random() * 4) + 1;
         for (let i = 0; i < previewCount; i++) {
-          const face = faces[Math.floor(Math.random() * faces.length)];
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const face = faces[Math.floor(Math.random() * faces.length)]!;
           await ctx.prisma.previewSound.create({
             data: {
               bucketKey: username(),
               voiceModelId: createdModel.id,
-              iconEmoji: face!,
+              iconEmoji: face,
             },
           });
         }

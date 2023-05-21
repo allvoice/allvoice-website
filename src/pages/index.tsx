@@ -13,7 +13,7 @@ const Home: NextPage = () => {
       className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
     >
       {voiceQuery.data?.map((voice) => (
-        <VoiceCard voice={voice} />
+        <VoiceCard key={voice.id} voice={voice} />
       ))}
     </ul>
   );
