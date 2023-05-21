@@ -17,26 +17,33 @@ export const usersRouter = createTRPCRouter({
     });
     return new Set(likedSounds.map((likedSound) => likedSound.voiceId));
   }),
-  likeSound: privateProcedure
+  toggleLiked: privateProcedure
     .input(z.object({ voiceId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.prisma.userLikes.create({
-        data: {
-          userId: ctx.userId,
-          voiceId: input.voiceId,
-        },
-      });
-    }),
-  unlikeSound: privateProcedure
-    .input(z.object({ voiceId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      await ctx.prisma.userLikes.delete({
+      const currentlyLiked = await ctx.prisma.userLikes.findFirst({
         where: {
-          userId_voiceId: {
-            voiceId: input.voiceId,
-            userId: ctx.userId,
-          },
+          voiceId: input.voiceId,
+          userId: ctx.userId,
         },
       });
+      if (currentlyLiked) {
+        await ctx.prisma.userLikes.delete({
+          where: {
+            userId_voiceId: {
+              voiceId: input.voiceId,
+              userId: ctx.userId,
+            },
+          },
+        });
+        return { liked: false };
+      } else {
+        await ctx.prisma.userLikes.create({
+          data: {
+            userId: ctx.userId,
+            voiceId: input.voiceId,
+          },
+        });
+        return { liked: true };
+      }
     }),
 });

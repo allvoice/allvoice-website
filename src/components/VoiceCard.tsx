@@ -18,23 +18,21 @@ type Props = {
   initiallyLiked?: boolean;
 };
 
+const likedTheme = "text-pink-400 hover:cursor-pointer";
+const notLikedTheme = "text-gray-400 hover:cursor-pointer hover:text-pink-400";
+
 const VoiceCard: React.FC<Props> = ({ voice, initiallyLiked }) => {
-  const [liked, setLiked] = useState(initiallyLiked);
-  const likeSound = api.users.likeSound.useMutation();
-  const unlikeSound = api.users.unlikeSound.useMutation();
+  const [likedDisplay, setLikedDisplay] = useState(initiallyLiked);
+  const toggleLiked = api.users.toggleLiked.useMutation();
+
   const { id: voiceId } = voice;
-  const changeLiked = useCallback(() => {
-    if (liked) {
-      unlikeSound.mutate({ voiceId });
-      setLiked(false);
-    } else {
-      likeSound.mutate({ voiceId });
-      setLiked(true);
-    }
-  }, [setLiked, likeSound, unlikeSound, liked, voiceId]);
-  const likedTheme = "text-pink-400 hover:cursor-pointer hover:text-gray-400";
-  const notLikedTheme =
-    "text-gray-400 hover:cursor-pointer hover:text-pink-400";
+  const changeLiked = useCallback(async () => {
+    setLikedDisplay(!likedDisplay);
+    const { liked } = await toggleLiked.mutateAsync({
+      voiceId,
+    });
+    setLikedDisplay(liked);
+  }, [setLikedDisplay, toggleLiked, voiceId, likedDisplay]);
 
   return (
     <li className="col-span-1 flex flex-col divide-y divide-gray-200 rounded-lg bg-white shadow">
@@ -58,7 +56,7 @@ const VoiceCard: React.FC<Props> = ({ voice, initiallyLiked }) => {
           <div className="-ml-px flex w-0 flex-1">
             <a
               className={`relative inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold ${
-                liked ? likedTheme : notLikedTheme
+                likedDisplay ? likedTheme : notLikedTheme
               }`}
               onClick={changeLiked}
             >
