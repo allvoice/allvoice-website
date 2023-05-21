@@ -22,7 +22,19 @@ function createContextHook<TValue>(name: string, hook: () => TValue) {
     return value;
   }
 
-  return [useNamedCustomHook, Provider] as const;
+  function withHook<TProps extends object>(
+    WrappedComponent: React.ComponentType<TProps>
+  ) {
+    return function WrappedWithHook(props: TProps) {
+      return (
+        <Provider>
+          <WrappedComponent {...props} />
+        </Provider>
+      );
+    };
+  }
+
+  return [useNamedCustomHook, Provider, withHook] as const;
 }
 
 export default createContextHook;
