@@ -16,13 +16,13 @@ function createContextHook<TValue>(name: string, hook: () => TValue) {
     const value = useContext(Context);
 
     if (value === null) {
-      throw new Error(`${name} must be used within a ${name}Provider`);
+      throw new Error(`use${name} must be used within a ${name}Provider`);
     }
 
     return value;
   }
 
-  return { [`${name}Provider`]: Provider, [name]: useNamedCustomHook };
+  return [useNamedCustomHook, Provider] as const;
 }
 
 export default createContextHook;

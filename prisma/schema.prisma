@@ -31,7 +31,7 @@ model SeedSound {
   name            String
   // uploadComplete signifies if we've received the bucket notification indicating the file has been successfully uploaded
   uploadComplete  Boolean                @default(false)
-  fileSize        BigInt                 @db.UnsignedBigInt
+  fileSize        BigInt?                 @db.UnsignedBigInt
   voiceModelJoins VoiceModelSeedSounds[]
 
   uploaderId String
