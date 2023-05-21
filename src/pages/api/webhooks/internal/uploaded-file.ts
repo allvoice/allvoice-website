@@ -19,7 +19,10 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return;
     }
 
-    console.log("/webhooks/internal/uploaded-file: received upload confirmation for: " + record.s3.object.key);
+    console.log(
+      "/webhooks/internal/uploaded-file: received upload confirmation for: " +
+        record.s3.object.key
+    );
 
     await prisma.seedSound.update({
       where: { bucketKey: record.s3.object.key },
