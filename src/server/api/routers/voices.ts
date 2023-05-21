@@ -62,7 +62,9 @@ export const voicesRouter = createTRPCRouter({
 
   refreshMock: publicProcedure.query(async ({ ctx }) => {
     const user = await ctx.prisma.user.create({
-      data: {},
+      data: {
+        id: "user_2PhHc4bcsYBoOUw824MbIsVVFVJ", // cameronlund4@gmail.com
+      },
     });
 
     await ctx.prisma.userLikes.deleteMany({});
