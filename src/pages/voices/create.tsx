@@ -3,24 +3,22 @@ import { useState } from "react";
 import FileUploader from "~/components/FileUploader";
 import createContextHook from "~/utils/createContextHook";
 
-export const [useUploadedFiles, UploadedFilesProvider] = createContextHook(
-  "uploadedFiles",
-  () => {
+export const [useUploadedFiles, UploadedFilesProvider, withUploadedFiles] =
+  createContextHook("uploadedFiles", () => {
     const [fileIds, setFileIds] = useState<string[]>([]);
 
     return {
       fileIds,
       setFileIds,
     };
-  }
-);
+  });
 
 const VoiceCreate: NextPage = () => {
   return (
-    <UploadedFilesProvider>
+    <>
       <FileUploader />
-    </UploadedFilesProvider>
+    </>
   );
 };
 
-export default VoiceCreate;
+export default withUploadedFiles(VoiceCreate);
