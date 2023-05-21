@@ -4,8 +4,8 @@ import VoiceCard from "~/components/VoiceCard";
 import { api } from "~/utils/api";
 const Home: NextPage = () => {
   // api.example.hello.useQuery({ text: "test" });
-  const voiceQuery = api.voice.listNewest.useQuery();
-  // const mockQuery = api.voice.refreshMock.useQuery();
+  const voiceQuery = api.voices.listNewest.useQuery();
+  // const mockQuery = api.voices.refreshMock.useQuery();
 
   return (
     <ul

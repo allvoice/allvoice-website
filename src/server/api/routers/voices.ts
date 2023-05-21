@@ -14,7 +14,7 @@ function createMockVoices(n: number, user: User) {
   return data;
 }
 
-export const voiceRouter = createTRPCRouter({
+export const voicesRouter = createTRPCRouter({
   listNewest: publicProcedure.query(async ({ ctx }) => {
     // TODO: Probably want to introduce cursor pagination
     const voices = await ctx.prisma.voice.findMany({
