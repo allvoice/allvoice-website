@@ -1,5 +1,6 @@
 import { createTRPCRouter } from "~/server/api/trpc";
 import { exampleRouter } from "~/server/api/routers/example";
+import { voicesRouter } from "./routers/voices";
 import { filesRouter } from "~/server/api/routers/files";
 
 /**
@@ -9,6 +10,7 @@ import { filesRouter } from "~/server/api/routers/files";
  */
 export const appRouter = createTRPCRouter({
   example: exampleRouter,
+  voices: voicesRouter,
   files: filesRouter,
 });
 

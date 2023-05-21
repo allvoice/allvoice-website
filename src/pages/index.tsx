@@ -1,11 +1,20 @@
 import { type NextPage } from "next";
-import FileUploader from "~/components/FileUploader";
+import VoiceCard from "~/components/VoiceCard";
+
+import { api } from "~/utils/api";
 const Home: NextPage = () => {
+  const voiceQuery = api.voices.listNewest.useQuery();
+  // const mockQuery = api.voices.refreshMock.useQuery();
+
   return (
-    <div className="h-screen bg-red-500">
-      <p>Hello! Testing the layout.</p>
-      <FileUploader />
-    </div>
+    <ul
+      role="list"
+      className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      {voiceQuery.data?.map((voice) => (
+        <VoiceCard key={voice.id} voice={voice} />
+      ))}
+    </ul>
   );
 };
 
