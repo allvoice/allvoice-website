@@ -13,6 +13,7 @@ datasource db {
 }
 
 model User {
+  // id is the user's id in clerk
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
