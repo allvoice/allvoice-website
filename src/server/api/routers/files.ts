@@ -21,7 +21,11 @@ export const filesRouter = createTRPCRouter({
         data: {
           bucketKey: key,
           name: input.fileName,
-          uploaderId: ctx.userId,
+          uploader: {
+            connect: {
+              id: ctx.userId,
+            },
+          },
           uploadComplete: env.NODE_ENV == "development" ? true : false, // no notification to set this on local dev
         },
       });
