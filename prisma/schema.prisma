@@ -47,6 +47,7 @@ model PreviewSound {
   bucketKey    String     @unique
   voiceModel   VoiceModel @relation(fields: [voiceModelId], references: [id])
   voiceModelId String
+  iconEmoji    String
 
   @@index([voiceModelId])
 }
@@ -94,7 +95,9 @@ model Language {
 }
 
 model Voice {
-  id String @id @default(uuid())
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   ownerUserId String
   ownerUser   User   @relation(fields: [ownerUserId], references: [id])
