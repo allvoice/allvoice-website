@@ -7,9 +7,9 @@ spec:
   selector:
     app: allvoice-website
   ports:
-  - name: http 
-    port: 8080
-    targetPort: 3000
+    - name: http
+      port: 8080
+      targetPort: 3000
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService

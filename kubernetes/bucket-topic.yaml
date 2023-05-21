@@ -1,0 +1,27 @@
+apiVersion: ceph.rook.io/v1
+kind: CephBucketTopic
+metadata:
+  name: uploaded-file-topic
+  namespace: allvoice
+spec:
+  objectStoreName: hdd-data-ssd-meta-object-store
+  objectStoreNamespace: rook-ceph
+  persistent: false # false = events sent sync, true = async # https://docs.ceph.com/en/latest/radosgw/notifications/#synchronous-notifications
+  opaqueData: lT43LQ5j4aeLjr917OunaBSKkDs # added to all events, we're going to use this as a sudo auth
+  endpoint:
+    http:
+      uri: http://allvoice-website.allvoice.svc.cluster.local:8080/api/webhooks/internal/uploaded-file
+      disableVerifySSL: true
+      sendCloudEvents: false
+#   amqp: [11]
+#     uri: amqp://my-rabbitmq-service:5672
+#     uri: amqp://my-rabbitmq-service:5672/vhost1
+#     uri: amqps://user@password:my-rabbitmq-service:5672
+#     disableVerifySSL: true [12]
+#     ackLevel: broker [13]
+#     exchange: my-exchange [14]
+#   kafka: [15]
+#     uri: kafka://my-kafka-service:9092
+#     disableVerifySSL: true [16]
+#     ackLevel: broker [17]
+#     useSSL: false [18]
