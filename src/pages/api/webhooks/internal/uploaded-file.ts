@@ -26,7 +26,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     await prisma.seedSound.update({
       where: { bucketKey: record.s3.object.key },
-      data: { uploadComplete: true },
+      data: { uploadComplete: true, fileSize: record.s3.object.size },
     });
   }
 
