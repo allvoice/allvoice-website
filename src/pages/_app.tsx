@@ -6,12 +6,14 @@ import "~/styles/globals.css";
 
 import {
   ClerkProvider,
+  RedirectToSignIn,
   SignedIn,
   SignedOut,
-  RedirectToSignIn,
 } from "@clerk/nextjs";
 import { useRouter } from "next/router";
 import MainLayout from "~/components/MainLayout";
+import { Toaster } from "~/components/ui/toaster";
+import { Compose } from "~/utils/compose";
 
 //  List pages you want to be publicly accessible, or leave empty if
 //  every page requires authentication. Use this naming strategy:
@@ -31,20 +33,31 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <>
       <ClerkProvider {...pageProps}>
-        {isPublicPage ? (
-          <Component {...pageProps} />
-        ) : (
-          <>
-            <SignedIn>
+        <Compose
+          // global providers go here
+          components={[]}
+        >
+          {isPublicPage ? (
+            <>
               <MainLayout>
                 <Component {...pageProps} />
               </MainLayout>
-            </SignedIn>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          </>
-        )}
+              <Toaster />
+            </>
+          ) : (
+            <>
+              <SignedIn>
+                <MainLayout>
+                  <Component {...pageProps} />
+                </MainLayout>
+                <Toaster />
+              </SignedIn>
+              <SignedOut>
+                <RedirectToSignIn />
+              </SignedOut>
+            </>
+          )}
+        </Compose>
       </ClerkProvider>
     </>
   );
