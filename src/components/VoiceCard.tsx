@@ -1,6 +1,7 @@
 import { DocumentDuplicateIcon, HeartIcon } from "@heroicons/react/20/solid";
 import { type PreviewSound, type Voice, type VoiceModel } from "@prisma/client";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { api } from "~/utils/api";
 
 const PlayButton: React.FC<{ icon: string }> = ({ icon }) => {
   return (
@@ -14,14 +15,24 @@ type Props = {
   voice: Voice & {
     modelVersions: (VoiceModel & { previewSounds: PreviewSound[] })[];
   };
+  initiallyLiked?: boolean;
 };
 
-const VoiceCard: React.FC<Props> = ({ voice }) => {
-  const [favorited] = useState(Math.random() > 0.5); // TODO impl based on user
-  const notFavoritedTheme =
-    "text-gray-400 hover:cursor-pointer hover:text-pink-400";
-  const favoritedTheme =
-    "text-pink-400 hover:cursor-pointer hover:text-gray-400";
+const likedTheme = "text-pink-400 hover:cursor-pointer";
+const notLikedTheme = "text-gray-400 hover:cursor-pointer hover:text-pink-400";
+
+const VoiceCard: React.FC<Props> = ({ voice, initiallyLiked }) => {
+  const [likedDisplay, setLikedDisplay] = useState(initiallyLiked);
+  const toggleLiked = api.users.toggleLiked.useMutation();
+
+  const { id: voiceId } = voice;
+  const changeLiked = useCallback(async () => {
+    setLikedDisplay(!likedDisplay);
+    const { liked } = await toggleLiked.mutateAsync({
+      voiceId,
+    });
+    setLikedDisplay(liked);
+  }, [setLikedDisplay, toggleLiked, voiceId, likedDisplay]);
 
   return (
     <li className="col-span-1 flex flex-col divide-y divide-gray-200 rounded-lg bg-white shadow">
@@ -45,8 +56,9 @@ const VoiceCard: React.FC<Props> = ({ voice }) => {
           <div className="-ml-px flex w-0 flex-1">
             <a
               className={`relative inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold ${
-                favorited ? favoritedTheme : notFavoritedTheme
+                likedDisplay ? likedTheme : notLikedTheme
               }`}
+              onClick={changeLiked}
             >
               <HeartIcon className="h-5 w-5 " aria-hidden="true" />
               {voice.likes}
