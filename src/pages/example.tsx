@@ -1,6 +1,5 @@
 import { type GetStaticProps, type NextPage } from "next";
 import { useState } from "react";
-import FileUploader from "~/components/FileUploader";
 import createContextHook from "~/utils/createContextHook";
 
 type Props = {
@@ -19,10 +18,9 @@ const Example: NextPage<Props> = ({ ssrExampleProp }) => {
   const { example, setExample } = useExample();
   setExample(ssrExampleProp);
   return (
-    <>
+    <div>
       {example}
-      <FileUploader />
-    </>
+    </div>
   );
 };
 

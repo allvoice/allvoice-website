@@ -1,6 +1,11 @@
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  privateProcedure,
+  publicProcedure,
+} from "~/server/api/trpc";
 import { username } from "react-lorem-ipsum";
 import { type Prisma, type User } from "@prisma/client";
+import { z } from "zod";
 
 function createMockVoices(n: number, user: User) {
   const data: Prisma.VoiceCreateManyInput[] = [];
@@ -60,6 +65,22 @@ export const voicesRouter = createTRPCRouter({
     return voices;
   }),
 
+  getVoiceModelWorkspace: privateProcedure
+    .input(z.object({ voiceModelId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const voiceModel = await ctx.prisma.voiceModel.findFirstOrThrow({
+        where: { id: input.voiceModelId, voice: { ownerUserId: ctx.userId } },
+        include: { soundFileJoins: true },
+      });
+
+      const seedSoundIds = voiceModel.soundFileJoins.map(
+        (join) => join.seedSoundId
+      );
+      return {
+        seedSoundIds: seedSoundIds,
+      };
+    }),
+
   refreshMock: publicProcedure.query(async ({ ctx }) => {
     const user = await ctx.prisma.user.create({
       data: {
@@ -93,7 +114,6 @@ export const voicesRouter = createTRPCRouter({
         const createdModel = await ctx.prisma.voiceModel.create({
           data: {
             voiceId: createdVoice.id,
-            version: username(),
           },
         });
 

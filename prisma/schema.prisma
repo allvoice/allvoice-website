@@ -31,7 +31,7 @@ model SeedSound {
   name            String
   // uploadComplete signifies if we've received the bucket notification indicating the file has been successfully uploaded
   uploadComplete  Boolean                @default(false)
-  fileSize        BigInt?                 @db.UnsignedBigInt
+  fileSize        BigInt?                @db.UnsignedBigInt
   voiceModelJoins VoiceModelSeedSounds[]
 
   uploaderId String
@@ -67,7 +67,7 @@ model VoiceModel {
   forkParent         VoiceModel?  @relation("VoiceForks", fields: [forkParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   directForkChildren VoiceModel[] @relation("VoiceForks")
 
-  version                String
+  version                Int @db.UnsignedInt @default(1)
   supportedLanguageJoins VoiceModelSupportedLanguages[]
 
   @@unique([voiceId, version])
@@ -105,8 +105,8 @@ model Voice {
 
   modelVersions VoiceModel[]
 
-  name  String
-  likes Int    @db.UnsignedInt // up to ~4 bil
+  name  String @default("Untitled Voice")
+  likes Int    @default(0) @db.UnsignedInt // up to ~4 bil
 
   userLikeJoins UserLikes[]
 
