@@ -22,7 +22,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
   const utils = api.useContext();
   const createUploadUrl = api.files.createUploadUrl.useMutation({
     async onSuccess(data) {
-      await utils.voices.getVoiceModelWorkspace.cancel()
+      await utils.voices.getVoiceModelWorkspace.cancel();
       utils.voices.getVoiceModelWorkspace.setData({ voiceModelId }, (old) => {
         return {
           ...old,
@@ -42,7 +42,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
     },
     {
       onSettled(data) {
-        void utils.voices.getVoiceModelWorkspace.invalidate({voiceModelId})
+        void utils.voices.getVoiceModelWorkspace.invalidate({ voiceModelId });
         void utils.files.getSeedSound.invalidate({ id: data?.fileId });
       },
       onSuccess(_data, variables) {
@@ -77,20 +77,20 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDropAccepted: onDropAccepted,
     accept: { "audio/mpeg": [] },
-    maxFiles: 25,
-    maxSize: 25000000,
+    maxFiles: 0,
+    maxSize: 10000000,
   });
 
   return (
     <div
-      className="flex flex-col h-40 w-60 items-center justify-center border border-black"
+      className="flex h-40 w-60 flex-col items-center justify-center rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       {...getRootProps()}
     >
       <input {...getInputProps()} />
       {isDragActive ? (
         <p>Drop the files here ...</p>
       ) : (
-        <UploadCloud className="h-full w-full" />
+        <UploadCloud className="h-full w-full stroke-slate-200" />
       )}
       {uploadInProgress && <p>Uploading...</p>}
     </div>

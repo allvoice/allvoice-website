@@ -6,6 +6,17 @@ import {
 import { username } from "react-lorem-ipsum";
 import { type Prisma, type User } from "@prisma/client";
 import { z } from "zod";
+import { voiceCreateFormSchema } from "~/pages/voicemodels/[voiceModelId]/edit";
+import {
+  addVoice,
+  deleteVoice,
+  textToSpeechStream,
+} from "~/server/elevenlabs-api";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { s3Client } from "~/server/s3";
+import { env } from "~/env.mjs";
+import { getPublicUrl } from "~/server/s3";
+import { v4 as uuidv4 } from "uuid";
 
 function createMockVoices(n: number, user: User) {
   const data: Prisma.VoiceCreateManyInput[] = [];
@@ -79,6 +90,55 @@ export const voicesRouter = createTRPCRouter({
       return {
         seedSoundIds: seedSoundIds,
       };
+    }),
+
+  generateTestSound: privateProcedure
+    .input(
+      z.object({
+        voiceModelId: z.string(),
+        formData: voiceCreateFormSchema,
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const voiceModel = await ctx.prisma.voiceModel.findFirstOrThrow({
+        where: { id: input.voiceModelId, voice: { ownerUserId: ctx.userId } },
+        include: { soundFileJoins: { include: { seedSound: true } } },
+      });
+
+      const seedBucketKeys = voiceModel.soundFileJoins.map(
+        (join) => join.seedSound.bucketKey
+      );
+
+      const elevenlabsVoiceId = await addVoice(
+        input.voiceModelId,
+        seedBucketKeys
+      );
+
+      const ttsResponse = await textToSpeechStream(
+        elevenlabsVoiceId,
+        input.formData.generationText,
+        input.formData.modelName,
+        {
+          similarity_boost: input.formData.similarity,
+          stability: input.formData.stability,
+        }
+      );
+
+      const genKey = `testgen/${uuidv4()}`;
+
+      const putObjectCommand = new PutObjectCommand({
+        Bucket: env.BUCKET_NAME,
+        Key: genKey,
+        Body: ttsResponse.stream,
+        ContentLength: ttsResponse.contentLength,
+        ContentType: ttsResponse.contentType,
+      });
+
+      await s3Client.send(putObjectCommand);
+
+      void deleteVoice(elevenlabsVoiceId);
+
+      return getPublicUrl(genKey);
     }),
 
   refreshMock: publicProcedure.query(async ({ ctx }) => {

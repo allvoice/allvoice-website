@@ -34,7 +34,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
     },
   });
 
-  const redirectUrl = `/voices/${voiceModel.id}/edit`
+  const redirectUrl = `/voicemodels/${voiceModel.id}/edit`;
 
   return {
     redirect: {

@@ -70,6 +70,10 @@ model VoiceModel {
   version                Int @db.UnsignedInt @default(1)
   supportedLanguageJoins VoiceModelSupportedLanguages[]
 
+  elevenLabsModelId String @default("eleven_monolingual_v1")
+  elevenLabsStability Float @default(0.5)
+  elevenLabsSimilarityBoost Float @default(0.9)
+
   @@unique([voiceId, version])
   @@index([forkParentId])
   @@index([voiceId])
