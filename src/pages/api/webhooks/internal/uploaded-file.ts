@@ -19,6 +19,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       return;
     }
 
+    const key = record.s3.object.key;
+    // TODO: figure out what to do with generated files from voicemodel edit page
+    if (key.startsWith("testgen/")) {
+      return;
+    }
+
     console.log(
       "/webhooks/internal/uploaded-file: received upload confirmation for: " +
         record.s3.object.key

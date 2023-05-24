@@ -17,6 +17,10 @@ export const s3Client = new S3Client({
   forcePathStyle: true, // causes bucket name to be in path instead of subdomain
 });
 
+export function getPublicUrl(bucketKey: string) {
+  return `${env.BUCKET_HOST}/${env.BUCKET_NAME}/${bucketKey}`;
+}
+
 export async function testUploadGetDelete() {
   const key = "test-file";
   // Upload the file
