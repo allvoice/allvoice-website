@@ -6,7 +6,7 @@
       "Effect": "Allow",
       "Principal": "*",
       "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::allvoice-bucket-520d0005-8c54-4544-b5a7-40f7db99d865/*"
+      "Resource": "arn:aws:s3:::allvoice-bucket-21d04c5c-dea2-4b2e-a605-ffa8c3fe7e22/*"
     }
   ]
 }
