@@ -15,6 +15,9 @@
     "fix": "pnpm lint-fix && pnpm style-fix",
     "print-schema": "prisma migrate diff --script --from-empty --to-schema-datamodel prisma\\schema.prisma"
   },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed/seed-warcraft-metadata.ts"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.332.0",
     "@aws-sdk/s3-request-presigner": "^3.332.0",
@@ -22,8 +25,10 @@
     "@headlessui/react": "^1.7.14",
     "@heroicons/react": "^2.0.18",
     "@hookform/resolvers": "^3.1.0",
-    "@prisma/client": "^4.14.1",
+    "@prisma/client": "^4.15.0",
+    "@radix-ui/react-dialog": "^1.0.4",
     "@radix-ui/react-label": "^2.0.1",
+    "@radix-ui/react-popover": "^1.0.6",
     "@radix-ui/react-select": "^1.2.1",
     "@radix-ui/react-slider": "^1.1.1",
     "@radix-ui/react-slot": "^1.0.1",
@@ -38,6 +43,8 @@
     "axios": "^1.4.0",
     "class-variance-authority": "^0.6.0",
     "clsx": "^1.2.1",
+    "cmdk": "^0.2.0",
+    "csv-parser": "^3.0.0",
     "form-data": "^4.0.0",
     "lucide-react": "^0.220.0",
     "next": "^13.2.4",
@@ -67,8 +74,9 @@
     "postcss": "^8.4.23",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.2.8",
-    "prisma": "^4.14.1",
+    "prisma": "^4.15.0",
     "tailwindcss": "^3.3.2",
+    "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
   "ct3aMetadata": {

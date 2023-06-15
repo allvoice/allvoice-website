@@ -6,7 +6,7 @@ metadata:
 spec:
   objectStoreName: hdd-data-ssd-meta-object-store
   objectStoreNamespace: rook-ceph
-  persistent: true # false = events sent sync, true = async # https://docs.ceph.com/en/latest/radosgw/notifications/#synchronous-notifications
+  persistent: false # false = events sent sync, true = async # https://docs.ceph.com/en/latest/radosgw/notifications/#synchronous-notifications
   opaqueData: lT43LQ5j4aeLjr917OunaBSKkDs # added to all events, we're going to use this as a sudo auth
   endpoint:
     http:

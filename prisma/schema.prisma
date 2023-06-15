@@ -67,12 +67,12 @@ model VoiceModel {
   forkParent         VoiceModel?  @relation("VoiceForks", fields: [forkParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   directForkChildren VoiceModel[] @relation("VoiceForks")
 
-  version                Int @db.UnsignedInt @default(1)
+  version                Int                            @default(1) @db.UnsignedInt
   supportedLanguageJoins VoiceModelSupportedLanguages[]
 
-  elevenLabsModelId String @default("eleven_monolingual_v1")
-  elevenLabsStability Float @default(0.5)
-  elevenLabsSimilarityBoost Float @default(0.9)
+  elevenLabsModelId         String @default("eleven_monolingual_v1")
+  elevenLabsStability       Float  @default(0.4)
+  elevenLabsSimilarityBoost Float  @default(0.98)
 
   @@unique([voiceId, version])
   @@index([forkParentId])
@@ -112,9 +112,15 @@ model Voice {
   name  String @default("Untitled Voice")
   likes Int    @default(0) @db.UnsignedInt // up to ~4 bil
 
+  warcraftNpcDisplay  WacraftNpcDisplay? @relation(fields: [wacraftNpcDisplayId], references: [id])
+  wacraftNpcDisplayId String?
+
+  // TODO: provide an override for voicing specific NPCs
+
   userLikeJoins UserLikes[]
 
   @@index([ownerUserId])
+  @@index([wacraftNpcDisplayId])
 }
 
 model UserLikes {
@@ -141,4 +147,42 @@ model VoiceModelSeedSounds {
   @@id([voiceModelId, seedSoundId])
   @@index([seedSoundId])
   @@index([voiceModelId])
+}
+
+model WacraftNpcDisplay {
+  id            String                @id @default(uuid())
+  // modelFilePath is the path of the model used to render the NPCs
+  // EX: Character\BloodElf\Female\BloodElfFemale.mdx
+  modelFilePath String                @unique
+  // raceId is -1 if unknown or positive if it maps to a wellknown race
+  raceId        Int
+  // genderId is -1 if unknown, 0 for male, 1 for female
+  genderId      Int
+  // voiceName is the end of the modelFilePath. This can be used for display.
+  // EX: BloodElfFemale
+  voiceName     String                @unique
+  // npcs refers to the ingame npcs that use this display
+  npcs          WarcraftNpcDisplays[]
+  // voices refer to the user models that were made for this npc display
+  voices        Voice[]
+}
+
+model WarcraftNpcDisplays {
+  id        String            @id @default(uuid())
+  npcId     Int
+  displayId String
+  npc       WarcraftNpc       @relation(fields: [npcId], references: [npcId])
+  display   WacraftNpcDisplay @relation(fields: [displayId], references: [id])
+
+  @@index([npcId])
+  @@index([displayId])
+}
+
+model WarcraftNpc {
+  // npcId maps to the npcId in game
+  npcId    Int                   @id @db.UnsignedInt
+  // a npc may have multiple displays if the same npcId is shared by multiple models
+  displays WarcraftNpcDisplays[]
+  // name is the npc's in game display name
+  name String
 }
