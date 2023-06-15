@@ -1,22 +1,22 @@
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { type Prisma, type User } from "@prisma/client";
+import { username } from "react-lorem-ipsum";
+import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
+import { env } from "~/env.mjs";
+import { voiceEditFormSchema } from "~/pages/voicemodels/[voiceModelId]/edit";
 import {
   createTRPCRouter,
   privateProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { username } from "react-lorem-ipsum";
-import { type Prisma, type User } from "@prisma/client";
-import { z } from "zod";
-import { voiceCreateFormSchema } from "~/pages/voicemodels/[voiceModelId]/edit";
 import {
   addVoice,
   deleteVoice,
   textToSpeechStream,
 } from "~/server/elevenlabs-api";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client } from "~/server/s3";
-import { env } from "~/env.mjs";
-import { getPublicUrl } from "~/server/s3";
-import { v4 as uuidv4 } from "uuid";
+import { PREVIEW_TEXTS } from "~/server/preview-text";
+import { getPublicUrl, s3Client } from "~/server/s3";
 
 function createMockVoices(n: number, user: User) {
   const data: Prisma.VoiceCreateManyInput[] = [];
@@ -75,6 +75,31 @@ export const voicesRouter = createTRPCRouter({
 
     return voices;
   }),
+  getVoiceDetails: publicProcedure
+    .input(z.object({ voiceId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const voice = await ctx.prisma.voice.findFirstOrThrow({
+        where: {
+          id: input.voiceId,
+        },
+        include: {
+          modelVersions: {
+            include: {
+              previewSounds: true,
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+            take: 1,
+          },
+        },
+      });
+      const previewSounds = voice.modelVersions[0]?.previewSounds.map(
+        (sound) => ({ ...sound, publicUrl: getPublicUrl(sound.bucketKey) })
+      );
+
+      return { voiceName: voice.name, previewSounds: previewSounds };
+    }),
 
   getVoiceModelWorkspace: privateProcedure
     .input(z.object({ voiceModelId: z.string() }))
@@ -92,11 +117,82 @@ export const voicesRouter = createTRPCRouter({
       };
     }),
 
+  postVoiceModel: privateProcedure
+    .input(
+      z.object({
+        voiceModelId: z.string(),
+        warcraftNpcDisplayId: z.string(),
+        voiceTitle: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const voiceModel = await ctx.prisma.voiceModel.findFirstOrThrow({
+        where: { id: input.voiceModelId, voice: { ownerUserId: ctx.userId } },
+        include: { soundFileJoins: { include: { seedSound: true } } },
+      });
+
+      // make auto-preview noises
+
+      const voice = await ctx.prisma.voice.update({
+        where: { id: voiceModel.voiceId },
+        data: {
+          name: input.voiceTitle,
+          warcraftNpcDisplay: {
+            connect: { id: input.warcraftNpcDisplayId },
+          },
+        },
+      });
+
+      const seedBucketKeys = voiceModel.soundFileJoins.map(
+        (join) => join.seedSound.bucketKey
+      );
+
+      const elevenlabsVoiceId = await addVoice(
+        input.voiceModelId,
+        seedBucketKeys
+      );
+
+      for (const previewText of PREVIEW_TEXTS) {
+        const ttsResponse = await textToSpeechStream(
+          elevenlabsVoiceId,
+          previewText.text,
+          voiceModel.elevenLabsModelId,
+          {
+            similarity_boost: voiceModel.elevenLabsSimilarityBoost,
+            stability: voiceModel.elevenLabsStability,
+          }
+        );
+
+        const genKey = `preview/${uuidv4()}`;
+
+        const putObjectCommand = new PutObjectCommand({
+          Bucket: env.BUCKET_NAME,
+          Key: genKey,
+          Body: ttsResponse.stream,
+          ContentLength: ttsResponse.contentLength,
+          ContentType: ttsResponse.contentType,
+        });
+
+        await s3Client.send(putObjectCommand);
+
+        await ctx.prisma.previewSound.create({
+          data: {
+            iconEmoji: previewText.emoji,
+            bucketKey: genKey,
+            voiceModel: { connect: { id: voiceModel.id } },
+          },
+        });
+      }
+
+      void deleteVoice(elevenlabsVoiceId);
+
+      return `/voices/${voice.id}`;
+    }),
   generateTestSound: privateProcedure
     .input(
       z.object({
         voiceModelId: z.string(),
-        formData: voiceCreateFormSchema,
+        formData: voiceEditFormSchema,
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -108,6 +204,15 @@ export const voicesRouter = createTRPCRouter({
       const seedBucketKeys = voiceModel.soundFileJoins.map(
         (join) => join.seedSound.bucketKey
       );
+
+      await ctx.prisma.voiceModel.update({
+        where: { id: input.voiceModelId },
+        data: {
+          elevenLabsModelId: input.formData.modelName,
+          elevenLabsSimilarityBoost: input.formData.similarity,
+          elevenLabsStability: input.formData.stability,
+        },
+      });
 
       const elevenlabsVoiceId = await addVoice(
         input.voiceModelId,

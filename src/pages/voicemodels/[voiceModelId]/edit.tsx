@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import Link from "next/link";
 
 type SeedSoundDisplayProps = {
   seedSoundId: string;
@@ -86,14 +87,14 @@ const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
   );
 };
 
-export const voiceCreateFormSchema = z.object({
+export const voiceEditFormSchema = z.object({
   similarity: z.number().min(0).max(1),
   stability: z.number().min(0).max(1),
   modelName: z.string(),
   generationText: z.string(),
 });
 
-const VoiceCreate: NextPage = () => {
+const VoiceEdit: NextPage = () => {
   const router = useRouter();
   // validate this better later, possibly serverside before rendering the page
   const voiceModelId = (router.query.voiceModelId ?? "") as string;
@@ -102,8 +103,8 @@ const VoiceCreate: NextPage = () => {
   });
   const generateTestSound = api.voices.generateTestSound.useMutation();
 
-  const form = useForm<z.infer<typeof voiceCreateFormSchema>>({
-    resolver: zodResolver(voiceCreateFormSchema),
+  const form = useForm<z.infer<typeof voiceEditFormSchema>>({
+    resolver: zodResolver(voiceEditFormSchema),
     // TODO: get defaults from workspace config
     defaultValues: {
       similarity: 0.98,
@@ -116,7 +117,7 @@ const VoiceCreate: NextPage = () => {
     string | undefined
   >();
   const { toast } = useToast();
-  const onSubmit = async (data: z.infer<typeof voiceCreateFormSchema>) => {
+  const onSubmit = async (data: z.infer<typeof voiceEditFormSchema>) => {
     toast({
       title: "You submitted the following values:",
       description: (
@@ -259,8 +260,9 @@ const VoiceCreate: NextPage = () => {
           )}
         </form>
       </Form>
+      <Link href={`/voicemodels/${voiceModelId}/post`}>POST THIS</Link>
     </>
   );
 };
 
-export default VoiceCreate;
+export default VoiceEdit;
