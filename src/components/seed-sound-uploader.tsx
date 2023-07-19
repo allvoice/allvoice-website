@@ -83,7 +83,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
 
   return (
     <div
-      className="flex h-40 w-60 flex-col items-center justify-center rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+      className="border-input ring-offset-background focus-visible:ring-ring flex h-40 w-60 flex-col items-center justify-center rounded-md border bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
       {...getRootProps()}
     >
       <input {...getInputProps()} />

@@ -6,7 +6,7 @@ import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Check, ChevronsUpDown } from "lucide-react";
 
-import { cn } from "~/utils/uiUtils";
+import { cn } from "~/utils/ui";
 import {
   Command,
   CommandEmpty,

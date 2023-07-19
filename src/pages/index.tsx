@@ -1,5 +1,5 @@
 import { type NextPage } from "next";
-import VoiceCard from "~/components/VoiceCard";
+import VoiceCard from "~/components/voice-card";
 
 import { api } from "~/utils/api";
 const Home: NextPage = () => {
