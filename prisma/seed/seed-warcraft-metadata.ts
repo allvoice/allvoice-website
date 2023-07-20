@@ -1,41 +1,45 @@
-import { type Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import csvParser from "csv-parser";
 import fs from "fs";
 
 const prisma = new PrismaClient();
 
 type WarcraftMetadataRow = {
+  entry: string;
+  name: string;
   modelname: string;
   race_id: string;
   gender: string;
   unique_voice_name: string;
-  npc_ids: string;
 };
 
 type ParsedWarcraftMetadataRow = {
+  // entry is the npc's id
+  entry: number;
+  // name is the npc's name
+  name: string;
+  // modelname is the full path to the NPC's model
   modelname: string;
   race_id: number;
   gender: number;
+  // -1 for unknown
   unique_voice_name: string;
-  npc_ids: number[];
 };
 async function parseWarcraftMetadataCSV() {
   return new Promise<ParsedWarcraftMetadataRow[]>((resolve, reject) => {
     const parsedData: ParsedWarcraftMetadataRow[] = [];
 
     // Read and parse the data.csv file
-    fs.createReadStream("prisma/seed/warcraft-metadata.csv")
+    fs.createReadStream("prisma/seed/warcraft-display-metadata.csv")
       .pipe(csvParser())
       .on("data", (row: WarcraftMetadataRow) => {
         parsedData.push({
+          entry: parseInt(row.entry),
+          name: row.name,
           modelname: row.modelname,
           race_id: parseInt(row.race_id),
           gender: parseInt(row.gender),
           unique_voice_name: row.unique_voice_name,
-          npc_ids: row.npc_ids
-            .split(",")
-            .map((id: string) => parseInt(id))
-            .filter((id) => !isNaN(id)),
         });
       })
       .on("end", () => {
@@ -48,48 +52,38 @@ async function parseWarcraftMetadataCSV() {
 async function main() {
   const data = await parseWarcraftMetadataCSV();
 
-  data.forEach(async (row) => {
-    const category = await prisma.wacraftNpcDisplay.create({
+  await prisma.warcraftNpcDisplays.deleteMany();
+  await prisma.warcraftNpc.deleteMany();
+  await prisma.warcraftNpcDisplays.deleteMany();
+
+  console.log(data.length);
+  
+  for (const row of data) {
+    if (row.unique_voice_name == "-1") continue;
+    await prisma.warcraftNpcDisplays.create({
       data: {
-        modelFilePath: row.modelname,
-        raceId: row.race_id,
-        genderId: row.gender,
-        voiceName: row.unique_voice_name,
+        display: {
+          connectOrCreate: {
+            where: {
+              modelFilePath: row.modelname,
+            },
+            create: {
+              modelFilePath: row.modelname,
+              raceId: row.race_id,
+              genderId: row.gender,
+              voiceName: row.unique_voice_name,
+            },
+          },
+        },
+        npc: {
+          connectOrCreate: {
+            where: { npcId: row.entry },
+            create: { npcId: row.entry, name: row.name },
+          },
+        },
       },
     });
-
-    for (const npcId of row.npc_ids) {
-      try {
-        await prisma.warcraftNpc.create({
-          data: {
-            npcId: npcId,
-          },
-        });
-      } catch (error) {
-        if (error instanceof Error && 'code' in error && error.code === 'P2002') {
-          // console.log(`NPC with ID ${npcId} already exists.`);
-        } else {
-          // Handle other errors or re-throw the error
-          throw error;
-        }
-      }
-      try {
-        await prisma.warcraftNpcDisplays.create({
-          data: {
-            npc: {
-              connect: { npcId: npcId },
-            },
-            display: {
-              connect: { id: category.id },
-            },
-          },
-        });
-      } catch (error) {
-        console.log(`error connecting: ${npcId} to ${category.id}`);
-      }
-    }
-
-  });
+  }
 }
 main()
   .then(async () => {
