@@ -5,17 +5,17 @@ type PreviewText = {
 
 const HAPPY_PREVIEW_TEXT: PreviewText = {
   emoji: "😁",
-  text: "Guess what? We've won the lottery of smiles today! Let's embrace this joy, spreading it around like sunshine on a cloudless day.",
+  text: "Happy happy happy! I'm so happy right now!",
 };
 
 const SAD_PREVIEW_TEXT: PreviewText = {
   emoji: "😭",
-  text: "Feels like a heavy cloud is hanging over us today. The once vibrant roses now bow their heads, echoing the melancholy in our hearts.",
+  text: "I'm so sad. It feels like a heavy cloud is hanging over me today.",
 };
 
 const NEUTRAL_PREVIEW_TEXT: PreviewText = {
   emoji: "😐",
-  text: "Just another typical day - the ticking of the clock, pages of a book turning, the predictable hum of the city outside. A portrait of life in its routine form.",
+  text: "I went to the store today and bought some chicken. It was fine.",
 };
 
 export const PREVIEW_TEXTS: PreviewText[] = [

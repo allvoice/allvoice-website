@@ -16,6 +16,8 @@ export const env = createEnv({
     BUCKET_HOST: z.string(),
     BUCKET_NOTIFICATION_SECRET: z.string(),
     ELEVENLABS_API_KEY: z.string(),
+    ELEVENLABS_MAX_VOICES: z.number({ coerce: true }).min(1),
+    ELEVENLABS_MAX_CONCURRENCY: z.number({ coerce: true }).min(1),
   },
 
   /**
@@ -43,5 +45,7 @@ export const env = createEnv({
     BUCKET_HOST: process.env.BUCKET_HOST,
     BUCKET_NOTIFICATION_SECRET: process.env.BUCKET_NOTIFICATION_SECRET,
     ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY,
+    ELEVENLABS_MAX_VOICES: process.env.ELEVENLABS_MAX_VOICES,
+    ELEVENLABS_MAX_CONCURRENCY: process.env.ELEVENLABS_MAX_CONCURRENCY,
   },
 });

@@ -24,7 +24,7 @@ const Header: React.FC<Props> = ({ onQuickActionClicked }) => {
                   onClick={onQuickActionClicked}
                 >
                   <PlusIcon className="-ml-0.5 h-5 w-5" aria-hidden="true" />
-                  New Chat
+                  New Voice
                 </button>
               )}
             </div>
