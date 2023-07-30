@@ -74,6 +74,8 @@ model VoiceModel {
   elevenLabsStability       Float  @default(0.4)
   elevenLabsSimilarityBoost Float  @default(0.98)
 
+  published Boolean @default(false)
+
   @@unique([voiceId, version])
   @@index([forkParentId])
   @@index([voiceId])
@@ -184,5 +186,5 @@ model WarcraftNpc {
   // a npc may have multiple displays if the same npcId is shared by multiple models
   displays WarcraftNpcDisplays[]
   // name is the npc's in game display name
-  name String
+  name     String
 }
