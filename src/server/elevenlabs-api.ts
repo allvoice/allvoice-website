@@ -250,4 +250,4 @@ class ElevenLabsManager {
 }
 
 export const elevenLabsManager = new ElevenLabsManager();
-void elevenLabsManager.initOnce()
+void elevenLabsManager.initOnce();

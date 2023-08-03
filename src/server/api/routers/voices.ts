@@ -129,7 +129,7 @@ export const voicesRouter = createTRPCRouter({
         (join) => join.seedSound.bucketKey
       );
 
-      const elevenlabsVoiceId = await elevenLabsManager.ensureVoiceIsLoaded({
+      await elevenLabsManager.ensureVoiceIsLoaded({
         name: input.voiceModelId,
         bucketKeys: seedBucketKeys,
       });
