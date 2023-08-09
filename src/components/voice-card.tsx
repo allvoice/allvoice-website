@@ -1,5 +1,6 @@
-import { DocumentDuplicateIcon, HeartIcon } from "@heroicons/react/20/solid";
+import { DocumentDuplicateIcon, HeartIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { type PreviewSound, type Voice, type VoiceModel } from "@prisma/client";
+import Link from "next/link";
 import { useCallback, useState } from "react";
 import { api } from "~/utils/api";
 
@@ -48,14 +49,20 @@ const VoiceCard: React.FC<Props> = ({ voice, initiallyLiked }) => {
       <div>
         <div className="-mt-px flex divide-x divide-gray-200">
           <div className="flex w-0 flex-1">
-            <a className="relative -mr-px inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-bl-lg border border-transparent py-4 text-sm font-semibold text-gray-400  hover:cursor-pointer hover:text-blue-400">
+            <a className="relative -mr-px inline-flex w-0 flex-1 items-center justify-center gap-x-1 rounded-bl-lg border border-transparent py-4 text-sm font-semibold text-gray-400  hover:cursor-pointer hover:text-blue-400">
               <DocumentDuplicateIcon className="h-5 w-5" aria-hidden="true" />
               Clone
             </a>
           </div>
+          <div className="flex w-0 flex-1">
+            <Link href={`/voices/${voice.id}`} className="relative -mr-px inline-flex w-0 flex-1 items-center justify-center gap-x-1 rounded-bl-lg border border-transparent py-4 text-sm font-semibold text-gray-400  hover:cursor-pointer hover:text-blue-400">
+              <MagnifyingGlassIcon className="h-5 w-5" aria-hidden="true" />
+              Details
+            </Link>
+          </div>
           <div className="-ml-px flex w-0 flex-1">
             <a
-              className={`relative inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-br-lg border border-transparent py-4 text-sm font-semibold ${
+              className={`relative inline-flex w-0 flex-1 items-center justify-center gap-x-1 rounded-br-lg border border-transparent py-4 text-sm font-semibold ${
                 likedDisplay ? likedTheme : notLikedTheme
               }`}
               onClick={changeLiked}

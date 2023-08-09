@@ -33,6 +33,13 @@ export const voicesRouter = createTRPCRouter({
       orderBy: {
         createdAt: "desc",
       },
+      where: {
+        modelVersions: {
+          some: {
+            published: true,
+          },
+        },
+      },
       take: 20,
     });
 
@@ -57,6 +64,13 @@ export const voicesRouter = createTRPCRouter({
       },
       orderBy: {
         likes: "desc",
+      },
+      where: {
+        modelVersions: {
+          some: {
+            published: true,
+          },
+        },
       },
       take: 20,
     });
@@ -179,6 +193,13 @@ export const voicesRouter = createTRPCRouter({
           },
         });
       }
+
+      await ctx.prisma.voiceModel.update({
+        where: { id: voiceModel.id },
+        data: {
+          published: true,
+        },
+      });
 
       return `/voices/${voice.id}`;
     }),
