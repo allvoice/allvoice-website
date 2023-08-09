@@ -24,6 +24,9 @@ export const voicesRouter = createTRPCRouter({
           orderBy: {
             createdAt: "desc",
           },
+          where: {
+            published: true,
+          },
           take: 1,
         },
       },
@@ -45,6 +48,9 @@ export const voicesRouter = createTRPCRouter({
           },
           orderBy: {
             createdAt: "desc",
+          },
+          where: {
+            published: true,
           },
           take: 1,
         },
@@ -71,6 +77,9 @@ export const voicesRouter = createTRPCRouter({
             },
             orderBy: {
               createdAt: "desc",
+            },
+            where: {
+              published: true,
             },
             take: 1,
           },
