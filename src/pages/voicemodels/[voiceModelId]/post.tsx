@@ -116,7 +116,7 @@ const VoiceEdit: NextPage = () => {
                       variant="outline"
                       role="combobox"
                       className={cn(
-                        "w-[200px] justify-between",
+                        "w-full justify-between",
                         !field.value && "text-muted-foreground"
                       )}
                     >
@@ -124,25 +124,25 @@ const VoiceEdit: NextPage = () => {
                         ? allWarcraftVoiceNameOptions.data?.find(
                             (option) => option.value === field.value
                           )?.label
-                        : "Select a voice"}
+                        : "Select a voice (e.g. HumanMale)"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0">
+                <PopoverContent className="h-[500px] w-full p-0" align="start">
                   <Command>
                     <CommandInput placeholder="Search..." />
                     <CommandEmpty>No voice found.</CommandEmpty>
                     {allWarcraftVoiceNameOptions.isLoading && (
                       <CommandLoading>Fetching voices…</CommandLoading>
                     )}
-                    <CommandGroup>
+                    <CommandGroup className="overflow-auto">
                       {allWarcraftVoiceNameOptions.data?.map((option) => (
                         <CommandItem
-                          value={option.value}
+                          value={option.label}
                           key={option.value}
-                          onSelect={(value) => {
-                            form.setValue("warcraftNpcDisplayId", value);
+                          onSelect={() => {
+                            form.setValue("warcraftNpcDisplayId", option.value);
                           }}
                         >
                           <Check
@@ -153,7 +153,7 @@ const VoiceEdit: NextPage = () => {
                                 : "opacity-0"
                             )}
                           />
-                          {option.label}
+                          {`${option.label} (${option.npcsCount})`}
                         </CommandItem>
                       ))}
                     </CommandGroup>
@@ -161,7 +161,9 @@ const VoiceEdit: NextPage = () => {
                 </PopoverContent>
               </Popover>
               <FormDescription>
-                Name of the in game voice this AI voice will be used for.
+                Name of the in game voice this AI voice will be used for. The
+                number in () represents the number of in-game NPCs this voice is
+                linked to that have spoken text.
               </FormDescription>
               <FormMessage />
             </FormItem>

@@ -53,6 +53,7 @@
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.45.2",
     "react-lorem-ipsum": "^1.4.10",
+    "react-use-audio-player": "^2.1.1",
     "superjson": "1.12.2",
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animate": "^1.0.6",

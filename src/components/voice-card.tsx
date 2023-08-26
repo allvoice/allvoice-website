@@ -1,21 +1,33 @@
-import { DocumentDuplicateIcon, HeartIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { type PreviewSound, type Voice, type VoiceModel } from "@prisma/client";
+import {
+  DocumentDuplicateIcon,
+  HeartIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/20/solid";
 import Link from "next/link";
 import { useCallback, useState } from "react";
-import { api } from "~/utils/api";
+import { useGlobalAudioPlayer } from "react-use-audio-player";
+import { type VoiceListElement, api } from "~/utils/api";
 
-const PlayButton: React.FC<{ icon: string }> = ({ icon }) => {
+const PlayButton: React.FC<{
+  sound: VoiceListElement["modelVersions"][number]["previewSounds"][number];
+}> = ({ sound }) => {
+  const { load } = useGlobalAudioPlayer();
+
+  const playSound = () => {
+    load(sound.publicUrl, { autoplay: true, format: "mp3" });
+  };
   return (
-    <div className="rounded-full border border-solid border-gray-400 p-2 text-gray-400 shadow hover:cursor-pointer hover:border-blue-400 hover:text-blue-400">
-      {icon}
+    <div
+      onClick={playSound}
+      className="rounded-full border border-solid border-gray-400 p-2 text-gray-400 shadow hover:cursor-pointer hover:border-blue-400 hover:text-blue-400"
+    >
+      {sound.iconEmoji}
     </div>
   );
 };
 
 type Props = {
-  voice: Voice & {
-    modelVersions: (VoiceModel & { previewSounds: PreviewSound[] })[];
-  };
+  voice: VoiceListElement;
   initiallyLiked?: boolean;
 };
 
@@ -26,6 +38,8 @@ const VoiceCard: React.FC<Props> = ({ voice, initiallyLiked }) => {
   const [likedDisplay, setLikedDisplay] = useState(initiallyLiked);
   const toggleLiked = api.users.toggleLiked.useMutation();
 
+  const utils = api.useContext();
+
   const { id: voiceId } = voice;
   const changeLiked = useCallback(async () => {
     setLikedDisplay(!likedDisplay);
@@ -33,16 +47,18 @@ const VoiceCard: React.FC<Props> = ({ voice, initiallyLiked }) => {
       voiceId,
     });
     setLikedDisplay(liked);
-  }, [setLikedDisplay, toggleLiked, voiceId, likedDisplay]);
+    void utils.voices.listNewest.invalidate();
+  }, [likedDisplay, toggleLiked, voiceId, utils.voices.listNewest]);
 
   return (
     <li className="col-span-1 flex flex-col divide-y divide-gray-200 rounded-lg bg-white shadow">
       <div className="flex flex-1 flex-col p-8">
         <h1 className="text-xl">{voice.name}</h1>
         <h2 className="text-sm">Version {voice?.modelVersions[0]?.version}</h2>
+        <h3>{voice.warcraftNpcDisplay?.voiceName}</h3>
         <div className="my-2 flex space-x-3">
-          {voice.modelVersions[0]?.previewSounds.map((preview) => (
-            <PlayButton key={preview.id} icon={preview.iconEmoji} />
+          {voice.modelVersions[0]?.previewSounds.map((sound) => (
+            <PlayButton key={sound.id} sound={sound} />
           ))}
         </div>
       </div>
@@ -55,7 +71,10 @@ const VoiceCard: React.FC<Props> = ({ voice, initiallyLiked }) => {
             </a>
           </div>
           <div className="flex w-0 flex-1">
-            <Link href={`/voices/${voice.id}`} className="relative -mr-px inline-flex w-0 flex-1 items-center justify-center gap-x-1 rounded-bl-lg border border-transparent py-4 text-sm font-semibold text-gray-400  hover:cursor-pointer hover:text-blue-400">
+            <Link
+              href={`/voices/${voice.id}`}
+              className="relative -mr-px inline-flex w-0 flex-1 items-center justify-center gap-x-1 rounded-bl-lg border border-transparent py-4 text-sm font-semibold text-gray-400  hover:cursor-pointer hover:text-blue-400"
+            >
               <MagnifyingGlassIcon className="h-5 w-5" aria-hidden="true" />
               Details
             </Link>

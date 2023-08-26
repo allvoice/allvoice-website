@@ -4,6 +4,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import { z } from "zod";
+import { decrementVoiceLikes, incrementVoiceLikes } from "~/server/db";
 
 export const usersRouter = createTRPCRouter({
   listLikedSounds: publicProcedure.query(async ({ ctx }) => {
@@ -35,6 +36,7 @@ export const usersRouter = createTRPCRouter({
             },
           },
         });
+        await decrementVoiceLikes(input.voiceId);
         return { liked: false };
       } else {
         await ctx.prisma.userLikes.create({
@@ -43,6 +45,7 @@ export const usersRouter = createTRPCRouter({
             voiceId: input.voiceId,
           },
         });
+        await incrementVoiceLikes(input.voiceId);
         return { liked: true };
       }
     }),

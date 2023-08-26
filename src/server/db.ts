@@ -14,3 +14,29 @@ export const prisma =
   });
 
 if (env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+export async function decrementVoiceLikes(voiceId: string) {
+  return await prisma.voice.update({
+    where: {
+      id: voiceId,
+    },
+    data: {
+      likes: {
+        decrement: 1,
+      },
+    },
+  });
+}
+
+export async function incrementVoiceLikes(voiceId: string) {
+  return await prisma.voice.update({
+    where: {
+      id: voiceId,
+    },
+    data: {
+      likes: {
+        increment: 1,
+      },
+    },
+  });
+}

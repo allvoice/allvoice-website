@@ -29,6 +29,9 @@ export const voicesRouter = createTRPCRouter({
           },
           take: 1,
         },
+        warcraftNpcDisplay: {
+          include: { npcs: true },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -43,7 +46,18 @@ export const voicesRouter = createTRPCRouter({
       take: 20,
     });
 
-    return voices;
+    const mapped = voices.map((voice) => ({
+      ...voice,
+      modelVersions: voice.modelVersions.map((version) => ({
+        ...version,
+        previewSounds: version.previewSounds.map((sound) => ({
+          ...sound,
+          publicUrl: getPublicUrl(sound.bucketKey),
+        })),
+      })),
+    }));
+
+    return mapped;
   }),
 
   listMostPopular: publicProcedure.query(async ({ ctx }) => {
