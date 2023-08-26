@@ -51,6 +51,8 @@ type TTSSettings = {
   generationSettings?: {
     similarity_boost: number;
     stability: number;
+    style: number;
+    use_speaker_boost: boolean;
   };
   optimizeStreamingLatency?: number;
 };

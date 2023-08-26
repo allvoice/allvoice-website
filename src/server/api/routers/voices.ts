@@ -183,6 +183,8 @@ export const voicesRouter = createTRPCRouter({
             generationSettings: {
               similarity_boost: voiceModel.elevenLabsSimilarityBoost,
               stability: voiceModel.elevenLabsStability,
+              style: voiceModel.elevenLabsStyle,
+              use_speaker_boost: voiceModel.elevenLabsSpeakerBoost,
             },
           }
         );
@@ -240,6 +242,8 @@ export const voicesRouter = createTRPCRouter({
           elevenLabsModelId: input.formData.modelName,
           elevenLabsSimilarityBoost: input.formData.similarity,
           elevenLabsStability: input.formData.stability,
+          elevenLabsSpeakerBoost: input.formData.speakerBoost,
+          elevenLabsStyle: input.formData.style,
         },
       });
 
@@ -254,6 +258,8 @@ export const voicesRouter = createTRPCRouter({
           generationSettings: {
             similarity_boost: input.formData.similarity,
             stability: input.formData.stability,
+            style: input.formData.style,
+            use_speaker_boost: input.formData.speakerBoost,
           },
         }
       );
@@ -271,5 +277,25 @@ export const voicesRouter = createTRPCRouter({
       await s3Client.send(putObjectCommand);
 
       return getPublicUrl(genKey);
+    }),
+
+  updateVoiceGenerationSettings: privateProcedure
+    .input(
+      z.object({
+        voiceModelId: z.string(),
+        formData: voiceEditFormSchema,
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.voiceModel.update({
+        where: { id: input.voiceModelId },
+        data: {
+          elevenLabsModelId: input.formData.modelName,
+          elevenLabsSimilarityBoost: input.formData.similarity,
+          elevenLabsStability: input.formData.stability,
+          elevenLabsSpeakerBoost: input.formData.speakerBoost,
+          elevenLabsStyle: input.formData.style,
+        },
+      });
     }),
 });

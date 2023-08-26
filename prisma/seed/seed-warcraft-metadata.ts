@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import csvParser from "csv-parser";
 import fs from "fs";
+import { Presets, SingleBar } from "cli-progress";
 
 const prisma = new PrismaClient();
 
@@ -56,10 +57,14 @@ async function main() {
   await prisma.warcraftNpc.deleteMany();
   await prisma.warcraftNpcDisplays.deleteMany();
 
-  console.log(data.length);
-  
+  const progressBar = new SingleBar({}, Presets.shades_classic);
+  progressBar.start(data.length, 0); // Start the progress bar with total number of data rows
+
   for (const row of data) {
-    if (row.unique_voice_name == "-1") continue;
+    if (row.unique_voice_name == "-1") {
+      progressBar.increment();
+      continue;
+    }
     await prisma.warcraftNpcDisplays.create({
       data: {
         display: {
@@ -83,7 +88,9 @@ async function main() {
         },
       },
     });
+    progressBar.increment();
   }
+  progressBar.stop();
 }
 main()
   .then(async () => {

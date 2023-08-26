@@ -70,9 +70,11 @@ model VoiceModel {
   version                Int                            @default(1) @db.UnsignedInt
   supportedLanguageJoins VoiceModelSupportedLanguages[]
 
-  elevenLabsModelId         String @default("eleven_monolingual_v1")
-  elevenLabsStability       Float  @default(0.4)
-  elevenLabsSimilarityBoost Float  @default(0.98)
+  elevenLabsModelId         String  @default("eleven_monolingual_v1")
+  elevenLabsStability       Float   @default(0.4)
+  elevenLabsSimilarityBoost Float   @default(0.98)
+  elevenLabsStyle           Float   @default(0.0)
+  elevenLabsSpeakerBoost    Boolean @default(true)
 
   published Boolean @default(false)
 

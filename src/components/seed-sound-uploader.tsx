@@ -76,7 +76,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDropAccepted: onDropAccepted,
-    accept: { "audio/mpeg": [] },
+    accept: { "audio/mpeg": [], "audio/ogg": [] },
     maxFiles: 0,
     maxSize: 10000000,
   });
