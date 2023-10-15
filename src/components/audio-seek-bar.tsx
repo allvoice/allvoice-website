@@ -17,7 +17,7 @@ interface AudioSeekBarProps {
 export const AudioSeekBar: FunctionComponent<AudioSeekBarProps> = ({
   className,
 }) => {
-  const { getPosition, duration, seek } = useGlobalAudioPlayer();
+  const { getPosition, duration, seek, playing } = useGlobalAudioPlayer();
   const [pos, setPos] = useState(0);
   const frameRef = useRef<number>();
 
@@ -40,6 +40,8 @@ export const AudioSeekBar: FunctionComponent<AudioSeekBarProps> = ({
 
   const goTo = useCallback(
     (event: MouseEvent) => {
+      if(!playing) return;
+      
       const { pageX: eventOffsetX } = event;
 
       if (seekBarElem.current) {
@@ -49,13 +51,13 @@ export const AudioSeekBar: FunctionComponent<AudioSeekBarProps> = ({
         seek(percent * duration);
       }
     },
-    [duration, seek]
+    [duration, playing, seek]
   );
 
   if (duration === Infinity || duration === 0) return null;
 
   return (
-    <div className={cn("w-full", className)} ref={seekBarElem} onClick={goTo}>
+    <div className={cn("w-full", {"cursor-pointer": playing}, className)} ref={seekBarElem} onClick={goTo}>
       <div
         style={{ width: `${(pos / duration) * 100}%` }}
         className={cn("h-full bg-black")}
