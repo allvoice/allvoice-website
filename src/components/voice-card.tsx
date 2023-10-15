@@ -3,25 +3,37 @@ import {
   HeartIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
+import { Pause } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useGlobalAudioPlayer } from "react-use-audio-player";
 import { type VoiceListElement, api } from "~/utils/api";
 
 const PlayButton: React.FC<{
   sound: VoiceListElement["modelVersions"][number]["previewSounds"][number];
 }> = ({ sound }) => {
-  const { load } = useGlobalAudioPlayer();
+  const { load, src, stop, playing } = useGlobalAudioPlayer();
 
+  const isPlayingThis = useMemo(
+    () => src == sound.publicUrl && playing,
+    [playing, sound.publicUrl, src]
+  );
   const playSound = () => {
-    load(sound.publicUrl, { autoplay: true, format: "mp3" });
+    load(sound.publicUrl, { autoplay: true, html5: true, format: "mp3" });
+  };
+  const stopSound = () => {
+    stop();
   };
   return (
     <div
-      onClick={playSound}
-      className="rounded-full border border-solid border-gray-400 p-2 text-gray-400 shadow hover:cursor-pointer hover:border-blue-400 hover:text-blue-400"
+      onClick={isPlayingThis ? stopSound : playSound}
+      className="flex h-10 w-10 justify-center rounded-full border border-solid border-gray-400 p-2 align-middle text-gray-400 shadow hover:cursor-pointer hover:border-blue-400 hover:text-blue-400"
     >
-      {sound.iconEmoji}
+      {isPlayingThis ? (
+        <Pause className="mt-[1px] h-5 w-5" />
+      ) : (
+        <span>{sound.iconEmoji}</span>
+      )}
     </div>
   );
 };
