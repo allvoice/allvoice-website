@@ -125,14 +125,15 @@ export const voicesRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const voiceModel = await ctx.prisma.voiceModel.findFirstOrThrow({
         where: { id: input.voiceModelId, voice: { ownerUserId: ctx.userId } },
-        include: { soundFileJoins: true },
+        include: { soundFileJoins: { include: { seedSound: true } } },
       });
 
-      const seedSoundIds = voiceModel.soundFileJoins.map(
-        (join) => join.seedSoundId
-      );
+      const seedSounds = voiceModel.soundFileJoins.map((join) => ({
+        id: join.seedSound.id,
+        active: join.seedSound.active,
+      }));
       return {
-        seedSoundIds: seedSoundIds,
+        seedSounds: seedSounds,
       };
     }),
 

@@ -1,8 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { X } from "lucide-react";
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
-import { useState, type FC } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import SeedSoundUploader from "~/components/seed-sound-uploader";
@@ -30,63 +29,6 @@ import { Slider } from "~/components/ui/slider";
 import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/components/ui/use-toast";
 
-type SeedSoundDisplayProps = {
-  seedSoundId: string;
-  voiceModelId: string;
-};
-const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
-  seedSoundId,
-  voiceModelId,
-}) => {
-  const utils = api.useContext();
-
-  const [refetchSeedSound, setRefetchSeedSound] = useState(true);
-  const getSeedSound = api.files.getSeedSound.useQuery(
-    { id: seedSoundId },
-    { refetchInterval: 5000, enabled: refetchSeedSound }
-  );
-  const deleteSeedSound = api.files.deleteSeedSoundForVoiceModel.useMutation({
-    async onMutate({ seedSoundId: deletedSoundId }) {
-      await utils.voices.getVoiceModelWorkspace.cancel();
-      utils.voices.getVoiceModelWorkspace.setData({ voiceModelId }, (old) => {
-        return {
-          ...old,
-          seedSoundIds: [
-            ...(old?.seedSoundIds.filter((id) => id != deletedSoundId) ?? []),
-          ],
-        };
-      });
-    },
-    onSettled: () => {
-      void utils.voices.getVoiceModelWorkspace.invalidate({ voiceModelId });
-    },
-  });
-
-  if (getSeedSound.isLoading) return <p>{`${seedSoundId}: loading...`}</p>;
-  if (!getSeedSound.data) return <p>{`${seedSoundId}: no data`}</p>;
-
-  const sData = getSeedSound.data;
-
-  if (sData.uploadComplete && refetchSeedSound == true) {
-    setRefetchSeedSound(false);
-  }
-
-  const removeSoundFromVoice = () => {
-    void deleteSeedSound.mutateAsync({ seedSoundId, voiceModelId });
-  };
-  return (
-    <div>
-      <p>
-        {`${sData.name}: isUploaded: ${sData.uploadComplete.toString()}`}
-        <button onClick={removeSoundFromVoice}>
-          <X className="h-4 w-4" />
-        </button>
-      </p>
-      {sData.uploadComplete && <audio src={sData.publicUrl} controls />}
-    </div>
-  );
-};
-
 export const voiceEditFormSchema = z.object({
   similarity: z.number().min(0).max(1),
   stability: z.number().min(0).max(1),
@@ -100,9 +42,7 @@ const VoiceEdit: NextPage = () => {
   const router = useRouter();
   // validate this better later, possibly serverside before rendering the page
   const voiceModelId = (router.query.voiceModelId ?? "") as string;
-  const workspace = api.voices.getVoiceModelWorkspace.useQuery({
-    voiceModelId,
-  });
+
   const generateTestSound = api.voices.generateTestSound.useMutation();
   const updateVoiceGenerationSettings =
     api.voices.updateVoiceGenerationSettings.useMutation();
@@ -168,19 +108,8 @@ const VoiceEdit: NextPage = () => {
 
   return (
     <>
-      <div className="flex space-x-4">
-        <SeedSoundUploader voiceModelId={voiceModelId} />
+      <SeedSoundUploader voiceModelId={voiceModelId} />
 
-        <div className="grid w-full grid-cols-3 gap-1">
-          {workspace.data?.seedSoundIds.map((fileId) => (
-            <SeedSoundDisplay
-              key={fileId}
-              voiceModelId={voiceModelId}
-              seedSoundId={fileId}
-            />
-          ))}
-        </div>
-      </div>
       <Form {...form}>
         <form className="space-y-8">
           <FormField
