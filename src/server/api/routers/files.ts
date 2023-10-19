@@ -54,6 +54,7 @@ export const filesRouter = createTRPCRouter({
         bucketKey: seedSound.bucketKey,
         name: seedSound.name,
         uploadComplete: seedSound.uploadComplete,
+        active: seedSound.active,
         publicUrl: publicUrl,
       };
     }),

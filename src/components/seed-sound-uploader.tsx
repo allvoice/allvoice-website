@@ -7,6 +7,8 @@ import { useToast } from "~/components/ui/use-toast";
 import { api } from "~/utils/api";
 import { SeedSoundDisplay } from "~/components/seed-sound-display";
 import { MAX_ACTIVE_SAMPLES } from "~/utils/consts";
+import { useDrop } from "react-dnd";
+import { ItemTypes } from "~/utils/dnd-itemtypes";
 
 const uploadFileFn = async (file: File, url: string): Promise<void> => {
   await axios.put(url, file, {
@@ -83,6 +85,20 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
     maxSize: 10000000,
   });
 
+  const [, inactiveDrop] = useDrop(() => ({
+    accept: ItemTypes.SOURCE_SOUND,
+    drop(item, monitor) {
+      console.log(item);
+    },
+  }));
+
+  const [, activeDrop] = useDrop(() => ({
+    accept: ItemTypes.SOURCE_SOUND,
+    drop(item, monitor) {
+      console.log(item);
+    },
+  }));
+
   const inactiveSeedSounds = useMemo(
     () => workspace.data?.seedSounds.filter((sound) => !sound.active),
     [workspace.data?.seedSounds]
@@ -96,21 +112,6 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
   return (
     <div className="grid grid-cols-3 gap-2">
       <div className="col-span-1 flex flex-col space-y-2">
-        <div className="flex h-96 flex-col space-y-1 overflow-y-auto rounded-md border">
-          {inactiveSeedSounds != null && inactiveSeedSounds.length > 0 ? (
-            inactiveSeedSounds.map((sound) => (
-              <SeedSoundDisplay
-                key={sound.id}
-                seedSoundId={sound.id}
-                voiceModelId={voiceModelId}
-              />
-            ))
-          ) : (
-            <div className="flex h-full w-full items-center justify-center p-4 text-sm text-slate-500">
-              Drag samples here to stop them from being used during generation.
-            </div>
-          )}
-        </div>
         <div
           className="border-input ring-offset-background focus-visible:ring-ring flex h-28 w-full flex-col items-center justify-center rounded-md border bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           {...getRootProps()}
@@ -128,10 +129,28 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
           )}
           {uploadInProgress && <p>Uploading...</p>}
         </div>
+        <div
+          ref={inactiveDrop}
+          className="flex h-96 flex-col space-y-1 overflow-y-auto rounded-md border"
+        >
+          {inactiveSeedSounds != null && inactiveSeedSounds.length > 0 ? (
+            inactiveSeedSounds.map((sound) => (
+              <SeedSoundDisplay
+                key={sound.id}
+                seedSoundId={sound.id}
+                voiceModelId={voiceModelId}
+              />
+            ))
+          ) : (
+            <div className="flex h-full w-full items-center justify-center p-4 text-sm text-slate-500">
+              Drag samples here to stop them from being used during generation.
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="relative col-span-2 h-full rounded-md border p-2">
-        <div className="grid h-min w-full grid-cols-3 gap-2 ">
+        <div ref={activeDrop} className="grid h-min w-full grid-cols-3 gap-2 ">
           {activeSeedSounds &&
             activeSeedSounds.map((sound) => (
               <SeedSoundDisplay

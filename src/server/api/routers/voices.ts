@@ -2,7 +2,6 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { env } from "~/env.mjs";
-import { voiceEditFormSchema } from "~/pages/voicemodels/[voiceModelId]/edit";
 import {
   createTRPCRouter,
   privateProcedure,
@@ -11,6 +10,7 @@ import {
 import { elevenLabsManager } from "~/server/elevenlabs-api";
 import { PREVIEW_TEXTS } from "~/server/preview-text";
 import { getPublicUrl, s3Client } from "~/server/s3";
+import { voiceEditFormSchema } from "~/utils/schema";
 
 export const voicesRouter = createTRPCRouter({
   listNewest: publicProcedure.query(async ({ ctx }) => {

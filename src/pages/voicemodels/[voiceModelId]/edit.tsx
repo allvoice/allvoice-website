@@ -3,10 +3,11 @@ import { type NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { type z } from "zod";
 import SeedSoundUploader from "~/components/seed-sound-uploader";
 import { api } from "~/utils/api";
 
+import { InfoPopover } from "~/components/info-popover";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import {
@@ -18,6 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
+import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -28,15 +30,7 @@ import {
 import { Slider } from "~/components/ui/slider";
 import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/components/ui/use-toast";
-
-export const voiceEditFormSchema = z.object({
-  similarity: z.number().min(0).max(1),
-  stability: z.number().min(0).max(1),
-  style: z.number().min(0).max(1),
-  speakerBoost: z.boolean(),
-  modelName: z.string(),
-  generationText: z.string(),
-});
+import { voiceEditFormSchema } from "~/utils/schema";
 
 const VoiceEdit: NextPage = () => {
   const router = useRouter();
@@ -108,6 +102,7 @@ const VoiceEdit: NextPage = () => {
 
   return (
     <>
+      <Label>Samples</Label>
       <SeedSoundUploader voiceModelId={voiceModelId} />
 
       <Form {...form}>
@@ -117,7 +112,16 @@ const VoiceEdit: NextPage = () => {
             name="modelName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Model</FormLabel>
+                <div className="flex items-center space-x-1">
+                  <FormLabel>Model</FormLabel>
+                  <InfoPopover>
+                    <p className="text-sm">
+                      English was trained on American and British audiobooks.
+                      Multilingual is capable of more accents with varying
+                      quality.
+                    </p>
+                  </InfoPopover>
+                </div>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -139,10 +143,7 @@ const VoiceEdit: NextPage = () => {
                     </SelectItem>
                   </SelectContent>
                 </Select>
-                <FormDescription>
-                  English was trained on American and British audiobooks.
-                  Multilingual is capable of more accents with varying quality.
-                </FormDescription>
+
                 <FormMessage />
               </FormItem>
             )}

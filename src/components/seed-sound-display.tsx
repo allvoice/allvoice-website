@@ -17,13 +17,6 @@ export const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
 }) => {
   const utils = api.useContext();
 
-  const [{ isDragging }, drag] = useDrag(() => ({
-    type: ItemTypes.SOURCE_SOUND,
-    collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(),
-    }),
-  }));
-
   const [refetchSeedSound, setRefetchSeedSound] = useState(true);
   const getSeedSound = api.files.getSeedSound.useQuery(
     { id: seedSoundId },
@@ -55,6 +48,13 @@ export const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
   const stopSound = () => {
     stop();
   };
+
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: ItemTypes.SOURCE_SOUND,
+    collect: (monitor) => ({
+      isDragging: !!monitor.isDragging(),
+    }),
+  }));
 
   if (getSeedSound.isLoading) return <p>{`${seedSoundId}: loading...`}</p>;
   if (!getSeedSound.data) return <p>{`${seedSoundId}: no data`}</p>;
