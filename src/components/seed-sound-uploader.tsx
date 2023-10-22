@@ -27,6 +27,39 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
   const workspace = api.voices.getVoiceModelWorkspace.useQuery({
     voiceModelId,
   });
+
+  const updateSeedSound = api.voices.updateSeedSound.useMutation({
+    async onMutate({ active, seedSoundId }) {
+      await utils.voices.getVoiceModelWorkspace.cancel();
+
+      utils.voices.getVoiceModelWorkspace.setData({ voiceModelId }, (old) => {
+        const newSounds = old?.seedSounds.map((sound) => {
+          if (sound.id != seedSoundId) {
+            return sound;
+          }
+          return {
+            ...sound,
+            active: active,
+          };
+        });
+
+        return {
+          ...old,
+          seedSounds: newSounds ?? [],
+        };
+      });
+    },
+    onSettled() {
+      void utils.voices.getVoiceModelWorkspace.invalidate({ voiceModelId });
+    },
+    onError(error, variables) {
+      toast({
+        title: "Sample Drag Error",
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        description: `Was not able to change ${variables.seedSoundId} to active:${variables.active}. Error: ${error}`,
+      });
+    },
+  });
   const createUploadUrl = api.files.createUploadUrl.useMutation({
     async onSuccess(data) {
       await utils.voices.getVoiceModelWorkspace.cancel();
@@ -87,15 +120,23 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
 
   const [, inactiveDrop] = useDrop(() => ({
     accept: ItemTypes.SOURCE_SOUND,
-    drop(item, monitor) {
-      console.log(item);
+    drop(item: { seedSoundId: string }) {
+      updateSeedSound.mutate({
+        active: false,
+        seedSoundId: item.seedSoundId,
+        voiceModelId: voiceModelId,
+      });
     },
   }));
 
   const [, activeDrop] = useDrop(() => ({
     accept: ItemTypes.SOURCE_SOUND,
-    drop(item, monitor) {
-      console.log(item);
+    drop(item: { seedSoundId: string }) {
+      updateSeedSound.mutate({
+        active: true,
+        seedSoundId: item.seedSoundId,
+        voiceModelId: voiceModelId,
+      });
     },
   }));
 
@@ -131,7 +172,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
         </div>
         <div
           ref={inactiveDrop}
-          className="flex h-96 flex-col space-y-1 overflow-y-auto rounded-md border"
+          className="p-2 flex h-96 flex-col space-y-1 overflow-y-auto rounded-md border"
         >
           {inactiveSeedSounds != null && inactiveSeedSounds.length > 0 ? (
             inactiveSeedSounds.map((sound) => (
@@ -142,15 +183,18 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
               />
             ))
           ) : (
-            <div className="flex h-full w-full items-center justify-center p-4 text-sm text-slate-500">
+            <div className="flex h-full w-full items-center justify-center p-4 text-sm text-center text-slate-500">
               Drag samples here to stop them from being used during generation.
             </div>
           )}
         </div>
       </div>
 
-      <div className="relative col-span-2 h-full rounded-md border p-2">
-        <div ref={activeDrop} className="grid h-min w-full grid-cols-3 gap-2 ">
+      <div
+        ref={activeDrop}
+        className="relative col-span-2 h-full rounded-md border p-2"
+      >
+        <div className="grid h-min w-full grid-cols-3 gap-2 ">
           {activeSeedSounds &&
             activeSeedSounds.map((sound) => (
               <SeedSoundDisplay

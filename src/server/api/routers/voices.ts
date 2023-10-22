@@ -125,12 +125,12 @@ export const voicesRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const voiceModel = await ctx.prisma.voiceModel.findFirstOrThrow({
         where: { id: input.voiceModelId, voice: { ownerUserId: ctx.userId } },
-        include: { soundFileJoins: { include: { seedSound: true } } },
+        include: { soundFileJoins: true },
       });
 
       const seedSounds = voiceModel.soundFileJoins.map((join) => ({
-        id: join.seedSound.id,
-        active: join.seedSound.active,
+        id: join.seedSoundId,
+        active: join.active,
       }));
       return {
         seedSounds: seedSounds,
@@ -296,6 +296,28 @@ export const voicesRouter = createTRPCRouter({
           elevenLabsStability: input.formData.stability,
           elevenLabsSpeakerBoost: input.formData.speakerBoost,
           elevenLabsStyle: input.formData.style,
+        },
+      });
+    }),
+
+  updateSeedSound: privateProcedure
+    .input(
+      z.object({
+        voiceModelId: z.string(),
+        seedSoundId: z.string(),
+        active: z.boolean(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.voiceModelSeedSounds.update({
+        where: {
+          voiceModelId_seedSoundId: {
+            seedSoundId: input.seedSoundId,
+            voiceModelId: input.voiceModelId,
+          },
+        },
+        data: {
+          active: input.active,
         },
       });
     }),

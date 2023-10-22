@@ -54,6 +54,9 @@ export const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
+    item: () => ({
+      seedSoundId: seedSoundId
+    })
   }));
 
   if (getSeedSound.isLoading) return <p>{`${seedSoundId}: loading...`}</p>;

@@ -34,9 +34,6 @@ model SeedSound {
   fileSize        BigInt?                @db.UnsignedBigInt
   voiceModelJoins VoiceModelSeedSounds[]
 
-  // active signifies if the seed sound is currently in use by the voice model
-  active Boolean @default(true)
-
   uploaderId String
   uploader   User   @relation(fields: [uploaderId], references: [id])
 
@@ -150,6 +147,9 @@ model VoiceModelSeedSounds {
   seedSoundId  String
   voiceModel   VoiceModel @relation(fields: [voiceModelId], references: [id])
   seedSound    SeedSound  @relation(fields: [seedSoundId], references: [id])
+
+  // active signifies if the seed sound is currently in use by the voice model
+  active Boolean @default(true)
 
   @@id([voiceModelId, seedSoundId])
   @@index([seedSoundId])
