@@ -6,14 +6,12 @@ import { useForm } from "react-hook-form";
 import { type z } from "zod";
 import SeedSoundUploader from "~/components/seed-sound-uploader";
 import { api } from "~/utils/api";
-
 import { InfoPopover } from "~/components/info-popover";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -102,7 +100,16 @@ const VoiceEdit: NextPage = () => {
 
   return (
     <>
-      <Label>Samples</Label>
+      <div className="flex items-center space-x-1">
+        <Label>Samples</Label>
+        <InfoPopover>
+          <p className="text-sm">
+            Use the top left box to add mp3 or ogg files. The files on the left
+            will not be used during generation. The files on the right are being
+            actively used.
+          </p>
+        </InfoPopover>
+      </div>
       <SeedSoundUploader voiceModelId={voiceModelId} />
 
       <Form {...form}>
@@ -153,7 +160,17 @@ const VoiceEdit: NextPage = () => {
             name="similarity"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Similarity</FormLabel>
+                <div className="flex items-center space-x-1">
+                  <FormLabel>Similarity</FormLabel>
+                  <InfoPopover>
+                    <p className="text-sm">
+                      High similarity boosts overall voice clarity and target
+                      speaker similarity. Very high values can cause artifacts,
+                      so adjusting this setting to find the optimal value is
+                      encouraged.
+                    </p>
+                  </InfoPopover>
+                </div>
                 <FormControl>
                   <Slider
                     {...field}
@@ -163,12 +180,7 @@ const VoiceEdit: NextPage = () => {
                     step={0.002}
                   />
                 </FormControl>
-                <FormDescription>
-                  High similarity boosts overall voice clarity and target
-                  speaker similarity. Very high values can cause artifacts, so
-                  adjusting this setting to find the optimal value is
-                  encouraged. Set this as high as possible without artifacts.
-                </FormDescription>
+
                 <FormMessage />
               </FormItem>
             )}
@@ -179,7 +191,16 @@ const VoiceEdit: NextPage = () => {
             name="stability"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Stability</FormLabel>
+                <div className="flex items-center space-x-1">
+                  <FormLabel>Stability</FormLabel>
+                  <InfoPopover>
+                    <p className="text-sm">
+                      Decreasing stability can make speech more expressive with
+                      output varying between re-generations. It can also lead to
+                      instabilities.
+                    </p>
+                  </InfoPopover>
+                </div>
                 <FormControl>
                   <Slider
                     {...field}
@@ -189,11 +210,7 @@ const VoiceEdit: NextPage = () => {
                     step={0.002}
                   />
                 </FormControl>
-                <FormDescription>
-                  Decreasing stability can make speech more expressive with
-                  output varying between re-generations. It can also lead to
-                  instabilities.
-                </FormDescription>
+
                 <FormMessage />
               </FormItem>
             )}
@@ -209,7 +226,17 @@ const VoiceEdit: NextPage = () => {
                   selectedModelName == "eleven_multilingual_v1"
                 }
               >
-                <FormLabel>Style Exaggeration</FormLabel>
+                <div className="flex items-center space-x-1">
+                  <FormLabel>Style Exaggeration</FormLabel>
+                  <InfoPopover>
+                    <p className="text-sm">
+                      High values are recommended if the style of the speech
+                      should be exaggerated compared to the uploaded audio.
+                      Higher values can lead to more instability in the
+                      generated speech.
+                    </p>
+                  </InfoPopover>
+                </div>
                 <FormControl>
                   <Slider
                     {...field}
@@ -219,13 +246,7 @@ const VoiceEdit: NextPage = () => {
                     step={0.002}
                   />
                 </FormControl>
-                <FormDescription>
-                  High values are recommended if the style of the speech should
-                  be exaggerated compared to the uploaded audio. Higher values
-                  can lead to more instability in the generated speech. Setting
-                  this to 0 will greatly increase generation speed and is the
-                  default setting.
-                </FormDescription>
+
                 <FormMessage />
               </FormItem>
             )}
@@ -241,20 +262,26 @@ const VoiceEdit: NextPage = () => {
                 }
               >
                 <FormControl>
-                  <div className="items-top flex space-x-2">
-                    <div className="grid gap-1.5 leading-none">
+                  <div className="flex flex-col space-y-1">
+                    <div className="flex items-center space-x-1">
                       <FormLabel>Speaker Boost</FormLabel>
+                      <InfoPopover>
+                        <p className="text-sm">
+                          Boost the similarity of the synthesized speech and the
+                          voice at the cost of some generation speed.
+                        </p>
+                      </InfoPopover>
                     </div>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <div className="flex items-center space-x-1">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <p className="text-sm">Enabled</p>
+                    </div>
                   </div>
                 </FormControl>
-                <FormDescription>
-                  Boost the similarity of the synthesized speech and the voice
-                  at the cost of some generation speed.
-                </FormDescription>
+
                 <FormMessage />
               </FormItem>
             )}
@@ -265,7 +292,16 @@ const VoiceEdit: NextPage = () => {
             name="generationText"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Test Generation Text</FormLabel>
+                <div className="flex items-center space-x-1">
+                  <FormLabel>Test Generation Text</FormLabel>
+
+                  <InfoPopover>
+                    <p className="text-sm">
+                      Your model will read the text in this field to help you
+                      judge its quality.
+                    </p>
+                  </InfoPopover>
+                </div>
                 <FormControl>
                   <Textarea
                     placeholder="All members of the horde are equal in my eyes."
@@ -273,10 +309,6 @@ const VoiceEdit: NextPage = () => {
                     {...field}
                   />
                 </FormControl>
-                <FormDescription>
-                  Your model will read the text in this field to help you judge
-                  its quality.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

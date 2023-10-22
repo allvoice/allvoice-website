@@ -218,10 +218,11 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
         ref={activeDrop}
         className="relative col-span-2 h-full rounded-md border p-2"
       >
-        <div className="grid h-min w-full grid-cols-3 gap-2 ">
+        <div className="grid h-min w-full grid-cols-3 gap-2">
           {activeSeedSounds &&
             activeSeedSounds.map((sound) => (
               <SeedSoundDisplay
+                className="z-10"
                 key={sound.id}
                 seedSoundId={sound.id}
                 voiceModelId={voiceModelId}
@@ -229,9 +230,9 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
             ))}
         </div>
 
-        <p className="absolute bottom-2 left-0 right-0 mx-auto select-none text-center text-sm text-slate-500">
+        <span className="absolute bottom-2 left-0 right-0 mx-auto select-none text-center text-sm text-slate-500">
           {numActiveSounds} / {MAX_ACTIVE_SAMPLES} samples active
-        </p>
+        </span>
       </div>
     </div>
   );
