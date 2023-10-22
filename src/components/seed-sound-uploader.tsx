@@ -24,6 +24,8 @@ type Props = {
 
 const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
   const utils = api.useContext();
+  const { toast } = useToast();
+
   const workspace = api.voices.getVoiceModelWorkspace.useQuery({
     voiceModelId,
   });
@@ -54,9 +56,9 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
     },
     onError(error, variables) {
       toast({
-        title: "Sample Drag Error",
+        title: "Sample Update Error",
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        description: `Was not able to change ${variables.seedSoundId} to active:${variables.active}. Error: ${error}`,
+        description: `Was not able to change ssid: ${variables.seedSoundId} with vmid: ${variables.voiceModelId} to active: ${variables.active}.\n Error: ${error}`,
       });
     },
   });
@@ -68,17 +70,18 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
           ...old,
           seedSounds: [
             ...(old?.seedSounds ?? []),
-            { id: data.fileId, active: true },
+            { id: data.fileId, active: data.active },
           ],
         };
       });
     },
   });
   const uploadFile = useMutation(
-    async ({ file }: { file: File }) => {
+    async ({ file, active }: { file: File; active: boolean }) => {
       const { uploadUrl, fileId } = await createUploadUrl.mutateAsync({
         fileName: file.name,
         voiceModelId: voiceModelId,
+        active: active,
       });
       await uploadFileFn(file, uploadUrl);
       return { fileId };
@@ -98,47 +101,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
     }
   );
 
-  const { toast } = useToast();
-
   const uploadInProgress = createUploadUrl.isLoading || uploadFile.isLoading;
-
-  const onDropAccepted = useCallback(
-    (acceptedFiles: File[]) => {
-      for (const file of acceptedFiles) {
-        void uploadFile.mutateAsync({ file: file });
-      }
-    },
-    [uploadFile]
-  );
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDropAccepted: onDropAccepted,
-    accept: { "audio/mpeg": [], "audio/ogg": [] },
-    maxFiles: 0,
-    maxSize: 10000000,
-  });
-
-  const [, inactiveDrop] = useDrop(() => ({
-    accept: ItemTypes.SOURCE_SOUND,
-    drop(item: { seedSoundId: string }) {
-      updateSeedSound.mutate({
-        active: false,
-        seedSoundId: item.seedSoundId,
-        voiceModelId: voiceModelId,
-      });
-    },
-  }));
-
-  const [, activeDrop] = useDrop(() => ({
-    accept: ItemTypes.SOURCE_SOUND,
-    drop(item: { seedSoundId: string }) {
-      updateSeedSound.mutate({
-        active: true,
-        seedSoundId: item.seedSoundId,
-        voiceModelId: voiceModelId,
-      });
-    },
-  }));
 
   const inactiveSeedSounds = useMemo(
     () => workspace.data?.seedSounds.filter((sound) => !sound.active),
@@ -148,6 +111,67 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
   const activeSeedSounds = useMemo(
     () => workspace.data?.seedSounds.filter((sound) => sound.active),
     [workspace.data?.seedSounds]
+  );
+
+  const numActiveSounds = useMemo(
+    () => activeSeedSounds?.length ?? 0,
+    [activeSeedSounds?.length]
+  );
+
+  const onDropAccepted = useCallback(
+    (acceptedFiles: File[]) => {
+      let currentActiveSounds = numActiveSounds;
+      for (const file of acceptedFiles) {
+        const active = currentActiveSounds + 1 <= MAX_ACTIVE_SAMPLES;
+
+        void uploadFile.mutateAsync({ file: file, active: active });
+        currentActiveSounds += 1;
+      }
+    },
+    [numActiveSounds, uploadFile]
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDropAccepted: onDropAccepted,
+    accept: { "audio/mpeg": [], "audio/ogg": [] },
+    maxFiles: 0,
+    maxSize: 10000000,
+  });
+
+  const [, activeDrop] = useDrop(
+    () => ({
+      accept: ItemTypes.SOURCE_SOUND,
+      drop(item: { seedSoundId: string }) {
+        if (numActiveSounds + 1 > MAX_ACTIVE_SAMPLES) {
+          toast({
+            title: "Too many active samples",
+            description:
+              "Deactivate an active sample by dragging it to the inactive box on the left.",
+          });
+          return;
+        }
+        updateSeedSound.mutate({
+          active: true,
+          seedSoundId: item.seedSoundId,
+          voiceModelId: voiceModelId,
+        });
+      },
+    }),
+    [voiceModelId, updateSeedSound, toast, numActiveSounds]
+  );
+
+  const [, inactiveDrop] = useDrop(
+    () => ({
+      accept: ItemTypes.SOURCE_SOUND,
+      drop(item: { seedSoundId: string }) {
+        updateSeedSound.mutate({
+          active: false,
+          seedSoundId: item.seedSoundId,
+          voiceModelId: voiceModelId,
+        });
+      },
+    }),
+    [voiceModelId, updateSeedSound]
   );
 
   return (
@@ -172,7 +196,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
         </div>
         <div
           ref={inactiveDrop}
-          className="p-2 flex h-96 flex-col space-y-1 overflow-y-auto rounded-md border"
+          className="flex h-96 flex-col space-y-1 overflow-y-auto rounded-md border p-2"
         >
           {inactiveSeedSounds != null && inactiveSeedSounds.length > 0 ? (
             inactiveSeedSounds.map((sound) => (
@@ -183,7 +207,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
               />
             ))
           ) : (
-            <div className="flex h-full w-full items-center justify-center p-4 text-sm text-center text-slate-500">
+            <div className="flex h-full w-full items-center justify-center p-4 text-center text-sm text-slate-500">
               Drag samples here to stop them from being used during generation.
             </div>
           )}
@@ -205,8 +229,8 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
             ))}
         </div>
 
-        <p className="absolute bottom-2 left-0 right-0 mx-auto text-center text-sm text-slate-500">
-          {activeSeedSounds?.length ?? 0} / {MAX_ACTIVE_SAMPLES} samples active
+        <p className="absolute bottom-2 left-0 right-0 mx-auto select-none text-center text-sm text-slate-500">
+          {numActiveSounds} / {MAX_ACTIVE_SAMPLES} samples active
         </p>
       </div>
     </div>

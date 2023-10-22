@@ -9,7 +9,11 @@ import { getPublicUrl, s3Client } from "~/server/s3";
 export const filesRouter = createTRPCRouter({
   createUploadUrl: privateProcedure
     .input(
-      z.object({ fileName: z.string().max(191), voiceModelId: z.string() })
+      z.object({
+        fileName: z.string().max(191),
+        voiceModelId: z.string(),
+        active: z.boolean(),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const key = uuidv4();
@@ -29,7 +33,10 @@ export const filesRouter = createTRPCRouter({
             },
           },
           voiceModelJoins: {
-            create: { voiceModel: { connect: { id: input.voiceModelId } } },
+            create: {
+              voiceModel: { connect: { id: input.voiceModelId } },
+              active: input.active,
+            },
           },
           uploadComplete: env.NODE_ENV == "development" ? true : false, // no notification to set this on local dev
         },
@@ -38,6 +45,7 @@ export const filesRouter = createTRPCRouter({
       return {
         fileId: dbFile.id,
         uploadUrl: await getSignedUrl(s3Client, command, { expiresIn: 3600 }),
+        active: input.active,
       };
     }),
 

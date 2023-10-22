@@ -55,8 +55,8 @@ export const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
       isDragging: !!monitor.isDragging(),
     }),
     item: () => ({
-      seedSoundId: seedSoundId
-    })
+      seedSoundId: seedSoundId,
+    }),
   }));
 
   if (getSeedSound.isLoading) return <p>{`${seedSoundId}: loading...`}</p>;
@@ -70,7 +70,7 @@ export const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
     setRefetchSeedSound(false);
   }
 
-  const removeSoundFromVoice = () => {
+  const deleteSound = () => {
     void deleteSeedSound.mutateAsync({ seedSoundId, voiceModelId });
   };
   return (
@@ -91,7 +91,7 @@ export const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
         )}
       </div>
       <p className="truncate text-xs">{sData.name}</p>
-      <button onClick={removeSoundFromVoice}>
+      <button onClick={deleteSound}>
         <X className="h-4 w-4" />
       </button>
     </div>
