@@ -1,15 +1,11 @@
-import { type AppType } from "next/app";
-
-import { api } from "~/utils/api";
-
-import "~/styles/globals.css";
-
 import { ClerkProvider } from "@clerk/nextjs";
-import MainLayout from "~/components/main-layout";
-import { Toaster } from "~/components/ui/toaster";
-import { Compose } from "~/utils/compose";
-import { HTML5Backend } from "react-dnd-html5-backend";
+import { type AppType } from "next/app";
 import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { Toaster } from "~/components/ui/toaster";
+import "~/styles/globals.css";
+import { api } from "~/utils/api";
+import { Compose } from "~/utils/compose";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
@@ -19,9 +15,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
           // global providers go here
           components={[]}
         >
-          <MainLayout>
-            <Component {...pageProps} />
-          </MainLayout>
+          <Component {...pageProps} />
           <Toaster />
         </Compose>
       </DndProvider>

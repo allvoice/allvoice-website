@@ -1,5 +1,6 @@
 import { type NextPage } from "next";
 import { useRouter } from "next/router";
+import MainLayout from "~/components/main-layout";
 import { api } from "~/utils/api";
 
 const VoicePage: NextPage = () => {
@@ -11,7 +12,7 @@ const VoicePage: NextPage = () => {
   });
   if (voiceDetails.isLoading) return <h2>Loading...</h2>;
   return (
-    <>
+    <MainLayout>
       <h1>{`${voiceDetails.data?.voiceName ?? ""}: ${voiceId}`}</h1>
       <div>
         {voiceDetails.data?.previewSounds?.map((previewSound) => (
@@ -24,7 +25,7 @@ const VoicePage: NextPage = () => {
           </div>
         ))}
       </div>
-    </>
+    </MainLayout>
   );
 };
 
