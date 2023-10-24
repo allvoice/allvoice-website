@@ -201,7 +201,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
         </div>
         <div
           ref={inactiveDrop}
-          className="grid flex-1 grid-cols-1 gap-1 overflow-y-auto rounded-md border p-2"
+          className="grid flex-1 grid-cols-1 gap-2 overflow-y-auto rounded-md border p-2"
         >
           {inactiveSeedSounds != null && inactiveSeedSounds.length > 0 ? (
             inactiveSeedSounds.map((sound) => (

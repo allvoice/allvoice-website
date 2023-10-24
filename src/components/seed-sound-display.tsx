@@ -78,7 +78,7 @@ export const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
   return (
     <div
       className={cn(
-        "flex h-12 items-center space-x-2 rounded-md border p-2",
+        "flex h-12 items-center space-x-2 rounded-md border p-2 cursor-grab",
         {
           "bg-slate-100 opacity-50": isDragging,
         },
