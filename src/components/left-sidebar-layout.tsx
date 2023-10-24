@@ -25,7 +25,7 @@ const LeftSidebarLayout: React.FC<Props> = ({ children, sidebarChildren }) => {
       </div>
       <div className="flex-1">
         <SidebarHeader />
-        <main className="py-10 h-[calc(100vh-theme('spacing.16'))]">
+        <main className="h-[calc(100vh-theme('spacing.16'))] py-10">
           <div className="px-4 sm:px-6 lg:px-8">{children}</div>
         </main>
       </div>

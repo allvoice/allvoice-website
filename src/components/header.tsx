@@ -2,17 +2,28 @@
 import { UserButton } from "@clerk/nextjs";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
+import { useOpenSearch } from "~/hooks/open-search-hook";
 
 const Header: React.FC = ({}) => {
+  const { setOpen } = useOpenSearch();
   return (
     <nav className="bg-white shadow">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 justify-between">
+        <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex">
             <div className="flex flex-shrink-0 items-center">
               <h2 className="text-3xl font-bold">allvoice.ai</h2>
             </div>
           </Link>
+
+          <div
+            onClick={() => setOpen((cur) => !cur)}
+            className="flex h-8 w-full max-w-md items-center justify-center rounded-md border hover:border-blue-400 hover:text-blue-400"
+          >
+            <p className="select-none text-center text-sm text-slate-500 ">
+              Ctrl+P or ⌘P to search
+            </p>
+          </div>
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <Link

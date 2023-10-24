@@ -8,7 +8,7 @@ const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>
 >(({ className, ...props }, ref) => (
-  <div className="flex flex-col w-full space-y-4">
+  <div className="flex w-full flex-col space-y-4">
     <SliderPrimitive.Root
       ref={ref}
       className={cn(

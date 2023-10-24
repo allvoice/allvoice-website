@@ -2,8 +2,9 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 datasource db {
@@ -172,6 +173,8 @@ model WacraftNpcDisplay {
   npcs          WarcraftNpcDisplays[]
   // voices refer to the user models that were made for this npc display
   voices        Voice[]
+
+  @@fulltext([voiceName])
 }
 
 model WarcraftNpcDisplays {
@@ -192,4 +195,21 @@ model WarcraftNpc {
   displays WarcraftNpcDisplays[]
   // name is the npc's in game display name
   name     String
+
+  uniqueWarcraftNpc   UniqueWarcraftNpc @relation(fields: [uniqueWarcraftNpcId], references: [id])
+  uniqueWarcraftNpcId String
+
+  @@index([uniqueWarcraftNpcId])
+}
+
+// UniqueWarcraftNpc describes NPCs as concepts.
+// E.G. Thrall may have 6 npcIds in game, but he is one character.
+model UniqueWarcraftNpc {
+  id   String @id @default(uuid())
+  // npc's in game display name (this is unique)
+  name String @unique
+
+  npcs WarcraftNpc[]
+
+  @@fulltext([name])
 }

@@ -1,7 +1,7 @@
 import { createContext, useContext, type FC, type ReactNode } from "react";
 
 type ProviderProps = {
-  children: ReactNode;
+  children?: ReactNode;
 };
 
 function createContextHook<TValue>(name: string, hook: () => TValue) {

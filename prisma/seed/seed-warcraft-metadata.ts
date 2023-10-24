@@ -83,7 +83,16 @@ async function main() {
         npc: {
           connectOrCreate: {
             where: { npcId: row.entry },
-            create: { npcId: row.entry, name: row.name },
+            create: {
+              npcId: row.entry,
+              name: row.name,
+              uniqueWarcraftNpc: {
+                connectOrCreate: {
+                  where: { name: row.name },
+                  create: { name: row.name },
+                },
+              },
+            },
           },
         },
       },

@@ -33,7 +33,7 @@ import { useToast } from "~/components/ui/use-toast";
 import { api } from "~/utils/api";
 import { cn } from "~/utils/ui";
 
-export const voicePostFormSchema = z.object({
+const voicePostFormSchema = z.object({
   warcraftNpcDisplayId: z.string(),
   voiceTitle: z.string(),
 });

@@ -40,6 +40,7 @@
     "@trpc/react-query": "^10.40.0",
     "@trpc/server": "^10.40.0",
     "@types/aws-lambda": "^8.10.125",
+    "@uidotdev/usehooks": "^2.4.1",
     "axios": "^1.5.1",
     "class-variance-authority": "^0.6.1",
     "clsx": "^1.2.1",
