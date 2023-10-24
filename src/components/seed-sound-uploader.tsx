@@ -58,7 +58,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
       toast({
         title: "Sample Update Error",
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        description: `Was not able to change ssid: ${variables.seedSoundId} with vmid: ${variables.voiceModelId} to active: ${variables.active}.\n Error: ${error}`,
+        description: `Was not able to change ssid: ${variables.seedSoundId} with vmid: ${variables.voiceModelId} to active: ${variables.active}.`,
       });
     },
   });
@@ -201,7 +201,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
         </div>
         <div
           ref={inactiveDrop}
-          className="grid flex-1 grid-cols-1 gap-2 overflow-y-auto rounded-md border p-2"
+          className="flex flex-1 flex-col space-y-2 overflow-y-auto rounded-md border p-2"
         >
           {inactiveSeedSounds != null && inactiveSeedSounds.length > 0 ? (
             inactiveSeedSounds.map((sound) => (
