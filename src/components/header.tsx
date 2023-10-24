@@ -18,7 +18,7 @@ const Header: React.FC = ({}) => {
 
           <div
             onClick={() => setOpen((cur) => !cur)}
-            className="flex h-8 w-full max-w-md items-center justify-center rounded-md border hover:border-blue-400 hover:text-blue-400"
+            className="flex h-8 w-full max-w-md items-center justify-center rounded-md border"
           >
             <p className="select-none text-center text-sm text-slate-500 ">
               Ctrl+P or ⌘P to search

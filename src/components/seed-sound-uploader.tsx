@@ -118,6 +118,11 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
     [activeSeedSounds?.length]
   );
 
+  const numInactiveSounds = useMemo(
+    () => inactiveSeedSounds?.length ?? 0,
+    [inactiveSeedSounds?.length]
+  );
+
   const onDropAccepted = useCallback(
     (acceptedFiles: File[]) => {
       let currentActiveSounds = numActiveSounds;
@@ -175,8 +180,8 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
   );
 
   return (
-    <div className="grid grid-cols-3 gap-2">
-      <div className="col-span-1 flex flex-col space-y-2">
+    <div className="grid h-full grid-cols-3 gap-2 overflow-hidden">
+      <div className="col-span-1 flex h-full flex-col space-y-2 overflow-hidden">
         <div
           className="border-input ring-offset-background focus-visible:ring-ring flex h-28 w-full flex-col items-center justify-center rounded-md border bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           {...getRootProps()}
@@ -196,7 +201,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
         </div>
         <div
           ref={inactiveDrop}
-          className="flex h-96 flex-col space-y-1 overflow-y-auto rounded-md border p-2"
+          className="grid flex-1 grid-cols-1 gap-1 overflow-y-auto rounded-md border p-2"
         >
           {inactiveSeedSounds != null && inactiveSeedSounds.length > 0 ? (
             inactiveSeedSounds.map((sound) => (
@@ -212,25 +217,25 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
             </div>
           )}
         </div>
+        <span className="select-none text-center text-sm text-slate-500">
+          {numInactiveSounds} inactive samples
+        </span>
       </div>
-
-      <div
-        ref={activeDrop}
-        className="relative col-span-2 h-full rounded-md border p-2"
-      >
-        <div className="grid h-min w-full grid-cols-3 gap-2">
-          {activeSeedSounds &&
-            activeSeedSounds.map((sound) => (
-              <SeedSoundDisplay
-                className="z-10"
-                key={sound.id}
-                seedSoundId={sound.id}
-                voiceModelId={voiceModelId}
-              />
-            ))}
+      <div className="col-span-2 flex h-full flex-col space-y-2 overflow-hidden">
+        <div ref={activeDrop} className="relative h-full rounded-md border p-2">
+          <div className="grid grid-cols-3 gap-2">
+            {activeSeedSounds &&
+              activeSeedSounds.map((sound) => (
+                <SeedSoundDisplay
+                  className="z-10"
+                  key={sound.id}
+                  seedSoundId={sound.id}
+                  voiceModelId={voiceModelId}
+                />
+              ))}
+          </div>
         </div>
-
-        <span className="absolute bottom-2 left-0 right-0 mx-auto select-none text-center text-sm text-slate-500">
+        <span className="select-none text-center text-sm text-slate-500">
           {numActiveSounds} / {MAX_ACTIVE_SAMPLES} samples active
         </span>
       </div>

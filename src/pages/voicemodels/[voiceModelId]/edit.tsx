@@ -319,19 +319,22 @@ const VoiceEdit: NextPage = () => {
         </Form>
       }
     >
-      <div className="flex items-center space-x-1">
-        <Label>Samples</Label>
-        <InfoPopover>
-          <p className="text-sm">
-            Use the top left box to add mp3 or ogg files. The files on the left
-            will not be used during generation. The files on the right are being
-            actively used.
-          </p>
-        </InfoPopover>
+      <div className="px-4 sm:px-6 lg:px-8 h-full flex flex-col space-y-1">
+        <div className="flex items-center space-x-1">
+          <Label>Samples</Label>
+          <InfoPopover>
+            <p className="text-sm">
+              Use the top left box to add mp3 or ogg files. The files on the left
+              will not be used during generation. The files on the right are being
+              actively used.
+            </p>
+          </InfoPopover>
+        </div>
+        <SeedSoundUploader voiceModelId={voiceModelId} />
       </div>
-      <SeedSoundUploader voiceModelId={voiceModelId} />
     </LeftSidebarLayout>
   );
 };
 
 export default VoiceEdit;
+{/* <div className="px-4 sm:px-6 lg:px-8"></div> */}
