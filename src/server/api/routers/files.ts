@@ -13,7 +13,7 @@ export const filesRouter = createTRPCRouter({
         fileName: z.string().max(191),
         voiceModelId: z.string(),
         active: z.boolean(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const key = uuidv4();

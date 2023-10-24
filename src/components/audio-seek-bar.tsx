@@ -51,7 +51,7 @@ export const AudioSeekBar: FunctionComponent<AudioSeekBarProps> = ({
         seek(percent * duration);
       }
     },
-    [duration, playing, seek]
+    [duration, playing, seek],
   );
 
   if (duration === Infinity || duration === 0) return null;

@@ -70,7 +70,7 @@ const VoiceEdit: NextPage = () => {
                 warcraftVoiceName: data.warcraftNpcDisplayId,
               },
               null,
-              2
+              2,
             )}
           </code>
         </pre>
@@ -118,12 +118,12 @@ const VoiceEdit: NextPage = () => {
                         role="combobox"
                         className={cn(
                           "w-full justify-between",
-                          !field.value && "text-muted-foreground"
+                          !field.value && "text-muted-foreground",
                         )}
                       >
                         {field.value
                           ? allWarcraftVoiceNameOptions.data?.find(
-                              (option) => option.value === field.value
+                              (option) => option.value === field.value,
                             )?.label
                           : "Select a voice (e.g. HumanMale)"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -148,7 +148,7 @@ const VoiceEdit: NextPage = () => {
                             onSelect={() => {
                               form.setValue(
                                 "warcraftNpcDisplayId",
-                                option.value
+                                option.value,
                               );
                             }}
                           >
@@ -157,7 +157,7 @@ const VoiceEdit: NextPage = () => {
                                 "mr-2 h-4 w-4",
                                 option.value === field.value
                                   ? "opacity-100"
-                                  : "opacity-0"
+                                  : "opacity-0",
                               )}
                             />
                             {`${option.label} (${option.npcsCount})`}

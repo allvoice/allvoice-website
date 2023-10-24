@@ -1,14 +1,7 @@
 "use client";
 
 import { useDebounce } from "@uidotdev/usehooks";
-import {
-  Calculator,
-  Calendar,
-  CreditCard,
-  Settings,
-  Smile,
-  User,
-} from "lucide-react";
+import { User } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import {
@@ -19,8 +12,6 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-  CommandShortcut,
-  CommandLoading,
 } from "~/components/ui/command";
 import { useOpenSearch } from "~/hooks/open-search-hook";
 import { api } from "~/utils/api";
@@ -45,7 +36,7 @@ export function CommandBar() {
   const debouncedInput = useDebounce(input, 500);
   const search = api.search.search.useQuery(
     { query: debouncedInput },
-    { enabled: open }
+    { enabled: open },
   );
 
   const hasNPCs = !isEmpty(search.data?.npcs);
@@ -75,7 +66,7 @@ export function CommandBar() {
           </CommandGroup>
         )}
 
-        {(hasModels && hasNPCs) && <CommandSeparator alwaysRender={true} />}
+        {hasModels && hasNPCs && <CommandSeparator alwaysRender={true} />}
         {hasModels && (
           <CommandGroup heading="Character Models">
             {search.data?.models.map((model) => (

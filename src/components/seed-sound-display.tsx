@@ -22,7 +22,7 @@ export const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
   const [refetchSeedSound, setRefetchSeedSound] = useState(true);
   const getSeedSound = api.files.getSeedSound.useQuery(
     { id: seedSoundId },
-    { refetchInterval: 5000, enabled: refetchSeedSound }
+    { refetchInterval: 5000, enabled: refetchSeedSound },
   );
   const deleteSeedSound = api.files.deleteSeedSoundForVoiceModel.useMutation({
     async onMutate({ seedSoundId: deletedSoundId }) {
@@ -78,11 +78,11 @@ export const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
   return (
     <div
       className={cn(
-        "flex h-12 items-center space-x-2 rounded-md border p-2 cursor-grab",
+        "flex h-12 cursor-grab items-center space-x-2 rounded-md border p-2",
         {
           "bg-slate-100 opacity-50": isDragging,
         },
-        className
+        className,
       )}
       ref={drag}
     >

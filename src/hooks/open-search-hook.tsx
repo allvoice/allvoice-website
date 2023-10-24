@@ -9,5 +9,5 @@ export const [useOpenSearch, OpenSearchProvider] = createContextHook(
       open,
       setOpen,
     };
-  }
+  },
 );

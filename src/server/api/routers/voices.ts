@@ -114,7 +114,7 @@ export const voicesRouter = createTRPCRouter({
         },
       });
       const previewSounds = voice.modelVersions[0]?.previewSounds.map(
-        (sound) => ({ ...sound, publicUrl: getPublicUrl(sound.bucketKey) })
+        (sound) => ({ ...sound, publicUrl: getPublicUrl(sound.bucketKey) }),
       );
 
       return { voiceName: voice.name, previewSounds: previewSounds };
@@ -156,7 +156,7 @@ export const voicesRouter = createTRPCRouter({
         voiceModelId: z.string(),
         warcraftNpcDisplayId: z.string(),
         voiceTitle: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const voiceModel = await ctx.prisma.voiceModel.findFirstOrThrow({
@@ -177,7 +177,7 @@ export const voicesRouter = createTRPCRouter({
       });
 
       const seedBucketKeys = voiceModel.soundFileJoins.map(
-        (join) => join.seedSound.bucketKey
+        (join) => join.seedSound.bucketKey,
       );
 
       await elevenLabsManager.ensureVoiceIsLoaded({
@@ -200,7 +200,7 @@ export const voicesRouter = createTRPCRouter({
               style: voiceModel.elevenLabsStyle,
               use_speaker_boost: voiceModel.elevenLabsSpeakerBoost,
             },
-          }
+          },
         );
 
         const genKey = `preview/${uuidv4()}`;
@@ -238,7 +238,7 @@ export const voicesRouter = createTRPCRouter({
       z.object({
         voiceModelId: z.string(),
         formData: voiceEditFormSchema,
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const voiceModel = await ctx.prisma.voiceModel.findFirstOrThrow({
@@ -247,7 +247,7 @@ export const voicesRouter = createTRPCRouter({
       });
 
       const seedBucketKeys = voiceModel.soundFileJoins.map(
-        (join) => join.seedSound.bucketKey
+        (join) => join.seedSound.bucketKey,
       );
 
       await ctx.prisma.voiceModel.update({
@@ -275,7 +275,7 @@ export const voicesRouter = createTRPCRouter({
             style: input.formData.style,
             use_speaker_boost: input.formData.speakerBoost,
           },
-        }
+        },
       );
 
       const genKey = `testgen/${uuidv4()}`;
@@ -298,7 +298,7 @@ export const voicesRouter = createTRPCRouter({
       z.object({
         voiceModelId: z.string(),
         formData: voiceEditFormSchema,
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       await ctx.prisma.voiceModel.update({
@@ -319,7 +319,7 @@ export const voicesRouter = createTRPCRouter({
         voiceModelId: z.string(),
         seedSoundId: z.string(),
         active: z.boolean(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       await ctx.prisma.voiceModelSeedSounds.update({

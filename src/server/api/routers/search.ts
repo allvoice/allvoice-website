@@ -6,7 +6,7 @@ export const searchRouter = createTRPCRouter({
     .input(
       z.object({
         query: z.string(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const npcsPromise = ctx.prisma.uniqueWarcraftNpc.findMany({

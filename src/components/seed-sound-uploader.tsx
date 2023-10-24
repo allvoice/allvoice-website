@@ -98,29 +98,29 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
           description: `${variables.file.name} did not upload. Error: ${error}`,
         });
       },
-    }
+    },
   );
 
   const uploadInProgress = createUploadUrl.isLoading || uploadFile.isLoading;
 
   const inactiveSeedSounds = useMemo(
     () => workspace.data?.seedSounds.filter((sound) => !sound.active),
-    [workspace.data?.seedSounds]
+    [workspace.data?.seedSounds],
   );
 
   const activeSeedSounds = useMemo(
     () => workspace.data?.seedSounds.filter((sound) => sound.active),
-    [workspace.data?.seedSounds]
+    [workspace.data?.seedSounds],
   );
 
   const numActiveSounds = useMemo(
     () => activeSeedSounds?.length ?? 0,
-    [activeSeedSounds?.length]
+    [activeSeedSounds?.length],
   );
 
   const numInactiveSounds = useMemo(
     () => inactiveSeedSounds?.length ?? 0,
-    [inactiveSeedSounds?.length]
+    [inactiveSeedSounds?.length],
   );
 
   const onDropAccepted = useCallback(
@@ -133,7 +133,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
         currentActiveSounds += 1;
       }
     },
-    [numActiveSounds, uploadFile]
+    [numActiveSounds, uploadFile],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -162,7 +162,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
         });
       },
     }),
-    [voiceModelId, updateSeedSound, toast, numActiveSounds]
+    [voiceModelId, updateSeedSound, toast, numActiveSounds],
   );
 
   const [, inactiveDrop] = useDrop(
@@ -176,7 +176,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
         });
       },
     }),
-    [voiceModelId, updateSeedSound]
+    [voiceModelId, updateSeedSound],
   );
 
   return (

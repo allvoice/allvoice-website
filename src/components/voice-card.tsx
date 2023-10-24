@@ -16,7 +16,7 @@ const PlayButton: React.FC<{
 
   const isPlayingThis = useMemo(
     () => src == sound.publicUrl && playing,
-    [playing, sound.publicUrl, src]
+    [playing, sound.publicUrl, src],
   );
   const playSound = () => {
     load(sound.publicUrl, { autoplay: true, html5: true, format: "mp3" });

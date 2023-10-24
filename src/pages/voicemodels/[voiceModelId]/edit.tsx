@@ -78,7 +78,7 @@ const VoiceEdit: NextPage = () => {
     },
     (errors) => {
       console.log(errors);
-    }
+    },
   );
 
   const handlePost = form.handleSubmit(async (data) => {
@@ -319,14 +319,14 @@ const VoiceEdit: NextPage = () => {
         </Form>
       }
     >
-      <div className="px-4 sm:px-6 lg:px-8 h-full flex flex-col space-y-1">
+      <div className="flex h-full flex-col space-y-1 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center space-x-1">
           <Label>Samples</Label>
           <InfoPopover>
             <p className="text-sm">
-              Use the top left box to add mp3 or ogg files. The files on the left
-              will not be used during generation. The files on the right are being
-              actively used.
+              Use the top left box to add mp3 or ogg files. The files on the
+              left will not be used during generation. The files on the right
+              are being actively used.
             </p>
           </InfoPopover>
         </div>
@@ -337,4 +337,6 @@ const VoiceEdit: NextPage = () => {
 };
 
 export default VoiceEdit;
-{/* <div className="px-4 sm:px-6 lg:px-8"></div> */}
+{
+  /* <div className="px-4 sm:px-6 lg:px-8"></div> */
+}

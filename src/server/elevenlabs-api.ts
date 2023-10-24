@@ -93,7 +93,7 @@ class ElevenLabsManager {
 
     for (const voiceModel of voiceModels) {
       const seedBucketKeys = voiceModel.soundFileJoins.map(
-        (join) => join.seedSound.bucketKey
+        (join) => join.seedSound.bucketKey,
       );
 
       const reproducedArgsHash = hashAddVoiceArgs({
@@ -101,7 +101,7 @@ class ElevenLabsManager {
         bucketKeys: seedBucketKeys,
       });
       const elevenVoice = existingVoices.data.voices.find(
-        (voice) => voice.name == voiceModel.id
+        (voice) => voice.name == voiceModel.id,
       );
 
       if (!elevenVoice) {
@@ -150,7 +150,7 @@ class ElevenLabsManager {
           Accept: "application/json",
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
 
     if (response.status === 200) {
@@ -194,7 +194,7 @@ class ElevenLabsManager {
       modelId = "eleven_monolingual_v1",
       generationSettings,
       optimizeStreamingLatency = 0,
-    }: TTSSettings
+    }: TTSSettings,
   ) {
     await this.initOnce();
     const voiceId = await this.ensureVoiceIsLoaded(voiceArgs);
@@ -220,7 +220,7 @@ class ElevenLabsManager {
           params: {
             optimize_streaming_latency: optimizeStreamingLatency,
           },
-        }
+        },
       );
       const contentLength = response.headers["content-length"] as
         | string

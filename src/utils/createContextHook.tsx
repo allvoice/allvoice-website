@@ -23,7 +23,7 @@ function createContextHook<TValue>(name: string, hook: () => TValue) {
   }
 
   function withHook<TProps extends object>(
-    WrappedComponent: React.ComponentType<TProps>
+    WrappedComponent: React.ComponentType<TProps>,
   ) {
     return function WrappedWithHook(props: TProps) {
       return (
