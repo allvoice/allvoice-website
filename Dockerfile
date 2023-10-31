@@ -22,7 +22,9 @@ RUN \
 ##### BUILDER
 
 FROM node:18-alpine AS builder
-ARG NEXT_PUBLIC_CLIENTVAR
+# Client Vars
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
