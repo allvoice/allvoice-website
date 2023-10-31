@@ -2,10 +2,12 @@
 import { UserButton } from "@clerk/nextjs";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
+import { isMacOs } from "react-device-detect";
 import { useOpenSearch } from "~/hooks/open-search-hook";
 
 const Header: React.FC = ({}) => {
   const { setOpen } = useOpenSearch();
+
   return (
     <nav className="bg-white shadow">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -18,10 +20,10 @@ const Header: React.FC = ({}) => {
 
           <div
             onClick={() => setOpen((cur) => !cur)}
-            className="flex h-8 w-full max-w-md items-center justify-center rounded-md border"
+            className="flex h-8 w-full max-w-md items-center justify-center rounded-md border hover:cursor-pointer hover:opacity-80"
           >
             <p className="select-none text-center text-sm text-slate-500 ">
-              Ctrl+P or ⌘P to search
+              {isMacOs ? "⌘P" : "Ctrl+P"} to search
             </p>
           </div>
           <div className="flex items-center">

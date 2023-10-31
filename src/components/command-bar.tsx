@@ -16,6 +16,7 @@ import {
 import { useOpenSearch } from "~/hooks/open-search-hook";
 import { api } from "~/utils/api";
 import { isEmpty } from "~/utils/array-util";
+import ThreeDotsFade from "~/components/spinner";
 
 export function CommandBar() {
   const { open, setOpen } = useOpenSearch();
@@ -33,10 +34,11 @@ export function CommandBar() {
   }, [setOpen]);
 
   const [input, setInput] = useState("");
-  const debouncedInput = useDebounce(input, 500);
+  const debouncedInput = useDebounce(input, 400);
+  const isDebouncedInputEmpty = debouncedInput == "";
   const search = api.search.search.useQuery(
     { query: debouncedInput },
-    { enabled: open },
+    { enabled: open && !isDebouncedInputEmpty, staleTime: Infinity },
   );
 
   const hasNPCs = !isEmpty(search.data?.npcs);
@@ -50,15 +52,21 @@ export function CommandBar() {
         placeholder="Type a command or search..."
       />
       <CommandList>
-        {/* {search.isLoading && (
+        {/* {search.isFetching && (
           <CommandLoading>Fetching results...</CommandLoading>
         )} */}
-        <CommandEmpty>No results found.</CommandEmpty>
+        <CommandEmpty>
+          {search.isFetching ? (
+            <ThreeDotsFade className="mx-auto h-5" />
+          ) : (
+            "No results found."
+          )}
+        </CommandEmpty>
 
         {hasNPCs && (
           <CommandGroup heading="NPCs">
-            {search.data?.npcs.map((npc) => (
-              <CommandItem key={npc.id}>
+            {search.data?.npcs.slice(0, 3).map((npc) => (
+              <CommandItem key={npc.id} value={npc.name}>
                 <User className="mr-2 h-4 w-4" />
                 <span>{npc.name}</span>
               </CommandItem>
@@ -69,8 +77,8 @@ export function CommandBar() {
         {hasModels && hasNPCs && <CommandSeparator alwaysRender={true} />}
         {hasModels && (
           <CommandGroup heading="Character Models">
-            {search.data?.models.map((model) => (
-              <CommandItem key={model.id}>
+            {search.data?.models.slice(0, 3).map((model) => (
+              <CommandItem key={model.id} value={model.voiceName}>
                 <User className="mr-2 h-4 w-4" />
                 <span>{model.voiceName}</span>
               </CommandItem>

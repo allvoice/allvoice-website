@@ -18,6 +18,7 @@ export const env = createEnv({
     ELEVENLABS_API_KEY: z.string(),
     ELEVENLABS_MAX_VOICES: z.number({ coerce: true }).min(1),
     ELEVENLABS_MAX_CONCURRENCY: z.number({ coerce: true }).min(1),
+    DATABASE_LOG_LEVEL: z.enum(["INFO", "WARN", "ERROR"]),
   },
 
   /**
@@ -47,5 +48,6 @@ export const env = createEnv({
     ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY,
     ELEVENLABS_MAX_VOICES: process.env.ELEVENLABS_MAX_VOICES,
     ELEVENLABS_MAX_CONCURRENCY: process.env.ELEVENLABS_MAX_CONCURRENCY,
+    DATABASE_LOG_LEVEL: process.env.DATABASE_LOG_LEVEL,
   },
 });

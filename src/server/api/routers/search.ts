@@ -9,6 +9,13 @@ export const searchRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
+      if (input.query == "") {
+        return {
+          npcs: [],
+          models: [],
+        };
+      }
+
       const npcsPromise = ctx.prisma.uniqueWarcraftNpc.findMany({
         where: {
           name: {
@@ -25,9 +32,18 @@ export const searchRouter = createTRPCRouter({
       });
       const modelsPromise = ctx.prisma.wacraftNpcDisplay.findMany({
         where: {
-          voiceName: {
-            search: `*${input.query}*`,
-          },
+          OR: [
+            {
+              voiceName: {
+                search: `*${input.query}*`,
+              },
+            },
+            {
+              voiceName: {
+                search: `*${input.query.replace(/\s+/g, "")}*`,
+              },
+            },
+          ],
         },
         orderBy: {
           _relevance: {

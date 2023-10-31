@@ -8,6 +8,7 @@ import { OpenSearchProvider } from "~/hooks/open-search-hook";
 import "~/styles/globals.css";
 import { api } from "~/utils/api";
 import { Compose } from "~/utils/compose";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
@@ -21,6 +22,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
           <Toaster />
           <CommandBar />
         </Compose>
+        <ReactQueryDevtools initialIsOpen={false} />
       </DndProvider>
     </ClerkProvider>
   );

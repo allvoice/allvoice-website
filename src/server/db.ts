@@ -10,7 +10,11 @@ export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
     log:
-      env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+      env.DATABASE_LOG_LEVEL === "INFO"
+        ? ["query", "error", "warn"]
+        : env.DATABASE_LOG_LEVEL === "WARN"
+        ? ["error", "warn"]
+        : ["error"],
   });
 
 if (env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
