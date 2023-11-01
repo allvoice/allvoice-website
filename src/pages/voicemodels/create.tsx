@@ -2,6 +2,7 @@ import { getAuth } from "@clerk/nextjs/server";
 import { type NextPage, type GetServerSideProps } from "next";
 import Error from "next/error";
 import { prisma } from "~/server/db";
+import { type Prisma } from "@prisma/client";
 
 type Props = {
   statusCode?: number;
@@ -17,28 +18,43 @@ export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
     };
   }
 
-  const voice = await prisma.voice.create({
-    data: {
-      ownerUser: {
-        connectOrCreate: {
-          where: { id: userId },
-          create: { id: userId },
-        },
+  const uniqueNPCId = ctx.query.uniqueNPCId as string | undefined;
+  const characterModelId = ctx.query.characterModelId as string | undefined;
+
+  const voiceData: Prisma.VoiceCreateInput = {
+    ownerUser: {
+      connectOrCreate: {
+        where: { id: userId },
+        create: { id: userId },
       },
     },
-  });
+  };
+
+  if (uniqueNPCId) {
+    voiceData.uniqueWarcraftNpc = {
+      connect: {
+        id: uniqueNPCId,
+      },
+    };
+  }
+
+  if (characterModelId) {
+    voiceData.warcraftNpcDisplay = {
+      connect: {
+        id: characterModelId,
+      },
+    };
+  }
 
   const voiceModel = await prisma.voiceModel.create({
     data: {
-      voice: { connect: { id: voice.id } },
+      voice: { create: voiceData },
     },
   });
 
-  const redirectUrl = `/voicemodels/${voiceModel.id}/edit`;
-
   return {
     redirect: {
-      destination: redirectUrl,
+      destination: `/voicemodels/${voiceModel.id}/edit`,
       permanent: false,
     },
   };

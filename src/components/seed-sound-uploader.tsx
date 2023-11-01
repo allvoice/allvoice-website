@@ -23,12 +23,15 @@ type Props = {
 };
 
 const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
-  const utils = api.useContext();
+  const utils = api.useUtils();
   const { toast } = useToast();
 
-  const workspace = api.voices.getVoiceModelWorkspace.useQuery({
-    voiceModelId,
-  });
+  const workspace = api.voices.getVoiceModelWorkspace.useQuery(
+    {
+      voiceModelId,
+    },
+    { enabled: !!voiceModelId },
+  );
 
   const updateSeedSound = api.voices.updateSeedSound.useMutation({
     async onMutate({ active, seedSoundId }) {

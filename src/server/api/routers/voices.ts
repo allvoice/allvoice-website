@@ -60,37 +60,74 @@ export const voicesRouter = createTRPCRouter({
     return mapped;
   }),
 
-  listMostPopular: publicProcedure.query(async ({ ctx }) => {
-    const voices = await ctx.prisma.voice.findMany({
-      include: {
-        modelVersions: {
-          include: {
-            previewSounds: true,
+  listMostPopular: publicProcedure
+    .input(
+      z
+        .object({
+          uniqueNPCId: z.string().optional(),
+          characterModelId: z.string().optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const voices = await ctx.prisma.voice.findMany({
+        include: {
+          modelVersions: {
+            include: {
+              previewSounds: true,
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+            where: {
+              published: true,
+            },
+            take: 1,
           },
-          orderBy: {
-            createdAt: "desc",
+          warcraftNpcDisplay: {
+            include: { npcs: true },
           },
-          where: {
-            published: true,
-          },
-          take: 1,
         },
-      },
-      orderBy: {
-        likes: "desc",
-      },
-      where: {
-        modelVersions: {
-          some: {
-            published: true,
+        orderBy: {
+          score: "desc",
+        },
+        where: {
+          modelVersions: {
+            some: {
+              published: true,
+            },
           },
         },
-      },
-      take: 20,
-    });
+        ...(input?.uniqueNPCId
+          ? {
+              where: {
+                uniqueWarcraftNpcId: input.uniqueNPCId,
+              },
+            }
+          : {}),
+        ...(input?.characterModelId
+          ? {
+              where: {
+                wacraftNpcDisplayId: input.characterModelId,
+              },
+            }
+          : {}),
+        take: 20,
+      });
 
-    return voices;
-  }),
+      const mapped = voices.map((voice) => ({
+        ...voice,
+        modelVersions: voice.modelVersions.map((version) => ({
+          ...version,
+          previewSounds: version.previewSounds.map((sound) => ({
+            ...sound,
+            publicUrl: getPublicUrl(sound.bucketKey),
+          })),
+        })),
+      }));
+
+      return mapped;
+    }),
   getVoiceDetails: publicProcedure
     .input(z.object({ voiceId: z.string() }))
     .query(async ({ input, ctx }) => {
@@ -154,7 +191,7 @@ export const voicesRouter = createTRPCRouter({
     .input(
       z.object({
         voiceModelId: z.string(),
-        warcraftNpcDisplayId: z.string(),
+        warcraftNpcDisplayId: z.string().optional(),
         voiceTitle: z.string(),
       }),
     )
@@ -170,9 +207,13 @@ export const voicesRouter = createTRPCRouter({
         where: { id: voiceModel.voiceId },
         data: {
           name: input.voiceTitle,
-          warcraftNpcDisplay: {
-            connect: { id: input.warcraftNpcDisplayId },
-          },
+          ...(input.warcraftNpcDisplayId
+            ? {
+                warcraftNpcDisplay: {
+                  connect: { id: input.warcraftNpcDisplayId },
+                },
+              }
+            : {}),
         },
       });
 

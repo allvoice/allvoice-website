@@ -17,7 +17,7 @@ export const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
   voiceModelId,
   className,
 }) => {
-  const utils = api.useContext();
+  const utils = api.useUtils();
 
   const [refetchSeedSound, setRefetchSeedSound] = useState(true);
   const getSeedSound = api.files.getSeedSound.useQuery(

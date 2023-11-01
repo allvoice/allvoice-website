@@ -12,7 +12,7 @@ export const searchRouter = createTRPCRouter({
       if (input.query == "") {
         return {
           npcs: [],
-          models: [],
+          characterModels: [],
         };
       }
 
@@ -30,7 +30,7 @@ export const searchRouter = createTRPCRouter({
           },
         },
       });
-      const modelsPromise = ctx.prisma.wacraftNpcDisplay.findMany({
+      const characterModelsPromise = ctx.prisma.wacraftNpcDisplay.findMany({
         where: {
           OR: [
             {
@@ -54,11 +54,14 @@ export const searchRouter = createTRPCRouter({
         },
       });
 
-      const [npcs, models] = await Promise.all([npcsPromise, modelsPromise]);
+      const [npcs, characterModels] = await Promise.all([
+        npcsPromise,
+        characterModelsPromise,
+      ]);
 
       return {
         npcs,
-        models,
+        characterModels,
       };
     }),
 });

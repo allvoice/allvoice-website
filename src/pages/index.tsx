@@ -5,7 +5,6 @@ import VoiceCard from "~/components/voice-card";
 import { api } from "~/utils/api";
 const Home: NextPage = () => {
   const voiceQuery = api.voices.listNewest.useQuery();
-  const likedSounds = api.users.listLikedSounds.useQuery();
 
   return (
     <MainLayout>
@@ -14,11 +13,7 @@ const Home: NextPage = () => {
         className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
       >
         {voiceQuery.data?.map((voice) => (
-          <VoiceCard
-            key={voice.id}
-            voice={voice}
-            initiallyLiked={likedSounds.data?.has(voice.id)}
-          />
+          <VoiceCard key={voice.id} voice={voice} />
         ))}
       </ul>
     </MainLayout>

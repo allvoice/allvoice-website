@@ -2,6 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { type AppType } from "next/app";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { AudioSeekBar } from "~/components/audio-seek-bar";
 import { CommandBar } from "~/components/command-bar";
 import { Toaster } from "~/components/ui/toaster";
 import { OpenSearchProvider } from "~/hooks/open-search-hook";
@@ -19,6 +20,8 @@ const MyApp: AppType = ({ Component, pageProps }) => {
           components={[OpenSearchProvider]}
         >
           <Component {...pageProps} />
+          <AudioSeekBar className="fixed bottom-0 left-0 z-30 h-2 w-full" />
+
           <Toaster />
           <CommandBar />
         </Compose>

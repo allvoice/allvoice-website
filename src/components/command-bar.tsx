@@ -17,8 +17,10 @@ import { useOpenSearch } from "~/hooks/open-search-hook";
 import { api } from "~/utils/api";
 import { isEmpty } from "~/utils/array-util";
 import ThreeDotsFade from "~/components/spinner";
+import { useRouter } from "next/router";
 
 export function CommandBar() {
+  const router = useRouter();
   const { open, setOpen } = useOpenSearch();
 
   useEffect(() => {
@@ -42,7 +44,17 @@ export function CommandBar() {
   );
 
   const hasNPCs = !isEmpty(search.data?.npcs);
-  const hasModels = !isEmpty(search.data?.models);
+  const hasModels = !isEmpty(search.data?.characterModels);
+
+  const onSelectNPC = (id: string) => {
+    void router.push(`/npcs/${id}`);
+    setOpen(false);
+  };
+
+  const onSelectModel = (id: string) => {
+    void router.push(`/charactermodels/${id}`);
+    setOpen(false);
+  };
 
   return (
     <CommandDialog shouldFilter={false} open={open} onOpenChange={setOpen}>
@@ -66,7 +78,11 @@ export function CommandBar() {
         {hasNPCs && (
           <CommandGroup heading="NPCs">
             {search.data?.npcs.slice(0, 3).map((npc) => (
-              <CommandItem key={npc.id} value={npc.name}>
+              <CommandItem
+                key={npc.id}
+                value={npc.name}
+                onSelect={() => onSelectNPC(npc.id)}
+              >
                 <User className="mr-2 h-4 w-4" />
                 <span>{npc.name}</span>
               </CommandItem>
@@ -77,10 +93,14 @@ export function CommandBar() {
         {hasModels && hasNPCs && <CommandSeparator alwaysRender={true} />}
         {hasModels && (
           <CommandGroup heading="Character Models">
-            {search.data?.models.slice(0, 3).map((model) => (
-              <CommandItem key={model.id} value={model.voiceName}>
+            {search.data?.characterModels.slice(0, 3).map((characterModel) => (
+              <CommandItem
+                key={characterModel.id}
+                value={characterModel.voiceName}
+                onSelect={() => onSelectModel(characterModel.id)}
+              >
                 <User className="mr-2 h-4 w-4" />
-                <span>{model.voiceName}</span>
+                <span>{characterModel.voiceName}</span>
               </CommandItem>
             ))}
           </CommandGroup>

@@ -19,9 +19,12 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userLikeJoins UserLikes[]
-  voices        Voice[]
-  seedSounds    SeedSound[]
+  userFavoriteJoins UserFavorites[]
+  userUpvoteJoins   UserUpvotes[]
+  userDownvoteJoins UserDownvotes[]
+
+  voices     Voice[]
+  seedSounds SeedSound[]
 }
 
 model SeedSound {
@@ -114,21 +117,54 @@ model Voice {
 
   modelVersions VoiceModel[]
 
-  name  String @default("Untitled Voice")
-  likes Int    @default(0) @db.UnsignedInt // up to ~4 bil
+  name String @default("Untitled Voice")
+
+  favorites Int @default(0) @db.UnsignedInt // up to ~4 bil
+  // score is upvotes minus downvotes
+  score     Int @default(0) @db.UnsignedInt // up to ~4 bil
 
   warcraftNpcDisplay  WacraftNpcDisplay? @relation(fields: [wacraftNpcDisplayId], references: [id])
   wacraftNpcDisplayId String?
 
-  // TODO: provide an override for voicing specific NPCs
+  uniqueWarcraftNpc   UniqueWarcraftNpc? @relation(fields: [uniqueWarcraftNpcId], references: [id])
+  uniqueWarcraftNpcId String?
 
-  userLikeJoins UserLikes[]
+  userFavoriteJoins UserFavorites[]
+  userUpvoteJoins   UserUpvotes[]
+  userDownvoteJoins UserDownvotes[]
 
   @@index([ownerUserId])
   @@index([wacraftNpcDisplayId])
+  @@index([uniqueWarcraftNpcId])
 }
 
-model UserLikes {
+model UserFavorites {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  voiceId   String
+  voice     Voice    @relation(fields: [voiceId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@id([userId, voiceId])
+  @@index([voiceId])
+  @@index([userId])
+}
+
+model UserUpvotes {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  voiceId   String
+  voice     Voice    @relation(fields: [voiceId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@id([userId, voiceId])
+  @@index([voiceId])
+  @@index([userId])
+}
+
+model UserDownvotes {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId    String
@@ -210,6 +246,9 @@ model UniqueWarcraftNpc {
   name String @unique
 
   npcs WarcraftNpc[]
+
+  // voices refer to the user models that were made for this npc
+  voices Voice[]
 
   @@fulltext([name])
 }

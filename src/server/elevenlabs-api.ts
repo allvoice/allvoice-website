@@ -69,9 +69,9 @@ class ElevenLabsManager {
       this.initialization = new Promise<void>(async (resolve, reject) => {
         try {
           await this.getAlreadyLoadedVoicesFromElevenLabs();
-          for (const el of this.loadedVoices.entries()) {
-            console.log(el);
-          }
+          // for (const el of this.loadedVoices.entries()) {
+          //  console.log(el);
+          // }
           resolve();
         } catch (error) {
           reject(error);

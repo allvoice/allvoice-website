@@ -34,7 +34,7 @@ import { api } from "~/utils/api";
 import { cn } from "~/utils/ui";
 
 const voicePostFormSchema = z.object({
-  warcraftNpcDisplayId: z.string(),
+  warcraftNpcDisplayId: z.string().optional(),
   voiceTitle: z.string(),
 });
 
