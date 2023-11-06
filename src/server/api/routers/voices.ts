@@ -375,4 +375,64 @@ export const voicesRouter = createTRPCRouter({
         },
       });
     }),
+    rateVoice: privateProcedure
+      .input(
+        z.object({
+          voiceId: z.string(),
+          action: z.enum(['upvote', 'downvote']),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { voiceId, action } = input;
+        const { userId } = ctx;
+
+        const userVote = {
+          where: {
+            userId_voiceId: {
+              userId,
+              voiceId,
+            },
+          },
+        };
+
+        await ctx.prisma.$transaction(async (prisma) => {
+          if (action === 'upvote') {
+            const existingUpvote = await prisma.userUpvotes.findUnique(userVote);
+
+            if (existingUpvote) {
+              await prisma.userUpvotes.delete(userVote);
+              await prisma.voice.update({
+                where: { id: voiceId },
+                data: { score: { decrement: 1 } },
+              });
+            } else {
+              await prisma.userUpvotes.create({
+                data: {
+                  userId,
+                  voiceId,
+                },
+              });
+              await prisma.userDownvotes.delete(userVote);
+            }
+          } else if (action === 'downvote') {
+            const existingDownvote = await prisma.userDownvotes.findUnique(userVote);
+
+            if (existingDownvote) {
+              await prisma.userDownvotes.delete(userVote);
+              await prisma.voice.update({
+                where: { id: voiceId },
+                data: { score: { increment: 1 } },
+              });
+            } else {
+              await prisma.userDownvotes.create({
+                data: {
+                  userId,
+                  voiceId,
+                },
+              });
+              await prisma.userUpvotes.delete(userVote);
+            }
+          }
+        });
+      }),
 });
