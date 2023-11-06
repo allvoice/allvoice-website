@@ -252,3 +252,20 @@ model UniqueWarcraftNpc {
 
   @@fulltext([name])
 }
+
+
+// model Voiceline {
+  // possible fields
+  // source	Type of interaction ('accept', 'progress', 'complete', or 'gossip')	addon
+  // quest	Quest ID or empty string if it's a gossip interaction	addon
+  // text	Text content of the interaction	addon
+  // npc_name	Name of the NPC involved in the interaction	addon
+  // npc_type	Type of the NPC involved ('creature', 'gameobject', or 'item')	addon (probably)
+  // npc_id	Creature/gameobject/item ID of the NPC involved in the interaction	addon
+  // player_race	Race of the player involved in the interaction	addon
+  // player_gender	Gender of the player involved in the interaction	addon
+  // player_name	Name of the player involved in the interaction	addon
+  // player_class	Class of the player involved in the interaction	addon
+  // language	Language of the text collected	addon
+  // expansion	Expansion text was added to the game. Is optional.	wowhead for quest text
+// }
