@@ -60,25 +60,31 @@ const NPCPage: NextPage = () => {
             </a>
           ))}
         </div>
-        <div className="mt-4 flex flex-col">
+        <div className="mt-4 grid grid-cols-1 gap-4">
           <h3 className="mb-2 text-2xl font-medium">Voice Models</h3>
           {voices.data.map((voice) => (
             <div
-              className="flex w-fit items-center space-x-2 rounded-md bg-slate-100 p-2"
+              className="flex flex-col bg-white shadow rounded-lg p-4"
               key={voice.id}
             >
-              <span>{voice.score}</span>
-              <ChevronUpIcon className="h-4 w-4" />
-              <ChevronDownIcon className="h-4 w-4" />
-              <span>{voice.name}</span>
-
-              {voice.modelVersions?.[0]?.previewSounds.map((sound) => (
-                <PlayButton key={sound.id} sound={sound} />
-              ))}
+              <div className="flex items-center justify-between">
+                <h4 className="text-lg font-semibold">{voice.name}</h4>
+                <div className="flex items-center space-x-2">
+                  <ChevronUpIcon className="h-4 w-4 text-green-500" />
+                  <span className="font-semibold">{voice.score}</span>
+                  <ChevronDownIcon className="h-4 w-4 text-red-500" />
+                </div>
+              </div>
+              <div className="mt-2">
+                {voice.modelVersions?.[0]?.previewSounds.map((sound) => (
+                  <PlayButton key={sound.id} sound={sound}  />
+                ))}
+              </div>
             </div>
           ))}
         </div>
       </div>
+      
     </MainLayout>
   );
 };
