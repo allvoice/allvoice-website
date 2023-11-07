@@ -1,3 +1,4 @@
+CREATE OR REPLACE VIEW view_classic_data AS
 WITH RECURSIVE
 creature_quest_relations AS (
     SELECT 'accept' as source, qr.quest, ct.entry as creature_id
@@ -271,7 +272,15 @@ SELECT
 FROM gameobject_data
     JOIN quest_greeting qg ON qg.entry=gameobject_data.id AND type=1
 
-)SELECT
+)
+#
+#   SELECT
+#       count(*),
+#       SUM(CHAR_LENGTH(text)) as total_characters
+#   FROM ALL_DATA
+
+
+SELECT
     source,
     quest,
     quest_title,
@@ -280,6 +289,5 @@ FROM gameobject_data
     DisplaySexID,
     name,
     type,
-    id,
-    text as original_text
+    id
 FROM ALL_DATA

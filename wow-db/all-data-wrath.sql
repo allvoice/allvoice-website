@@ -1,3 +1,4 @@
+CREATE OR REPLACE VIEW view_wrath_data AS
 WITH RECURSIVE
 creature_quest_relations AS (
     SELECT 'accept' as source, qr.quest, ct.entry as creature_id
@@ -81,14 +82,6 @@ numbers AS (
     UNION ALL SELECT 5
     UNION ALL SELECT 6
     UNION ALL SELECT 7
-    UNION ALL SELECT 8
-    UNION ALL SELECT 9
-    UNION ALL SELECT 10
-    UNION ALL SELECT 11
-    UNION ALL SELECT 12
-    UNION ALL SELECT 13
-    UNION ALL SELECT 14
-    UNION ALL SELECT 15
 ),
 ALL_DATA AS (
 
@@ -104,7 +97,6 @@ SELECT
         WHEN qr.source = 'progress' THEN qt.RequestItemsText
         ELSE qt.OfferRewardText
     END as "text",
-    0 as broadcast_text_id,
     cdie.DisplayRaceID,
     cdie.DisplaySexID,
     ct.name,
@@ -136,7 +128,6 @@ SELECT
         WHEN qr.source = 'progress' THEN qt.RequestItemsText
         ELSE qt.OfferRewardText
     END as "text",
-    0 as broadcast_text_id,
     -1 as DisplayRaceID,
     0 as DisplaySexID,
     gt.name,
@@ -162,7 +153,6 @@ SELECT
     qr.quest,
     qt.Title as quest_title,
     qt.Details as "text",
-    0 as broadcast_text_id,
     -1 as DisplayRaceID,
     0 as DisplaySexID,
     it.name,
@@ -185,8 +175,16 @@ SELECT
     'gossip' as source,
     '' as quest,
     '' as quest_title,
-    IF(creature_data.DisplaySexID = 0, bt.Text, bt.Text1) AS text,
-    bt.Id as broadcast_text_id,
+      ELT(numbers.n + 1,
+        IF(creature_data.DisplaySexID = 0, nt.text0_0, nt.text0_1),
+        IF(creature_data.DisplaySexID = 0, nt.text1_0, nt.text1_1),
+        IF(creature_data.DisplaySexID = 0, nt.text2_0, nt.text2_1),
+        IF(creature_data.DisplaySexID = 0, nt.text3_0, nt.text3_1),
+        IF(creature_data.DisplaySexID = 0, nt.text4_0, nt.text4_1),
+        IF(creature_data.DisplaySexID = 0, nt.text5_0, nt.text5_1),
+        IF(creature_data.DisplaySexID = 0, nt.text6_0, nt.text6_1),
+        IF(creature_data.DisplaySexID = 0, nt.text7_0, nt.text7_1)
+    ) AS text,
     creature_data.DisplayRaceID,
     creature_data.DisplaySexID,
     creature_data.name,
@@ -195,69 +193,73 @@ SELECT
 FROM creature_data
     CROSS JOIN numbers
     JOIN npc_text nt ON nt.ID = creature_data.text_id
-    JOIN broadcast_text bt ON
-        CASE numbers.n
-            WHEN 0 THEN nt.text0_0
-            WHEN 1 THEN nt.text0_1
-            WHEN 2 THEN nt.text1_0
-            WHEN 3 THEN nt.text1_1
-            WHEN 4 THEN nt.text2_0
-            WHEN 5 THEN nt.text2_1
-            WHEN 6 THEN nt.text3_0
-            WHEN 7 THEN nt.text3_1
-            WHEN 8 THEN nt.text4_0
-            WHEN 9 THEN nt.text4_1
-            WHEN 10 THEN nt.text5_0
-            WHEN 11 THEN nt.text5_1
-            WHEN 12 THEN nt.text6_0
-            WHEN 13 THEN nt.text6_1
-            WHEN 14 THEN nt.text7_0
-            WHEN 15 THEN nt.text7_1
-        END = bt.Id
 WHERE
-    (DisplaySexID = 0 AND bt.Text IS NOT NULL AND bt.Text != '')
-    OR (DisplaySexID = 1 AND bt.Text1 IS NOT NULL AND bt.Text1 != '')
-
+    ELT(numbers.n + 1,
+        IF(creature_data.DisplaySexID = 0, nt.text0_0, nt.text0_1),
+        IF(creature_data.DisplaySexID = 0, nt.text1_0, nt.text1_1),
+        IF(creature_data.DisplaySexID = 0, nt.text2_0, nt.text2_1),
+        IF(creature_data.DisplaySexID = 0, nt.text3_0, nt.text3_1),
+        IF(creature_data.DisplaySexID = 0, nt.text4_0, nt.text4_1),
+        IF(creature_data.DisplaySexID = 0, nt.text5_0, nt.text5_1),
+        IF(creature_data.DisplaySexID = 0, nt.text6_0, nt.text6_1),
+        IF(creature_data.DisplaySexID = 0, nt.text7_0, nt.text7_1)
+    ) IS NOT NULL AND
+    ELT(numbers.n + 1,
+        IF(creature_data.DisplaySexID = 0, nt.text0_0, nt.text0_1),
+        IF(creature_data.DisplaySexID = 0, nt.text1_0, nt.text1_1),
+        IF(creature_data.DisplaySexID = 0, nt.text2_0, nt.text2_1),
+        IF(creature_data.DisplaySexID = 0, nt.text3_0, nt.text3_1),
+        IF(creature_data.DisplaySexID = 0, nt.text4_0, nt.text4_1),
+        IF(creature_data.DisplaySexID = 0, nt.text5_0, nt.text5_1),
+        IF(creature_data.DisplaySexID = 0, nt.text6_0, nt.text6_1),
+        IF(creature_data.DisplaySexID = 0, nt.text7_0, nt.text7_1)
+    ) != ''
 -- GameObject Gossip
 
 UNION ALL
-SELECT
-    distinct
-    'gossip' as source,
-    '' as quest,
-    '' as quest_title,
-    IF(creature_data.DisplaySexID = 0, bt.Text, bt.Text1) AS text,
-    bt.Id as broadcast_text_id,
-    -1 as DisplayRaceID,
-    0 as DisplaySexID,
+SELECT DISTINCT
+    'gossip' AS source,
+    '' AS quest,
+    '' AS quest_title,
+    ELT(numbers.n + 1,
+        IF(nt.text0_0 IS NOT NULL AND nt.text0_0 != '', nt.text0_0, nt.text0_1),
+        IF(nt.text1_0 IS NOT NULL AND nt.text1_0 != '', nt.text1_0, nt.text1_1),
+        IF(nt.text2_0 IS NOT NULL AND nt.text2_0 != '', nt.text2_0, nt.text2_1),
+        IF(nt.text3_0 IS NOT NULL AND nt.text3_0 != '', nt.text3_0, nt.text3_1),
+        IF(nt.text4_0 IS NOT NULL AND nt.text4_0 != '', nt.text4_0, nt.text4_1),
+        IF(nt.text5_0 IS NOT NULL AND nt.text5_0 != '', nt.text5_0, nt.text5_1),
+        IF(nt.text6_0 IS NOT NULL AND nt.text6_0 != '', nt.text6_0, nt.text6_1),
+        IF(nt.text7_0 IS NOT NULL AND nt.text7_0 != '', nt.text7_0, nt.text7_1)
+    ) AS text,
+    -1 AS DisplayRaceID,
+    0 AS DisplaySexID,
     gameobject_data.name,
-    'gameobject' as type,
+    'gameobject' AS type,
     gameobject_data.id
 FROM gameobject_data
     CROSS JOIN numbers
     JOIN npc_text nt ON nt.ID = gameobject_data.text_id
-        JOIN broadcast_text bt ON
-        CASE numbers.n
-            WHEN 0 THEN nt.text0_0
-            WHEN 1 THEN nt.text0_1
-            WHEN 2 THEN nt.text1_0
-            WHEN 3 THEN nt.text1_1
-            WHEN 4 THEN nt.text2_0
-            WHEN 5 THEN nt.text2_1
-            WHEN 6 THEN nt.text3_0
-            WHEN 7 THEN nt.text3_1
-            WHEN 8 THEN nt.text4_0
-            WHEN 9 THEN nt.text4_1
-            WHEN 10 THEN nt.text5_0
-            WHEN 11 THEN nt.text5_1
-            WHEN 12 THEN nt.text6_0
-            WHEN 13 THEN nt.text6_1
-            WHEN 14 THEN nt.text7_0
-            WHEN 15 THEN nt.text7_1
-        END = bt.Id
 WHERE
-    bt.Text IS NOT NULL AND bt.Text != '' OR
-    bt.Text1 IS NOT NULL AND bt.Text1 != ''
+    ELT(numbers.n + 1,
+        IF(nt.text0_0 IS NOT NULL AND nt.text0_0 != '', nt.text0_0, nt.text0_1),
+        IF(nt.text1_0 IS NOT NULL AND nt.text1_0 != '', nt.text1_0, nt.text1_1),
+        IF(nt.text2_0 IS NOT NULL AND nt.text2_0 != '', nt.text2_0, nt.text2_1),
+        IF(nt.text3_0 IS NOT NULL AND nt.text3_0 != '', nt.text3_0, nt.text3_1),
+        IF(nt.text4_0 IS NOT NULL AND nt.text4_0 != '', nt.text4_0, nt.text4_1),
+        IF(nt.text5_0 IS NOT NULL AND nt.text5_0 != '', nt.text5_0, nt.text5_1),
+        IF(nt.text6_0 IS NOT NULL AND nt.text6_0 != '', nt.text6_0, nt.text6_1),
+        IF(nt.text7_0 IS NOT NULL AND nt.text7_0 != '', nt.text7_0, nt.text7_1)
+    ) IS NOT NULL AND
+    ELT(numbers.n + 1,
+        IF(nt.text0_0 IS NOT NULL AND nt.text0_0 != '', nt.text0_0, nt.text0_1),
+        IF(nt.text1_0 IS NOT NULL AND nt.text1_0 != '', nt.text1_0, nt.text1_1),
+        IF(nt.text2_0 IS NOT NULL AND nt.text2_0 != '', nt.text2_0, nt.text2_1),
+        IF(nt.text3_0 IS NOT NULL AND nt.text3_0 != '', nt.text3_0, nt.text3_1),
+        IF(nt.text4_0 IS NOT NULL AND nt.text4_0 != '', nt.text4_0, nt.text4_1),
+        IF(nt.text5_0 IS NOT NULL AND nt.text5_0 != '', nt.text5_0, nt.text5_1),
+        IF(nt.text6_0 IS NOT NULL AND nt.text6_0 != '', nt.text6_0, nt.text6_1),
+        IF(nt.text7_0 IS NOT NULL AND nt.text7_0 != '', nt.text7_0, nt.text7_1)
+    ) != ''
 
 -- Creature QuestGreetings
 
@@ -268,7 +270,6 @@ SELECT
     '' as quest,
     '' as quest_title,
     qg.Text AS text,
-    0 as broadcast_text_id,
     creature_data.DisplayRaceID,
     creature_data.DisplaySexID,
     creature_data.name,
@@ -286,7 +287,6 @@ SELECT
     '' as quest,
     '' as quest_title,
     qg.Text AS text,
-    0 as broadcast_text_id,
     -1 AS DisplayRaceID,
     0 AS DisplaySexID,
     gameobject_data.name,
@@ -295,7 +295,14 @@ SELECT
 FROM gameobject_data
     JOIN questgiver_greeting qg ON qg.entry=gameobject_data.id AND type=1
 
-)SELECT
+)
+# SELECT
+#   count(*),
+#   SUM(CHAR_LENGTH(text)) as total_characters
+# FROM ALL_DATA
+
+
+SELECT
     source,
     quest,
     quest_title,
@@ -304,6 +311,6 @@ FROM gameobject_data
     DisplaySexID,
     name,
     type,
-    id,
-    text as original_text
+    id
+
 FROM ALL_DATA

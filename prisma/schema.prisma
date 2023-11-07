@@ -234,6 +234,7 @@ model WarcraftNpc {
 
   uniqueWarcraftNpc   UniqueWarcraftNpc @relation(fields: [uniqueWarcraftNpcId], references: [id])
   uniqueWarcraftNpcId String
+  rawVoicelines       RawVoiceline[]
 
   @@index([uniqueWarcraftNpcId])
 }
@@ -253,19 +254,25 @@ model UniqueWarcraftNpc {
   @@fulltext([name])
 }
 
+model RawVoiceline {
+  id     String @id @default(uuid())
+  // source is the type of interaction ('accept', 'progress', 'complete', 'gossip')
+  source String
 
-// model Voiceline {
+  questName String?      @db.Text
+  questId   Int?         @db.UnsignedInt
+  text      String       @db.Text
+  npc       WarcraftNpc? @relation(fields: [npcId], references: [npcId])
+  npcId     Int?
+
+  // 0 classic, 2 wrath
+  expansion Int
+
   // possible fields
-  // source	Type of interaction ('accept', 'progress', 'complete', or 'gossip')	addon
-  // quest	Quest ID or empty string if it's a gossip interaction	addon
-  // text	Text content of the interaction	addon
-  // npc_name	Name of the NPC involved in the interaction	addon
+  // gameobjects + item support
   // npc_type	Type of the NPC involved ('creature', 'gameobject', or 'item')	addon (probably)
   // npc_id	Creature/gameobject/item ID of the NPC involved in the interaction	addon
-  // player_race	Race of the player involved in the interaction	addon
-  // player_gender	Gender of the player involved in the interaction	addon
-  // player_name	Name of the player involved in the interaction	addon
-  // player_class	Class of the player involved in the interaction	addon
-  // language	Language of the text collected	addon
-  // expansion	Expansion text was added to the game. Is optional.	wowhead for quest text
-// }
+  // language	Language of the text collected	addon (all english for now)
+
+  @@index([npcId])
+}
