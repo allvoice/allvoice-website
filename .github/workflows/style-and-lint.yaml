@@ -3,7 +3,7 @@ on: pull_request
 
 env:
   pnpm-version: 8
-  node-version: 18
+  node-version: 20
 
 jobs:
   style:
