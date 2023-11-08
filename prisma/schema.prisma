@@ -20,8 +20,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   userFavoriteJoins UserFavorites[]
-  userUpvoteJoins   UserUpvotes[]
-  userDownvoteJoins UserDownvotes[]
+  votes             Vote[]
 
   voices     Voice[]
   seedSounds SeedSound[]
@@ -121,7 +120,7 @@ model Voice {
 
   favorites Int @default(0) @db.UnsignedInt // up to ~4 bil
   // score is upvotes minus downvotes
-  score     Int @default(0) @db.UnsignedInt // up to ~4 bil
+  score     Int @default(0)
 
   warcraftNpcDisplay  WacraftNpcDisplay? @relation(fields: [wacraftNpcDisplayId], references: [id])
   wacraftNpcDisplayId String?
@@ -130,8 +129,7 @@ model Voice {
   uniqueWarcraftNpcId String?
 
   userFavoriteJoins UserFavorites[]
-  userUpvoteJoins   UserUpvotes[]
-  userDownvoteJoins UserDownvotes[]
+  votes             Vote[]
 
   @@index([ownerUserId])
   @@index([wacraftNpcDisplayId])
@@ -151,20 +149,13 @@ model UserFavorites {
   @@index([userId])
 }
 
-model UserUpvotes {
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    String
-  voiceId   String
-  voice     Voice    @relation(fields: [voiceId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
-
-  @@id([userId, voiceId])
-  @@index([voiceId])
-  @@index([userId])
+enum VoteType {
+  UPVOTE
+  DOWNVOTE
 }
 
-model UserDownvotes {
+model Vote {
+  type      VoteType
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId    String

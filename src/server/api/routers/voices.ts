@@ -39,6 +39,11 @@ export const voicesRouter = createTRPCRouter({
             take: 1,
           },
           uniqueWarcraftNpc: true,
+          ...(ctx.userId
+            ? {
+                votes: { where: { userId: ctx.userId } },
+              }
+            : {}),
         },
         orderBy: {
           ...(input?.type === "newest"
@@ -346,45 +351,78 @@ export const voicesRouter = createTRPCRouter({
         },
       };
 
-      await ctx.prisma.$transaction(async (prisma) => {
-        if (action === "upvote") {
-          const existingUpvote = await prisma.userUpvotes.findUnique(userVote);
+      const existingVote = await ctx.prisma.vote.findUnique(userVote);
 
-          if (existingUpvote) {
-            await prisma.userUpvotes.delete(userVote);
-            await prisma.voice.update({
-              where: { id: voiceId },
-              data: { score: { decrement: 1 } },
-            });
-          } else {
-            await prisma.userUpvotes.create({
+      if (action === "upvote") {
+        if (!existingVote) {
+          await ctx.prisma.$transaction([
+            ctx.prisma.vote.create({
               data: {
-                userId,
-                voiceId,
+                type: "UPVOTE",
+                voice: { connect: { id: voiceId } },
+                user: { connect: { id: userId } },
               },
-            });
-            await prisma.userDownvotes.delete(userVote);
-          }
-        } else if (action === "downvote") {
-          const existingDownvote =
-            await prisma.userDownvotes.findUnique(userVote);
-
-          if (existingDownvote) {
-            await prisma.userDownvotes.delete(userVote);
-            await prisma.voice.update({
+            }),
+            ctx.prisma.voice.update({
               where: { id: voiceId },
               data: { score: { increment: 1 } },
-            });
-          } else {
-            await prisma.userDownvotes.create({
-              data: {
-                userId,
-                voiceId,
-              },
-            });
-            await prisma.userUpvotes.delete(userVote);
-          }
+            }),
+          ]);
+        } else if (existingVote.type === "UPVOTE") {
+          await ctx.prisma.$transaction([
+            ctx.prisma.vote.delete(userVote),
+            ctx.prisma.voice.update({
+              where: { id: voiceId },
+              data: { score: { decrement: 1 } },
+            }),
+          ]);
+        } else if (existingVote.type === "DOWNVOTE") {
+          await ctx.prisma.$transaction([
+            ctx.prisma.vote.update({
+              ...userVote,
+              data: { type: "UPVOTE" },
+            }),
+            ctx.prisma.voice.update({
+              where: { id: voiceId },
+              data: { score: { increment: 2 } },
+            }),
+          ]);
         }
-      });
+      } else if (action === "downvote") {
+        if (!existingVote) {
+          await ctx.prisma.$transaction([
+            ctx.prisma.vote.create({
+              data: {
+                type: "DOWNVOTE",
+                voice: { connect: { id: voiceId } },
+                user: { connect: { id: userId } },
+              },
+            }),
+            ctx.prisma.voice.update({
+              where: { id: voiceId },
+              data: { score: { decrement: 1 } },
+            }),
+          ]);
+        } else if (existingVote.type === "DOWNVOTE") {
+          await ctx.prisma.$transaction([
+            ctx.prisma.vote.delete(userVote),
+            ctx.prisma.voice.update({
+              where: { id: voiceId },
+              data: { score: { increment: 1 } },
+            }),
+          ]);
+        } else if (existingVote.type === "UPVOTE") {
+          await ctx.prisma.$transaction([
+            ctx.prisma.vote.update({
+              ...userVote,
+              data: { type: "DOWNVOTE" },
+            }),
+            ctx.prisma.voice.update({
+              where: { id: voiceId },
+              data: { score: { decrement: 2 } },
+            }),
+          ]);
+        }
+      }
     }),
 });

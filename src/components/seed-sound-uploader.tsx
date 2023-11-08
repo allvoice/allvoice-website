@@ -79,8 +79,8 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
       });
     },
   });
-  const uploadFile = useMutation(
-    async ({ file, active }: { file: File; active: boolean }) => {
+  const uploadFile = useMutation({
+    mutationFn: async ({ file, active }: { file: File; active: boolean }) => {
       const { uploadUrl, fileId } = await createUploadUrl.mutateAsync({
         fileName: file.name,
         voiceModelId: voiceModelId,
@@ -89,22 +89,21 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
       await uploadFileFn(file, uploadUrl);
       return { fileId };
     },
-    {
-      onSettled(data) {
-        void utils.voices.getVoiceModelWorkspace.invalidate({ voiceModelId });
-        void utils.files.getSeedSound.invalidate({ id: data?.fileId });
-      },
-      onError(error, variables) {
-        toast({
-          title: "File Upload Error",
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          description: `${variables.file.name} did not upload. Error: ${error}`,
-        });
-      },
-    },
-  );
 
-  const uploadInProgress = createUploadUrl.isLoading || uploadFile.isLoading;
+    onSettled(data) {
+      void utils.voices.getVoiceModelWorkspace.invalidate({ voiceModelId });
+      void utils.files.getSeedSound.invalidate({ id: data?.fileId });
+    },
+    onError(error, variables) {
+      toast({
+        title: "File Upload Error",
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        description: `${variables.file.name} did not upload. Error: ${error}`,
+      });
+    },
+  });
+
+  const uploadInProgress = createUploadUrl.isPending || uploadFile.isPending;
 
   const inactiveSeedSounds = useMemo(
     () => workspace.data?.seedSounds.filter((sound) => !sound.active),
