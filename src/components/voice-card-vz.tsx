@@ -1,19 +1,20 @@
+import { Button } from "~/components/ui/button";
 import {
-  Bookmark,
+  Play,
+  Pause,
+  ThumbsUp,
+  ThumbsDown,
   GitFork,
   MoreHorizontal,
-  ThumbsDown,
-  ThumbsUp,
+  Bookmark,
 } from "lucide-react";
-import Link from "next/link";
-import { Button } from "~/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import { api, type VoiceListElement } from "~/utils/api";
-import { cn } from "~/utils/ui";
+import { type VoiceListElement } from "~/utils/api";
+import Link from "next/link";
 import { PlayButton } from "./play-button";
 import { VoteType, type Vote } from "@prisma/client";
 
@@ -21,6 +22,7 @@ type Props = {
   voice: VoiceListElement;
   className?: string;
 };
+
 
 const VoiceCardVZ: React.FC<Props> = ({ className, voice }) => {
   const utils = api.useUtils();
@@ -96,13 +98,13 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice }) => {
         <div className="flex w-full items-start justify-between overflow-hidden">
           <div className="flex-grow overflow-hidden">
             <Link href={`/voices/${voice.id}`}>
-              <h3 className="truncate text-2xl font-semibold text-gray-800 hover:underline dark:text-white">
+              <h3 className="truncate text-2xl font-semibold text-gray-800 dark:text-white hover:underline">
                 {voice.name}
               </h3>
             </Link>
 
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
-              by Author&apos;s Name
+              by Author's Name
             </p>
 
             {voice.uniqueWarcraftNpc && (
@@ -131,7 +133,6 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice }) => {
             <Button
               className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
               variant="outline"
-              onClick={onUpvote}
             >
               <ThumbsUp
                 className={cn(
@@ -144,7 +145,6 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice }) => {
             <Button
               className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
               variant="outline"
-              onClick={onDownvote}
             >
               <ThumbsDown
                 className={cn(
