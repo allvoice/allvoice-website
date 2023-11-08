@@ -20,7 +20,7 @@ const NPCPage: NextPage = () => {
     { enabled: !!uniqueNPCId },
   );
 
-  const voices = api.voices.listMostPopular.useQuery(
+  const voices = api.voices.listVoices.useQuery(
     { uniqueNPCId: uniqueNPCId },
     { enabled: !!uniqueNPCId },
   );

@@ -13,57 +13,11 @@ import { getPublicUrl, s3Client } from "~/server/s3";
 import { voiceEditFormSchema } from "~/utils/schema";
 
 export const voicesRouter = createTRPCRouter({
-  listNewest: publicProcedure.query(async ({ ctx }) => {
-    // TODO: Probably want to introduce cursor pagination
-    const voices = await ctx.prisma.voice.findMany({
-      include: {
-        modelVersions: {
-          include: {
-            previewSounds: true,
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-          where: {
-            published: true,
-          },
-          take: 1,
-        },
-        warcraftNpcDisplay: {
-          include: { npcs: true },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      where: {
-        modelVersions: {
-          some: {
-            published: true,
-          },
-        },
-      },
-      take: 20,
-    });
-
-    const mapped = voices.map((voice) => ({
-      ...voice,
-      modelVersions: voice.modelVersions.map((version) => ({
-        ...version,
-        previewSounds: version.previewSounds.map((sound) => ({
-          ...sound,
-          publicUrl: getPublicUrl(sound.bucketKey),
-        })),
-      })),
-    }));
-
-    return mapped;
-  }),
-
-  listMostPopular: publicProcedure
+  listVoices: publicProcedure
     .input(
       z
         .object({
+          type: z.enum(["newest", "popular"]).optional().default("popular"),
           uniqueNPCId: z.string().optional(),
           characterModelId: z.string().optional(),
         })
@@ -89,7 +43,9 @@ export const voicesRouter = createTRPCRouter({
           },
         },
         orderBy: {
-          score: "desc",
+          ...(input?.type === "newest"
+            ? { createdAt: "desc" }
+            : { score: "desc" }), // defaults to popular sorting if input object is null
         },
         where: {
           modelVersions: {
@@ -97,21 +53,18 @@ export const voicesRouter = createTRPCRouter({
               published: true,
             },
           },
-        },
-        ...(input?.uniqueNPCId
-          ? {
-              where: {
+          ...(input?.uniqueNPCId
+            ? {
                 uniqueWarcraftNpcId: input.uniqueNPCId,
-              },
-            }
-          : {}),
-        ...(input?.characterModelId
-          ? {
-              where: {
+              }
+            : {}),
+          ...(input?.characterModelId
+            ? {
                 wacraftNpcDisplayId: input.characterModelId,
-              },
-            }
-          : {}),
+              }
+            : {}),
+        },
+
         take: 20,
       });
 
@@ -375,64 +328,65 @@ export const voicesRouter = createTRPCRouter({
         },
       });
     }),
-    rateVoice: privateProcedure
-      .input(
-        z.object({
-          voiceId: z.string(),
-          action: z.enum(['upvote', 'downvote']),
-        }),
-      )
-      .mutation(async ({ ctx, input }) => {
-        const { voiceId, action } = input;
-        const { userId } = ctx;
-
-        const userVote = {
-          where: {
-            userId_voiceId: {
-              userId,
-              voiceId,
-            },
-          },
-        };
-
-        await ctx.prisma.$transaction(async (prisma) => {
-          if (action === 'upvote') {
-            const existingUpvote = await prisma.userUpvotes.findUnique(userVote);
-
-            if (existingUpvote) {
-              await prisma.userUpvotes.delete(userVote);
-              await prisma.voice.update({
-                where: { id: voiceId },
-                data: { score: { decrement: 1 } },
-              });
-            } else {
-              await prisma.userUpvotes.create({
-                data: {
-                  userId,
-                  voiceId,
-                },
-              });
-              await prisma.userDownvotes.delete(userVote);
-            }
-          } else if (action === 'downvote') {
-            const existingDownvote = await prisma.userDownvotes.findUnique(userVote);
-
-            if (existingDownvote) {
-              await prisma.userDownvotes.delete(userVote);
-              await prisma.voice.update({
-                where: { id: voiceId },
-                data: { score: { increment: 1 } },
-              });
-            } else {
-              await prisma.userDownvotes.create({
-                data: {
-                  userId,
-                  voiceId,
-                },
-              });
-              await prisma.userUpvotes.delete(userVote);
-            }
-          }
-        });
+  rateVoice: privateProcedure
+    .input(
+      z.object({
+        voiceId: z.string(),
+        action: z.enum(["upvote", "downvote"]),
       }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { voiceId, action } = input;
+      const { userId } = ctx;
+
+      const userVote = {
+        where: {
+          userId_voiceId: {
+            userId,
+            voiceId,
+          },
+        },
+      };
+
+      await ctx.prisma.$transaction(async (prisma) => {
+        if (action === "upvote") {
+          const existingUpvote = await prisma.userUpvotes.findUnique(userVote);
+
+          if (existingUpvote) {
+            await prisma.userUpvotes.delete(userVote);
+            await prisma.voice.update({
+              where: { id: voiceId },
+              data: { score: { decrement: 1 } },
+            });
+          } else {
+            await prisma.userUpvotes.create({
+              data: {
+                userId,
+                voiceId,
+              },
+            });
+            await prisma.userDownvotes.delete(userVote);
+          }
+        } else if (action === "downvote") {
+          const existingDownvote =
+            await prisma.userDownvotes.findUnique(userVote);
+
+          if (existingDownvote) {
+            await prisma.userDownvotes.delete(userVote);
+            await prisma.voice.update({
+              where: { id: voiceId },
+              data: { score: { increment: 1 } },
+            });
+          } else {
+            await prisma.userDownvotes.create({
+              data: {
+                userId,
+                voiceId,
+              },
+            });
+            await prisma.userUpvotes.delete(userVote);
+          }
+        }
+      });
+    }),
 });

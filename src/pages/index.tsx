@@ -4,7 +4,7 @@ import VoiceCard from "~/components/voice-card";
 
 import { api } from "~/utils/api";
 const Home: NextPage = () => {
-  const voiceQuery = api.voices.listNewest.useQuery();
+  const voiceQuery = api.voices.listVoices.useQuery();
 
   return (
     <MainLayout>

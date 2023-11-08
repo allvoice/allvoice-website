@@ -67,6 +67,6 @@ export type RouterInputs = inferRouterInputs<AppRouter>;
  */
 export type RouterOutputs = inferRouterOutputs<AppRouter>;
 
-export type VoiceListOutput = RouterOutputs["voices"]["listNewest"];
+export type VoiceListOutput = RouterOutputs["voices"]["listVoices"];
 
 export type VoiceListElement = VoiceListOutput[number];
