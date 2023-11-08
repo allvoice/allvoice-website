@@ -1,17 +1,13 @@
 import {
-  PlusIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
+  PlusIcon
 } from "@heroicons/react/20/solid";
-import Link from "next/link";
 import { type NextPage } from "next";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import MainLayout from "~/components/main-layout";
 import ThreeDotsFade from "~/components/spinner";
-import { api } from "~/utils/api";
-import { PlayButton } from "~/components/play-button";
 import VoiceCardVZ from "~/components/voice-card-vz";
-import React from "react";
+import { api } from "~/utils/api";
 
 const NPCPage: NextPage = () => {
   const router = useRouter();
