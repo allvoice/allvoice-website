@@ -1,7 +1,5 @@
 import { Button } from "~/components/ui/button";
 import {
-  Play,
-  Pause,
   ThumbsUp,
   ThumbsDown,
   GitFork,
@@ -13,18 +11,21 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import { type VoiceListElement } from "~/utils/api";
+import { api, type VoiceListElement, type VoiceListInput } from "~/utils/api";
+
 import Link from "next/link";
 import { PlayButton } from "./play-button";
 import { VoteType, type Vote } from "@prisma/client";
+import { cn } from "~/utils/ui";
 
 type Props = {
   voice: VoiceListElement;
+  // needed for optimisitic update for now until we dont need to provide an exact match for the query we're setting data for
+  voiceListInput: VoiceListInput;
   className?: string;
 };
 
-
-const VoiceCardVZ: React.FC<Props> = ({ className, voice }) => {
+const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
   const utils = api.useUtils();
   const currVote = voice.votes?.[0];
   const isUpvoted = currVote?.type == VoteType.UPVOTE;
@@ -34,7 +35,7 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice }) => {
     onMutate: async ({ voiceId, action }) => {
       await utils.voices.listVoices.cancel();
 
-      utils.voices.listVoices.setData(undefined, (old) => {
+      utils.voices.listVoices.setData(voiceListInput, (old) => {
         const newVoices = old?.map((voice) => {
           if (voice.id != voiceId) {
             return voice;
@@ -98,13 +99,13 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice }) => {
         <div className="flex w-full items-start justify-between overflow-hidden">
           <div className="flex-grow overflow-hidden">
             <Link href={`/voices/${voice.id}`}>
-              <h3 className="truncate text-2xl font-semibold text-gray-800 dark:text-white hover:underline">
+              <h3 className="truncate text-2xl font-semibold text-gray-800 hover:underline dark:text-white">
                 {voice.name}
               </h3>
             </Link>
 
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
-              by Author's Name
+              by Author&apos;s Name
             </p>
 
             {voice.uniqueWarcraftNpc && (
@@ -133,6 +134,7 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice }) => {
             <Button
               className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
               variant="outline"
+              onClick={onUpvote}
             >
               <ThumbsUp
                 className={cn(
@@ -145,6 +147,7 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice }) => {
             <Button
               className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
               variant="outline"
+              onClick={onDownvote}
             >
               <ThumbsDown
                 className={cn(

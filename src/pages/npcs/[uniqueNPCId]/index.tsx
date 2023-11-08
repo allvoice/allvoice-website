@@ -1,27 +1,24 @@
-import {
-  PlusIcon
-} from "@heroicons/react/20/solid";
+import { PlusIcon } from "@heroicons/react/20/solid";
 import { type NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import MainLayout from "~/components/main-layout";
 import ThreeDotsFade from "~/components/spinner";
 import VoiceCardVZ from "~/components/voice-card-vz";
-import { api } from "~/utils/api";
+import { type VoiceListInput, api } from "~/utils/api";
 
 const NPCPage: NextPage = () => {
   const router = useRouter();
   const uniqueNPCId = (router.query.uniqueNPCId ?? "") as string;
-
+  const voiceListInput = { uniqueNPCId: uniqueNPCId } as VoiceListInput;
   const npc = api.warcraft.getUniqueNPC.useQuery(
     { uniqueNPCId: uniqueNPCId },
     { enabled: !!uniqueNPCId },
   );
 
-  const voices = api.voices.listVoices.useQuery(
-    { uniqueNPCId: uniqueNPCId },
-    { enabled: !!uniqueNPCId },
-  );
+  const voices = api.voices.listVoices.useQuery(voiceListInput, {
+    enabled: !!uniqueNPCId,
+  });
 
   if (npc.data == null || voices.data == null) {
     return (
@@ -61,8 +58,13 @@ const NPCPage: NextPage = () => {
         <h3 className="mt-4 text-2xl font-medium">Voice Models</h3>
 
         <div className="mt-4 flex flex-wrap space-x-4 rounded-md border border-gray-200 dark:bg-gray-800">
-          {voices.data.map((voice, index) => (
-            <VoiceCardVZ voice={voice} className="w-72 border-0" />
+          {voices.data.map((voice) => (
+            <VoiceCardVZ
+              key={voice.id}
+              voice={voice}
+              voiceListInput={voiceListInput}
+              className="w-72 border-0"
+            />
           ))}
         </div>
       </div>
