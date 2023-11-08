@@ -1,6 +1,7 @@
 import React from "react";
 import { type VoiceListElement } from "~/utils/api";
-import { Pause } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import { Play, Pause } from "lucide-react";
 import { useMemo } from "react";
 import { useGlobalAudioPlayer } from "react-use-audio-player";
 
@@ -20,15 +21,16 @@ export const PlayButton: React.FC<{
     stop();
   };
   return (
-    <div
+    <Button
+      className=" rounded-md  bg-indigo-600 px-3 py-2  hover:bg-indigo-700"
+      variant="outline"
       onClick={isPlayingThis ? stopSound : playSound}
-      className="flex h-10 w-10 justify-center rounded-full border border-solid border-gray-400 p-2 align-middle text-gray-400 shadow hover:cursor-pointer hover:border-blue-400 hover:text-blue-400"
     >
       {isPlayingThis ? (
-        <Pause className="mt-[1px] h-5 w-5" />
+        <Pause className="h-5 w-5 text-white" />
       ) : (
-        <span>{sound.iconEmoji}</span>
+        <Play className="h-5 w-5 text-white" />
       )}
-    </div>
+    </Button>
   );
 };

@@ -38,9 +38,7 @@ export const voicesRouter = createTRPCRouter({
             },
             take: 1,
           },
-          warcraftNpcDisplay: {
-            include: { npcs: true },
-          },
+          uniqueWarcraftNpc: true,
         },
         orderBy: {
           ...(input?.type === "newest"

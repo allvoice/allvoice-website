@@ -21,7 +21,6 @@ const VoiceCard: React.FC<Props> = ({ voice }) => {
       <div className="flex flex-1 flex-col p-8">
         <h1 className="text-xl">{voice.name}</h1>
         <h2 className="text-sm">Version {voice?.modelVersions[0]?.version}</h2>
-        <h3>{voice.warcraftNpcDisplay?.voiceName}</h3>
         <div className="my-2 flex space-x-3">
           {voice.modelVersions[0]?.previewSounds.map((sound) => (
             <PlayButton key={sound.id} sound={sound} />

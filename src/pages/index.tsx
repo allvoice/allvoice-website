@@ -1,6 +1,7 @@
 import { type NextPage } from "next";
 import MainLayout from "~/components/main-layout";
 import VoiceCard from "~/components/voice-card";
+import VoiceCardVZ from "~/components/voice-card-vz";
 
 import { api } from "~/utils/api";
 const Home: NextPage = () => {
@@ -12,6 +13,9 @@ const Home: NextPage = () => {
         role="list"
         className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
       >
+        {voiceQuery.data?.map((voice) => (
+          <VoiceCardVZ key={voice.id} voice={voice} />
+        ))}
         {voiceQuery.data?.map((voice) => (
           <VoiceCard key={voice.id} voice={voice} />
         ))}

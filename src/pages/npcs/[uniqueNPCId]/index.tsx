@@ -10,6 +10,8 @@ import MainLayout from "~/components/main-layout";
 import ThreeDotsFade from "~/components/spinner";
 import { api } from "~/utils/api";
 import { PlayButton } from "~/components/play-button";
+import VoiceCardVZ from "~/components/voice-card-vz";
+import React from "react";
 
 const NPCPage: NextPage = () => {
   const router = useRouter();
@@ -60,31 +62,14 @@ const NPCPage: NextPage = () => {
             </a>
           ))}
         </div>
-        <div className="mt-4 grid grid-cols-1 gap-4">
-          <h3 className="mb-2 text-2xl font-medium">Voice Models</h3>
-          {voices.data.map((voice) => (
-            <div
-              className="flex flex-col bg-white shadow rounded-lg p-4"
-              key={voice.id}
-            >
-              <div className="flex items-center justify-between">
-                <h4 className="text-lg font-semibold">{voice.name}</h4>
-                <div className="flex items-center space-x-2">
-                  <ChevronUpIcon className="h-4 w-4 text-green-500" />
-                  <span className="font-semibold">{voice.score}</span>
-                  <ChevronDownIcon className="h-4 w-4 text-red-500" />
-                </div>
-              </div>
-              <div className="mt-2">
-                {voice.modelVersions?.[0]?.previewSounds.map((sound) => (
-                  <PlayButton key={sound.id} sound={sound}  />
-                ))}
-              </div>
-            </div>
+        <h3 className="mt-4 text-2xl font-medium">Voice Models</h3>
+
+        <div className="mt-4 flex flex-wrap space-x-4 rounded-md border border-gray-200 dark:bg-gray-800">
+          {voices.data.map((voice, index) => (
+            <VoiceCardVZ voice={voice} className="w-72 border-0" />
           ))}
         </div>
       </div>
-      
     </MainLayout>
   );
 };
