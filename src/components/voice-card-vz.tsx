@@ -15,46 +15,61 @@ import {
 import { api, type VoiceListElement } from "~/utils/api";
 import { cn } from "~/utils/ui";
 import { PlayButton } from "./play-button";
+import { VoteType, type Vote } from "@prisma/client";
 
 type Props = {
   voice: VoiceListElement;
   className?: string;
 };
-// TODO: make optimistic like update and add stable ordering to frontend by caching ids then resorting from server using rq select
+
 const VoiceCardVZ: React.FC<Props> = ({ className, voice }) => {
-  // const utils = api.useUtils();
+  const utils = api.useUtils();
+  const currVote = voice.votes?.[0];
+  const isUpvoted = currVote?.type == VoteType.UPVOTE;
+  const isDownvoted = currVote?.type == VoteType.DOWNVOTE;
+
   const rateVoice = api.voices.rateVoice.useMutation({
-    // onMutate: async ({ voiceId, action }) => {
-    //   await utils.voices.listVoices.cancel();
+    onMutate: async ({ voiceId, action }) => {
+      await utils.voices.listVoices.cancel();
 
-    //   utils.voices.listVoices.setData((old) => {
-    //     const newVoices = old?.map((voice) => {
-    //       if (voice.id != voiceId) {
-    //         return voice;
-    //       }
-    //       const voteChange = action === "upvote" ? 1 : -1;
-    //       return {
-    //         ...voice,
-    //         score: voice.score + voteChange,
-    //       };
-    //     });
+      utils.voices.listVoices.setData(undefined, (old) => {
+        const newVoices = old?.map((voice) => {
+          if (voice.id != voiceId) {
+            return voice;
+          }
+          let newScore = voice.score;
+          let newVotes = voice.votes;
+          if (action === "upvote") {
+            if (isUpvoted) {
+              newScore = voice.score - 1;
+              newVotes = [];
+            } else {
+              newScore = isDownvoted ? voice.score + 2 : voice.score + 1;
+              newVotes = [{ ...currVote, type: VoteType.UPVOTE } as Vote];
+            }
+          } else if (action === "downvote") {
+            if (isDownvoted) {
+              newScore = voice.score + 1;
+              newVotes = [];
+            } else {
+              newScore = isUpvoted ? voice.score - 2 : voice.score - 1;
+              newVotes = [{ ...currVote, type: VoteType.DOWNVOTE } as Vote];
+            }
+          }
+          return {
+            ...voice,
+            score: newScore,
+            votes: newVotes,
+          };
+        });
 
-    //     return newVoices ?? [];
-    //   });
-    // },
-    // onError: (error, variables, context) => {
-    //   utils.voices.listVoices.setData(context?.oldVoices);
-    // },
-    // onSettled: () => {
-    //   void utils.voices.listVoices.invalidate();
-    // },
-
-
-
+        return newVoices ?? [];
+      });
+    },
+    onSettled: () => {
+      void utils.voices.listVoices.invalidate();
+    },
   });
-
-  const isUpvoted = voice.votes?.[0]?.type == "UPVOTE";
-  const isDownvoted = voice.votes?.[0]?.type == "DOWNVOTE";
 
   const onUpvote = () => {
     rateVoice.mutate({
@@ -121,7 +136,7 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice }) => {
               <ThumbsUp
                 className={cn(
                   "h-5 w-5",
-                  isUpvoted ? "text-green-500" : "text-gray-500"
+                  isUpvoted ? "text-green-500" : "text-gray-500",
                 )}
               />
             </Button>
@@ -131,10 +146,10 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice }) => {
               variant="outline"
               onClick={onDownvote}
             >
-                 <ThumbsDown
+              <ThumbsDown
                 className={cn(
                   "h-5 w-5",
-                  isDownvoted ? "text-red-500" : "text-gray-500"
+                  isDownvoted ? "text-red-500" : "text-gray-500",
                 )}
               />
             </Button>

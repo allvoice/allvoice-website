@@ -17,7 +17,7 @@ export const voicesRouter = createTRPCRouter({
     .input(
       z
         .object({
-          type: z.enum(["newest", "popular"]).optional().default("popular"),
+          sortType: z.enum(["newest", "popular"]).optional().default("popular"),
           uniqueNPCId: z.string().optional(),
           characterModelId: z.string().optional(),
         })
@@ -46,7 +46,7 @@ export const voicesRouter = createTRPCRouter({
             : {}),
         },
         orderBy: {
-          ...(input?.type === "newest"
+          ...(input?.sortType === "newest"
             ? { createdAt: "desc" }
             : { score: "desc" }), // defaults to popular sorting if input object is null
         },
