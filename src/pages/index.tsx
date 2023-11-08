@@ -6,7 +6,7 @@ import { api, type VoiceListInput } from "~/utils/api";
 
 const Home: NextPage = () => {
   const [initialOrder, setInitialOrder] = useState<string[]>([]);
-  const voiceListInput = {sortType: "popular"} as VoiceListInput
+  const voiceListInput = { sortType: "popular" } as VoiceListInput;
   const voiceQuery = api.voices.listVoices.useQuery(voiceListInput, {
     select(data) {
       if (initialOrder.length === 0) {
@@ -36,9 +36,12 @@ const Home: NextPage = () => {
         className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
       >
         {voiceQuery.data?.map((voice) => (
-          <VoiceCardVZ key={voice.id} voice={voice} voiceListInput={voiceListInput} />
+          <VoiceCardVZ
+            key={voice.id}
+            voice={voice}
+            voiceListInput={voiceListInput}
+          />
         ))}
-
       </ul>
     </MainLayout>
   );
