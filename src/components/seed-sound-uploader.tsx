@@ -60,8 +60,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
     onError(error, variables) {
       toast({
         title: "Sample Update Error",
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        description: `Was not able to change ssid: ${variables.seedSoundId} with vmid: ${variables.voiceModelId} to active: ${variables.active}.`,
+        description: `Was not able to change ssid: ${variables.seedSoundId} with vmid: ${variables.voiceModelId} to active: ${variables.active}.\nError ${error.message}`,
       });
     },
   });
@@ -79,8 +78,8 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
       });
     },
   });
-  const uploadFile = useMutation(
-    async ({ file, active }: { file: File; active: boolean }) => {
+  const uploadFile = useMutation({
+    async mutationFn({ file, active }: { file: File; active: boolean }) {
       const { uploadUrl, fileId } = await createUploadUrl.mutateAsync({
         fileName: file.name,
         voiceModelId: voiceModelId,
@@ -89,22 +88,19 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
       await uploadFileFn(file, uploadUrl);
       return { fileId };
     },
-    {
-      onSettled(data) {
-        void utils.voices.getVoiceModelWorkspace.invalidate({ voiceModelId });
-        void utils.files.getSeedSound.invalidate({ id: data?.fileId });
-      },
-      onError(error, variables) {
-        toast({
-          title: "File Upload Error",
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          description: `${variables.file.name} did not upload. Error: ${error}`,
-        });
-      },
+    onSettled(data) {
+      void utils.voices.getVoiceModelWorkspace.invalidate({ voiceModelId });
+      void utils.files.getSeedSound.invalidate({ id: data?.fileId });
     },
-  );
+    onError(error, variables) {
+      toast({
+        title: "File Upload Error",
+        description: `${variables.file.name} did not upload. Error: ${error.message}`,
+      });
+    },
+  });
 
-  const uploadInProgress = createUploadUrl.isLoading || uploadFile.isLoading;
+  const uploadInProgress = createUploadUrl.isPending || uploadFile.isPending;
 
   const inactiveSeedSounds = useMemo(
     () => workspace.data?.seedSounds.filter((sound) => !sound.active),
