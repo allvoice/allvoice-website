@@ -71,7 +71,7 @@
   "devDependencies": {
     "@types/cli-progress": "^3.11.5",
     "@types/eslint": "^8.44.7",
-    "@types/node": "^18.18.8",
+    "@types/node": "^20.9.0",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "@types/uuid": "^9.0.7",
