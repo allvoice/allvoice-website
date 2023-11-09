@@ -39,9 +39,15 @@ export const voicesRouter = createTRPCRouter({
             take: 1,
           },
           uniqueWarcraftNpc: true,
+
           ...(ctx.userId
             ? {
                 votes: { where: { userId: ctx.userId } },
+              }
+            : {}),
+          ...(ctx.userId
+            ? {
+                userFavoriteJoins: { where: { userId: ctx.userId } },
               }
             : {}),
         },
@@ -331,6 +337,7 @@ export const voicesRouter = createTRPCRouter({
         },
       });
     }),
+
   rateVoice: privateProcedure
     .input(
       z.object({
@@ -423,6 +430,44 @@ export const voicesRouter = createTRPCRouter({
             }),
           ]);
         }
+      }
+    }),
+
+  bookmarkVoice: privateProcedure
+    .input(
+      z.object({
+        voiceId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { voiceId } = input;
+      const { userId } = ctx;
+
+      const existingBookmark = await ctx.prisma.userFavorites.findUnique({
+        where: {
+          userId_voiceId: {
+            userId,
+            voiceId,
+          },
+        },
+      });
+
+      if (!existingBookmark) {
+        await ctx.prisma.userFavorites.create({
+          data: {
+            voice: { connect: { id: voiceId } },
+            user: { connect: { id: userId } },
+          },
+        });
+      } else {
+        await ctx.prisma.userFavorites.delete({
+          where: {
+            userId_voiceId: {
+              userId,
+              voiceId,
+            },
+          },
+        });
       }
     }),
 });

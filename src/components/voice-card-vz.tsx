@@ -15,7 +15,7 @@ import { api, type VoiceListElement, type VoiceListInput } from "~/utils/api";
 
 import Link from "next/link";
 import { PlayButton } from "./play-button";
-import { VoteType, type Vote } from "@prisma/client";
+import { VoteType, type Vote, type UserFavorites } from "@prisma/client";
 import { cn } from "~/utils/ui";
 
 type Props = {
@@ -27,6 +27,7 @@ type Props = {
 
 const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
   const utils = api.useUtils();
+  const isBookmarked = voice.userFavoriteJoins?.[0] != null;
   const currVote = voice.votes?.[0];
   const isUpvoted = currVote?.type == VoteType.UPVOTE;
   const isDownvoted = currVote?.type == VoteType.DOWNVOTE;
@@ -74,6 +75,41 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
     },
   });
 
+  const bookmarkVoice = api.voices.bookmarkVoice.useMutation({
+    onMutate: async ({ voiceId }) => {
+      await utils.voices.listVoices.cancel();
+
+      utils.voices.listVoices.setData(voiceListInput, (old) => {
+        const newVoices = old?.map((voice) => {
+          if (voice.id != voiceId) {
+            return voice;
+          }
+          if (isBookmarked) {
+            return {
+              ...voice,
+              userFavoriteJoins: [],
+            };
+          }
+          return {
+            ...voice,
+            userFavoriteJoins: [{} as UserFavorites],
+          };
+        });
+
+        return newVoices ?? [];
+      });
+    },
+    onSettled: () => {
+      void utils.voices.listVoices.invalidate();
+    },
+  });
+
+  const onBookmark = () => {
+    bookmarkVoice.mutate({
+      voiceId: voice.id,
+    });
+  };
+
   const onUpvote = () => {
     rateVoice.mutate({
       voiceId: voice.id,
@@ -91,7 +127,7 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
   return (
     <div
       className={cn(
-        "flex flex-col justify-between rounded-lg border border-gray-200 hover:border-indigo-500 dark:bg-gray-800",
+        "flex flex-col justify-between rounded-lg border hover:border-indigo-500 dark:bg-gray-800",
         className,
       )}
     >
@@ -117,10 +153,17 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
             )}
           </div>
           <Button
-            className="rounded-md bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            className="rounded-md bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
             variant="ghost"
+            onClick={onBookmark}
+            disabled={bookmarkVoice.isPending}
           >
-            <Bookmark className="h-5 w-5 text-gray-500" />
+            <Bookmark
+              className={cn(
+                "h-5 w-5 text-gray-500",
+                isBookmarked ? "fill-gray-500" : "",
+              )}
+            />
           </Button>
         </div>
       </div>
@@ -132,9 +175,10 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
               .map((sound) => <PlayButton key={sound.id} sound={sound} />)}
 
             <Button
-              className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              className="rounded-md bg-gray-100 px-3 py-2 font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
               variant="outline"
               onClick={onUpvote}
+              disabled={rateVoice.isPending}
             >
               <ThumbsUp
                 className={cn(
@@ -145,9 +189,10 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
             </Button>
 
             <Button
-              className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              className="rounded-md bg-gray-100 px-3 py-2 font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
               variant="outline"
               onClick={onDownvote}
+              disabled={rateVoice.isPending}
             >
               <ThumbsDown
                 className={cn(

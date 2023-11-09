@@ -19,7 +19,7 @@ const Header: React.FC = ({}) => {
 
           <div
             onClick={() => setOpen((cur) => !cur)}
-            className="flex h-8 w-full max-w-md items-center justify-center rounded-md border hover:cursor-pointer hover:opacity-80"
+            className="flex h-8 w-full max-w-md items-center justify-center rounded-md border hover:cursor-pointer hover:bg-gray-100"
           >
             <p className="select-none text-center text-sm text-slate-500 ">
               {isMacOs ? "⌘P" : "Ctrl+P"} to search
