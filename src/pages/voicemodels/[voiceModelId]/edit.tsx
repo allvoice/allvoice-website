@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { GetServerSideProps, type NextPage } from "next";
+import { type GetServerSideProps, type NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -79,7 +79,6 @@ const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
   const updateVoiceGenerationSettings =
     api.voices.updateVoiceGenerationSettings.useMutation();
 
-  console.log({ serverProps });
   const form = useForm<z.infer<typeof voiceEditFormSchema>>({
     resolver: zodResolver(voiceEditFormSchema),
     defaultValues: {
@@ -99,7 +98,6 @@ const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
   const { toast } = useToast();
   const handleGenerate = form.handleSubmit(
     async (data) => {
-      console.log("submitting");
       toast({
         title: "You submitted the following values:",
         description: (
