@@ -17,6 +17,9 @@ import Link from "next/link";
 import { PlayButton } from "./play-button";
 import { VoteType, type Vote, type UserFavorites } from "@prisma/client";
 import { cn } from "~/utils/ui";
+import { useRouter } from "next/router";
+import ThreeDotsFade from "./spinner";
+import { useToast } from "./ui/use-toast";
 
 type Props = {
   voice: VoiceListElement;
@@ -31,6 +34,29 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
   const currVote = voice.votes?.[0];
   const isUpvoted = currVote?.type == VoteType.UPVOTE;
   const isDownvoted = currVote?.type == VoteType.DOWNVOTE;
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const forkVoice = api.voices.forkVoice.useMutation({
+    onMutate: () => {
+      const { dismiss } = toast({
+        title: "Forking model...",
+        description: (
+          <>
+            This will redirect you to the new model once it&apos;s ready.
+            <ThreeDotsFade className="h-5 w-5 text-blue-500" />
+          </>
+        ),
+      });
+      return dismiss;
+    },
+    onSuccess: (data) => {
+      void router.push(`/voicemodels/${data}/edit`);
+    },
+    onSettled: (data, error, variables, dismissFn) => {
+      dismissFn?.();
+    },
+  });
 
   const rateVoice = api.voices.rateVoice.useMutation({
     onMutate: async ({ voiceId, action }) => {
@@ -104,12 +130,6 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
     },
   });
 
-  const onBookmark = () => {
-    bookmarkVoice.mutate({
-      voiceId: voice.id,
-    });
-  };
-
   const onUpvote = () => {
     rateVoice.mutate({
       voiceId: voice.id,
@@ -155,7 +175,11 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
           <Button
             className="rounded-md bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
             variant="ghost"
-            onClick={onBookmark}
+            onClick={() =>
+              bookmarkVoice.mutate({
+                voiceId: voice.id,
+              })
+            }
             disabled={bookmarkVoice.isPending}
           >
             <Bookmark
@@ -229,6 +253,8 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
                 <Button
                   className="flex w-full items-center justify-start rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                   variant="outline"
+                  onClick={() => forkVoice.mutate({ voiceId: voice.id })}
+                  disabled={forkVoice.isPending}
                 >
                   <GitFork className="mr-2 h-5 w-5 text-gray-500" />
                   <span className="text-sm text-gray-500 dark:text-gray-300">

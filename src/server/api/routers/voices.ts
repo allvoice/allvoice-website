@@ -470,4 +470,71 @@ export const voicesRouter = createTRPCRouter({
         });
       }
     }),
+
+  forkVoice: privateProcedure
+    .input(
+      z.object({
+        voiceId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { voiceId } = input;
+      const { userId } = ctx;
+
+      const voiceToBeForked = await ctx.prisma.voice.findUniqueOrThrow({
+        where: {
+          id: voiceId,
+        },
+      });
+
+      const newVoice = await ctx.prisma.voice.create({
+        data: {
+          ownerUser: { connect: { id: userId } },
+          forkParent: { connect: { id: voiceToBeForked.id } },
+        },
+      });
+
+      const voiceModels = await ctx.prisma.voiceModel.findMany({
+        where: {
+          voiceId: voiceId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 1,
+        include: {
+          soundFileJoins: true,
+        },
+      });
+
+      const voiceModel = voiceModels[0];
+      if (!voiceModel) {
+        throw new Error("Voice model not found");
+      }
+
+      const newVoiceModel = await ctx.prisma.voiceModel.create({
+        data: {
+          voice: { connect: { id: newVoice.id } },
+          forkParent: { connect: { id: voiceModel.id } },
+          elevenLabsModelId: voiceModel.elevenLabsModelId,
+          elevenLabsStability: voiceModel.elevenLabsStability,
+          elevenLabsSimilarityBoost: voiceModel.elevenLabsSimilarityBoost,
+          elevenLabsStyle: voiceModel.elevenLabsStyle,
+          elevenLabsSpeakerBoost: voiceModel.elevenLabsSpeakerBoost,
+          published: false,
+        },
+      });
+
+      for (const seedSoundJoin of voiceModel.soundFileJoins) {
+        await ctx.prisma.voiceModelSeedSounds.create({
+          data: {
+            voiceModel: { connect: { id: newVoiceModel.id } },
+            seedSound: { connect: { id: seedSoundJoin.seedSoundId } },
+            active: seedSoundJoin.active,
+          },
+        });
+      }
+
+      return newVoiceModel.id;
+    }),
 });

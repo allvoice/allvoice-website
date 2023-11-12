@@ -1,11 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type NextPage } from "next";
+import { GetServerSideProps, type NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { type z } from "zod";
 import { InfoPopover } from "~/components/info-popover";
-import LeftSidebarLayout from "~/components/left-sidebar-layout";
+import SidebarLayout from "~/components/sidebar-layout";
 import SeedSoundUploader from "~/components/seed-sound-uploader";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -30,8 +30,47 @@ import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/components/ui/use-toast";
 import { api } from "~/utils/api";
 import { voiceEditFormSchema } from "~/utils/schema";
+import { prisma } from "~/server/db";
 
-const VoiceEdit: NextPage = () => {
+type ServerProps = {
+  similarity: number;
+  stability: number;
+  style: number;
+  speakerBoost: boolean;
+  modelName: string;
+};
+
+export const getServerSideProps: GetServerSideProps<ServerProps> = async (
+  ctx,
+) => {
+  const voiceModelId = (ctx.query.voiceModelId ?? "") as string;
+  const defaultValues = await prisma.voiceModel.findUnique({
+    where: { id: voiceModelId },
+    select: {
+      elevenLabsModelId: true,
+      elevenLabsSimilarityBoost: true,
+      elevenLabsStyle: true,
+      elevenLabsSpeakerBoost: true,
+      elevenLabsStability: true,
+    },
+  });
+
+  if (!defaultValues) {
+    throw new Error("Default values is null");
+  }
+
+  return {
+    props: {
+      modelName: defaultValues.elevenLabsModelId,
+      similarity: defaultValues.elevenLabsSimilarityBoost,
+      stability: defaultValues.elevenLabsStability,
+      style: defaultValues.elevenLabsStyle,
+      speakerBoost: defaultValues.elevenLabsSpeakerBoost,
+    },
+  };
+};
+
+const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
   const router = useRouter();
   // validate this better later, possibly serverside before rendering the page
   const voiceModelId = (router.query.voiceModelId ?? "") as string;
@@ -40,17 +79,18 @@ const VoiceEdit: NextPage = () => {
   const updateVoiceGenerationSettings =
     api.voices.updateVoiceGenerationSettings.useMutation();
 
+  console.log({ serverProps });
   const form = useForm<z.infer<typeof voiceEditFormSchema>>({
     resolver: zodResolver(voiceEditFormSchema),
-    // TODO: get defaults from workspace config
     defaultValues: {
-      similarity: 0.98,
-      stability: 0.3,
-      style: 0,
-      speakerBoost: true,
-      modelName: "eleven_english_v2",
+      similarity: serverProps.similarity,
+      stability: serverProps.stability,
+      style: serverProps.style,
+      speakerBoost: serverProps.speakerBoost,
+      modelName: serverProps.modelName,
     },
   });
+
   const selectedModelName = form.watch("modelName");
 
   const [testGeneratedSoundUrl, setTestGeneratedSoundUrl] = useState<
@@ -100,7 +140,7 @@ const VoiceEdit: NextPage = () => {
   });
 
   return (
-    <LeftSidebarLayout
+    <SidebarLayout
       sidebarChildren={
         <Form {...form}>
           <form className="space-y-8">
@@ -332,7 +372,7 @@ const VoiceEdit: NextPage = () => {
         </div>
         <SeedSoundUploader voiceModelId={voiceModelId} />
       </div>
-    </LeftSidebarLayout>
+    </SidebarLayout>
   );
 };
 

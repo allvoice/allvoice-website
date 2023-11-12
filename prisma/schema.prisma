@@ -67,14 +67,14 @@ model VoiceModel {
   voice   Voice  @relation(fields: [voiceId], references: [id])
 
   forkParentId       String?
-  forkParent         VoiceModel?  @relation("VoiceForks", fields: [forkParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  directForkChildren VoiceModel[] @relation("VoiceForks")
+  forkParent         VoiceModel?  @relation("VoiceModelForks", fields: [forkParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  directForkChildren VoiceModel[] @relation("VoiceModelForks")
 
   version                Int                            @default(1) @db.UnsignedInt
   supportedLanguageJoins VoiceModelSupportedLanguages[]
 
-  elevenLabsModelId         String  @default("eleven_monolingual_v1")
-  elevenLabsStability       Float   @default(0.4)
+  elevenLabsModelId         String  @default("eleven_english_v2")
+  elevenLabsStability       Float   @default(0.35)
   elevenLabsSimilarityBoost Float   @default(0.98)
   elevenLabsStyle           Float   @default(0.0)
   elevenLabsSpeakerBoost    Boolean @default(true)
@@ -128,12 +128,17 @@ model Voice {
   uniqueWarcraftNpc   UniqueWarcraftNpc? @relation(fields: [uniqueWarcraftNpcId], references: [id])
   uniqueWarcraftNpcId String?
 
+  forkParentId       String?
+  forkParent         Voice?  @relation("VoiceForks", fields: [forkParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  directForkChildren Voice[] @relation("VoiceForks")
+
   userFavoriteJoins UserFavorites[]
   votes             Vote[]
 
   @@index([ownerUserId])
   @@index([wacraftNpcDisplayId])
   @@index([uniqueWarcraftNpcId])
+  @@index([forkParentId])
 }
 
 model UserFavorites {
@@ -252,18 +257,19 @@ model RawVoiceline {
 
   questName String?      @db.Text
   questId   Int?         @db.UnsignedInt
+
   text      String       @db.Text
   npc       WarcraftNpc? @relation(fields: [npcId], references: [npcId])
   npcId     Int?
 
-  // 0 classic, 2 wrath
+  // 0 classic, 2 wrath, 99 turtle
   expansion Int
 
   // possible fields
   // gameobjects + item support
   // npc_type	Type of the NPC involved ('creature', 'gameobject', or 'item')	addon (probably)
   // npc_id	Creature/gameobject/item ID of the NPC involved in the interaction	addon
-  // language	Language of the text collected	addon (all english for now)
+  // language	Language  // of the text collected	addon (all english for now)
 
   @@index([npcId])
 }
