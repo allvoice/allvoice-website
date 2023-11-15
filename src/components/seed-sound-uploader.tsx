@@ -6,9 +6,9 @@ import { useDropzone } from "react-dropzone";
 import { useToast } from "~/components/ui/use-toast";
 import { api } from "~/utils/api";
 import { SeedSoundDisplay } from "~/components/seed-sound-display";
-import { MAX_ACTIVE_SAMPLES } from "~/utils/consts";
 import { useDrop } from "react-dnd";
 import { ItemTypes } from "~/utils/dnd-itemtypes";
+import { env } from "~/env.mjs";
 
 const uploadFileFn = async (file: File, url: string): Promise<void> => {
   await axios.put(url, file, {
@@ -126,7 +126,9 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
     (acceptedFiles: File[]) => {
       let currentActiveSounds = numActiveSounds;
       for (const file of acceptedFiles) {
-        const active = currentActiveSounds + 1 <= MAX_ACTIVE_SAMPLES;
+        const active =
+          currentActiveSounds + 1 <=
+          env.NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES;
 
         void uploadFile.mutateAsync({ file: file, active: active });
         currentActiveSounds += 1;
@@ -146,7 +148,10 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
     () => ({
       accept: ItemTypes.SOURCE_SOUND,
       drop(item: { seedSoundId: string }) {
-        if (numActiveSounds + 1 > MAX_ACTIVE_SAMPLES) {
+        if (
+          numActiveSounds + 1 >
+          env.NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES
+        ) {
           toast({
             title: "Too many active samples",
             description:
@@ -235,7 +240,8 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
           </div>
         </div>
         <span className="select-none text-center text-sm text-slate-500">
-          {numActiveSounds} / {MAX_ACTIVE_SAMPLES} samples active
+          {numActiveSounds} / {env.NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES}{" "}
+          samples active
         </span>
       </div>
     </div>

@@ -28,11 +28,16 @@ export const env = createEnv({
    */
   client: {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
+    NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES: z
+      .number({ coerce: true })
+      .min(1),
   },
 
   experimental__runtimeEnv: {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+    NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES:
+      process.env.NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES,
   },
 
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
