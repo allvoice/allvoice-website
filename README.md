@@ -1,8 +1,4 @@
 # Allvoice Website
 
-## TODO
- - [ x ] get like count working on homepage
- - [ ] get clone/forking to work by duplicating the voice model
- - [ x ] get voice buttons to work on homepage
- - [ x ] my voices page that includes wip voices
- - [ x ] my likes page
+## cursor prompt
+```im using typescript, functional react 18, nextjs page router, tailwind, trpc, prisma, and react query 4 with the trpc integration. T3 stack is the name of the stack im using.```
