@@ -45,6 +45,14 @@ export const searchRouter = createTRPCRouter({
             },
           ],
         },
+        include: {
+          npcs: {
+            include: {
+              npc: { select: { uniqueWarcraftNpcId: true } },
+            },
+          },
+        },
+
         orderBy: {
           _relevance: {
             fields: ["voiceName"],
@@ -59,9 +67,22 @@ export const searchRouter = createTRPCRouter({
         characterModelsPromise,
       ]);
 
+      const uniqueNpcIds = new Set(npcs.map((npc) => npc.id));
+
+      const filteredModels = characterModels.filter((model) => {
+        const uniqueModelNpcIds = new Set(
+          model.npcs.map((npc) => npc.npc.uniqueWarcraftNpcId),
+        );
+        if (uniqueModelNpcIds.size !== 1) {
+          return true;
+        }
+        const [uniqueModelNpcId] = uniqueModelNpcIds;
+        return !uniqueNpcIds.has(uniqueModelNpcId!);
+      });
+
       return {
         npcs,
-        characterModels,
+        characterModels: filteredModels,
       };
     }),
 });
