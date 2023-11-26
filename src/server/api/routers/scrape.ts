@@ -10,7 +10,7 @@ export const scrapeRouter = createTRPCRouter({
         textLanguageId: z.string().optional(),
 
         source: z.enum(["accept", "progress", "complete", "gossip"]),
-        
+
         questName: z.string().optional(),
         questId: z.number().optional(),
 

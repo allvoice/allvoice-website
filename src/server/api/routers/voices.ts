@@ -159,7 +159,11 @@ export const voicesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const voiceModel = await ctx.prisma.voiceModel.findFirstOrThrow({
-        where: { id: input.voiceModelId, published: false, voice: { ownerUserId: ctx.userId } },
+        where: {
+          id: input.voiceModelId,
+          published: false,
+          voice: { ownerUserId: ctx.userId },
+        },
         include: { soundFileJoins: { include: { seedSound: true } } },
       });
 
@@ -246,13 +250,61 @@ export const voicesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const voiceModel = await ctx.prisma.voiceModel.findFirstOrThrow({
         where: { id: input.voiceModelId, voice: { ownerUserId: ctx.userId } },
-        include: { soundFileJoins: { include: { seedSound: true } } },
+        include: {
+          soundFileJoins: { include: { seedSound: true } },
+          voice: true,
+        },
       });
 
       const seedBucketKeys = voiceModel.soundFileJoins.map(
         (join) => join.seedSound.bucketKey,
       );
 
+      let textToGenerate;
+      if (voiceModel.voice.uniqueWarcraftNpcId) {
+        const uniqueNpc = await ctx.prisma.uniqueWarcraftNpc.findUnique({
+          where: { id: voiceModel.voice.uniqueWarcraftNpcId },
+          include: {
+            npcs: {
+              include: { rawVoicelines: { select: { text: true }, take: 1 } },
+              take: 1,
+            },
+          },
+        });
+        textToGenerate = uniqueNpc?.npcs?.[0]?.rawVoicelines?.[0]?.text;
+      } else if (voiceModel.voice.wacraftNpcDisplayId) {
+        const warcraftNpcDisplay =
+          await ctx.prisma.wacraftNpcDisplay.findUnique({
+            where: { id: voiceModel.voice.wacraftNpcDisplayId },
+            include: {
+              npcs: {
+                include: {
+                  npc: {
+                    include: {
+                      rawVoicelines: { select: { text: true }, take: 1 },
+                    },
+                  },
+                },
+                take: 1,
+              },
+            },
+          });
+        textToGenerate =
+          warcraftNpcDisplay?.npcs?.[0]?.npc?.rawVoicelines?.[0]?.text;
+      }
+
+      if (!textToGenerate) {
+        throw new Error(
+          "Could not find text to generate. Select a character model or npc.",
+        );
+      }
+      const firstSentence = textToGenerate.split(/(?<=[.!?])\s/)[0];
+
+      if (!firstSentence) {
+        throw new Error(
+          "First sentence regex failed for text: " + textToGenerate,
+        );
+      }
       await ctx.prisma.voiceModel.update({
         where: { id: input.voiceModelId },
         data: {
@@ -270,7 +322,7 @@ export const voicesRouter = createTRPCRouter({
           bucketKeys: seedBucketKeys,
         },
         {
-          text: input.formData.generationText,
+          text: firstSentence,
           modelId: input.formData.modelName,
           generationSettings: {
             similarity_boost: input.formData.similarity,
@@ -327,14 +379,13 @@ export const voicesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       // idk if this is absuse, but this effectively checks user perms
       await ctx.prisma.voiceModel.findFirstOrThrow({
-        where: { 
-          id: input.voiceModelId, 
-          published: false, 
-          voice: { ownerUserId: ctx.userId } 
+        where: {
+          id: input.voiceModelId,
+          published: false,
+          voice: { ownerUserId: ctx.userId },
         },
       });
 
- 
       await ctx.prisma.voiceModelSeedSounds.update({
         where: {
           voiceModelId_seedSoundId: {
@@ -501,6 +552,20 @@ export const voicesRouter = createTRPCRouter({
         data: {
           ownerUser: { connect: { id: userId } },
           forkParent: { connect: { id: voiceToBeForked.id } },
+          ...(voiceToBeForked.uniqueWarcraftNpcId
+            ? {
+                uniqueWarcraftNpc: {
+                  connect: { id: voiceToBeForked.uniqueWarcraftNpcId },
+                },
+              }
+            : {}),
+          ...(voiceToBeForked.wacraftNpcDisplayId
+            ? {
+                wacraftNpcDisplay: {
+                  connect: { id: voiceToBeForked.wacraftNpcDisplayId },
+                },
+              }
+            : {}),
         },
       });
 

@@ -26,11 +26,12 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Slider } from "~/components/ui/slider";
-import { Textarea } from "~/components/ui/textarea";
-import { useToast } from "~/components/ui/use-toast";
 import { api } from "~/utils/api";
 import { voiceEditFormSchema } from "~/utils/schema";
 import { prisma } from "~/server/db";
+import { PlayButton } from "~/components/play-button";
+import ThreeDotsFade from "~/components/spinner";
+import { useGlobalAudioPlayer } from "react-use-audio-player";
 
 type ServerProps = {
   similarity: number;
@@ -91,6 +92,7 @@ const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
   const generateTestSound = api.voices.generateTestSound.useMutation();
   const updateVoiceGenerationSettings =
     api.voices.updateVoiceGenerationSettings.useMutation();
+  const { load } = useGlobalAudioPlayer();
 
   const form = useForm<z.infer<typeof voiceEditFormSchema>>({
     resolver: zodResolver(voiceEditFormSchema),
@@ -108,41 +110,17 @@ const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
   const [testGeneratedSoundUrl, setTestGeneratedSoundUrl] = useState<
     string | undefined
   >();
-  const { toast } = useToast();
-  const handleGenerate = form.handleSubmit(
-    async (data) => {
-      toast({
-        title: "You submitted the following values:",
-        description: (
-          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-            <code className="text-white">
-              {JSON.stringify({ voiceModelId, formData: data }, null, 2)}
-            </code>
-          </pre>
-        ),
-      });
-      const url = await generateTestSound.mutateAsync({
-        voiceModelId,
-        formData: data,
-      });
-      setTestGeneratedSoundUrl(url);
-    },
-    (errors) => {
-      console.log(errors);
-    },
-  );
+  const handleGenerate = form.handleSubmit(async (data) => {
+    setTestGeneratedSoundUrl(undefined);
+    const url = await generateTestSound.mutateAsync({
+      voiceModelId,
+      formData: data,
+    });
+    load(url, { autoplay: true, html5: true, format: "mp3" });
+    setTestGeneratedSoundUrl(url);
+  });
 
   const handlePost = form.handleSubmit(async (data) => {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">
-            {JSON.stringify({ voiceModelId, formData: data }, null, 2)}
-          </code>
-        </pre>
-      ),
-    });
     await updateVoiceGenerationSettings.mutateAsync({
       voiceModelId,
       formData: data,
@@ -327,50 +305,40 @@ const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="generationText"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center space-x-1">
-                    <FormLabel>Test Generation Text</FormLabel>
-
-                    <InfoPopover>
-                      <p className="text-sm">
-                        Your model will read the text in this field to help you
-                        judge its quality.
-                      </p>
-                    </InfoPopover>
-                  </div>
-                  <FormControl>
-                    <Textarea
-                      placeholder="All members of the horde are equal in my eyes."
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </form>
-          <div className="flex space-x-2">
-            <Button type="button" onClick={handleGenerate}>
-              Generate
-            </Button>
-            {testGeneratedSoundUrl && (
-              <audio src={testGeneratedSoundUrl} controls />
-            )}
-
-            <Button type="button" onClick={handlePost}>
+          <div className="flex flex-1 flex-col justify-end space-y-2">
+            <div className="flex space-x-1">
+              <Button
+                className="flex-grow"
+                type="button"
+                onClick={handleGenerate}
+                disabled={generateTestSound.isPending}
+              >
+                {generateTestSound.isPending ? (
+                  <ThreeDotsFade className="w-5 fill-white" />
+                ) : (
+                  "Generate"
+                )}
+              </Button>
+              {testGeneratedSoundUrl && (
+                <div>
+                  <PlayButton soundUrl={testGeneratedSoundUrl} />
+                </div>
+              )}
+            </div>
+            <Button
+              className="w-full"
+              type="button"
+              onClick={handlePost}
+              disabled={generateTestSound.isPending}
+            >
               Post
             </Button>
           </div>
         </Form>
       }
     >
-      <div className="flex h-full flex-col space-y-1 px-4 sm:px-6 lg:px-8">
+      <div className=" flex h-full flex-col space-y-1 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center space-x-1">
           <Label>Samples</Label>
           <InfoPopover>

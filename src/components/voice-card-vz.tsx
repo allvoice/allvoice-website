@@ -196,7 +196,9 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
           <div className="flex space-x-2">
             {voice.modelVersions[0]?.previewSounds
               .slice(0, 1)
-              .map((sound) => <PlayButton key={sound.id} sound={sound} />)}
+              .map((sound) => (
+                <PlayButton key={sound.id} soundUrl={sound.publicUrl} />
+              ))}
 
             <Button
               className="rounded-md bg-gray-100 px-3 py-2 font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"

@@ -36,7 +36,7 @@ const SidebarLayout: React.FC<Props> = ({
           sidebarPosition === "right" ? "flex-row-reverse" : ""
         }`}
       >
-        <div className="  lg:flex lg:w-72 lg:flex-col">
+        <div className="lg:flex lg:w-72 lg:flex-col">
           <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-slate-50 px-6 py-5 pb-4">
             {sidebarChildren}
           </div>

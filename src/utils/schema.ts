@@ -6,5 +6,4 @@ export const voiceEditFormSchema = z.object({
   style: z.number().min(0).max(1),
   speakerBoost: z.boolean(),
   modelName: z.string(),
-  generationText: z.string(),
 });
