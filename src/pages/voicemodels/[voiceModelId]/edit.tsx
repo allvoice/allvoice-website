@@ -44,7 +44,7 @@ export const getServerSideProps: GetServerSideProps<ServerProps> = async (
   ctx,
 ) => {
   const voiceModelId = (ctx.query.voiceModelId ?? "") as string;
-  const defaultValues = await prisma.voiceModel.findUnique({
+  const voiceModel = await prisma.voiceModel.findUnique({
     where: { id: voiceModelId },
     select: {
       elevenLabsModelId: true,
@@ -52,20 +52,33 @@ export const getServerSideProps: GetServerSideProps<ServerProps> = async (
       elevenLabsStyle: true,
       elevenLabsSpeakerBoost: true,
       elevenLabsStability: true,
+      published: true,
+      voiceId: true,
     },
   });
 
-  if (!defaultValues) {
-    throw new Error("Default values is null");
+  if (!voiceModel) {
+    return {
+      notFound: true,
+    };
+  }
+
+  if (voiceModel.published) {
+    return {
+      redirect: {
+        destination: `/voices/${voiceModel.voiceId}`,
+        permanent: true,
+      },
+    };
   }
 
   return {
     props: {
-      modelName: defaultValues.elevenLabsModelId,
-      similarity: defaultValues.elevenLabsSimilarityBoost,
-      stability: defaultValues.elevenLabsStability,
-      style: defaultValues.elevenLabsStyle,
-      speakerBoost: defaultValues.elevenLabsSpeakerBoost,
+      modelName: voiceModel.elevenLabsModelId,
+      similarity: voiceModel.elevenLabsSimilarityBoost,
+      stability: voiceModel.elevenLabsStability,
+      style: voiceModel.elevenLabsStyle,
+      speakerBoost: voiceModel.elevenLabsSpeakerBoost,
     },
   };
 };

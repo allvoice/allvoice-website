@@ -159,7 +159,7 @@ export const voicesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const voiceModel = await ctx.prisma.voiceModel.findFirstOrThrow({
-        where: { id: input.voiceModelId, voice: { ownerUserId: ctx.userId } },
+        where: { id: input.voiceModelId, published: false, voice: { ownerUserId: ctx.userId } },
         include: { soundFileJoins: { include: { seedSound: true } } },
       });
 
@@ -305,7 +305,7 @@ export const voicesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       await ctx.prisma.voiceModel.update({
-        where: { id: input.voiceModelId },
+        where: { id: input.voiceModelId, published: false },
         data: {
           elevenLabsModelId: input.formData.modelName,
           elevenLabsSimilarityBoost: input.formData.similarity,
@@ -325,6 +325,16 @@ export const voicesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // idk if this is absuse, but this effectively checks user perms
+      await ctx.prisma.voiceModel.findFirstOrThrow({
+        where: { 
+          id: input.voiceModelId, 
+          published: false, 
+          voice: { ownerUserId: ctx.userId } 
+        },
+      });
+
+ 
       await ctx.prisma.voiceModelSeedSounds.update({
         where: {
           voiceModelId_seedSoundId: {
