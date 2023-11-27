@@ -217,7 +217,6 @@ export const voicesRouter = createTRPCRouter({
     .input(
       z.object({
         voiceModelId: z.string(),
-        warcraftNpcDisplayId: z.string().optional(),
         voiceTitle: z.string(),
       }),
     )
@@ -237,13 +236,6 @@ export const voicesRouter = createTRPCRouter({
         where: { id: voiceModel.voiceId },
         data: {
           name: input.voiceTitle,
-          ...(input.warcraftNpcDisplayId
-            ? {
-                warcraftNpcDisplay: {
-                  connect: { id: input.warcraftNpcDisplayId },
-                },
-              }
-            : {}),
         },
       });
 
@@ -568,7 +560,7 @@ export const voicesRouter = createTRPCRouter({
       const { voiceId } = input;
       const { userId } = ctx;
 
-      const existingBookmark = await ctx.prisma.userFavorites.findUnique({
+      const existingBookmark = await ctx.prisma.favorite.findUnique({
         where: {
           userId_voiceId: {
             userId,
@@ -578,14 +570,14 @@ export const voicesRouter = createTRPCRouter({
       });
 
       if (!existingBookmark) {
-        await ctx.prisma.userFavorites.create({
+        await ctx.prisma.favorite.create({
           data: {
             voice: { connect: { id: voiceId } },
             user: { connect: { id: userId } },
           },
         });
       } else {
-        await ctx.prisma.userFavorites.delete({
+        await ctx.prisma.favorite.delete({
           where: {
             userId_voiceId: {
               userId,

@@ -19,9 +19,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userFavoriteJoins UserFavorites[]
-  votes             Vote[]
+  username String? @unique
 
+  favorites  Favorite[]
+  votes      Vote[]
   voices     Voice[]
   seedSounds SeedSound[]
 }
@@ -118,9 +119,8 @@ model Voice {
 
   name String @default("Untitled Voice")
 
-  favorites Int @default(0) @db.UnsignedInt // up to ~4 bil
   // score is upvotes minus downvotes
-  score     Int @default(0)
+  score Int @default(0)
 
   warcraftNpcDisplay  WacraftNpcDisplay? @relation(fields: [wacraftNpcDisplayId], references: [id])
   wacraftNpcDisplayId String?
@@ -132,8 +132,8 @@ model Voice {
   forkParent         Voice?  @relation("VoiceForks", fields: [forkParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   directForkChildren Voice[] @relation("VoiceForks")
 
-  userFavoriteJoins UserFavorites[]
-  votes             Vote[]
+  favorites Favorite[]
+  votes     Vote[]
 
   @@index([ownerUserId])
   @@index([wacraftNpcDisplayId])
@@ -141,7 +141,7 @@ model Voice {
   @@index([forkParentId])
 }
 
-model UserFavorites {
+model Favorite {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId    String
@@ -255,12 +255,12 @@ model RawVoiceline {
   // source is the type of interaction ('accept', 'progress', 'complete', 'gossip')
   source String
 
-  questName String?      @db.Text
-  questId   Int?         @db.UnsignedInt
+  questName String? @db.Text
+  questId   Int?    @db.UnsignedInt
 
-  text      String       @db.Text
-  npc       WarcraftNpc? @relation(fields: [npcId], references: [npcId])
-  npcId     Int?
+  text  String       @db.Text
+  npc   WarcraftNpc? @relation(fields: [npcId], references: [npcId])
+  npcId Int?
 
   // 0 classic, 2 wrath, 99 turtle
   expansion Int

@@ -3,7 +3,7 @@ import { type GetServerSideProps, type NextPage } from "next";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { type z } from "zod";
+import { z } from "zod";
 import { InfoPopover } from "~/components/info-popover";
 import SidebarLayout from "~/components/sidebar-layout";
 import SeedSoundUploader from "~/components/seed-sound-uploader";
@@ -34,6 +34,7 @@ import ThreeDotsFade from "~/components/spinner";
 import { useGlobalAudioPlayer } from "react-use-audio-player";
 
 type ServerProps = {
+  voiceModelId: string;
   similarity: number;
   stability: number;
   style: number;
@@ -44,9 +45,18 @@ type ServerProps = {
 export const getServerSideProps: GetServerSideProps<ServerProps> = async (
   ctx,
 ) => {
-  const voiceModelId = (ctx.query.voiceModelId ?? "") as string;
+  const voiceModelId = z
+    .string()
+    .uuid()
+    .safeParse(ctx.query?.voiceModelId);
+  if (!voiceModelId.success) {
+    return {
+      notFound: true,
+    };
+  }
+
   const voiceModel = await prisma.voiceModel.findUnique({
-    where: { id: voiceModelId },
+    where: { id: voiceModelId.data },
     select: {
       elevenLabsModelId: true,
       elevenLabsSimilarityBoost: true,
@@ -75,6 +85,7 @@ export const getServerSideProps: GetServerSideProps<ServerProps> = async (
 
   return {
     props: {
+      voiceModelId: voiceModelId.data,
       modelName: voiceModel.elevenLabsModelId,
       similarity: voiceModel.elevenLabsSimilarityBoost,
       stability: voiceModel.elevenLabsStability,
@@ -86,8 +97,7 @@ export const getServerSideProps: GetServerSideProps<ServerProps> = async (
 
 const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
   const router = useRouter();
-  // validate this better later, possibly serverside before rendering the page
-  const voiceModelId = (router.query.voiceModelId ?? "") as string;
+  const voiceModelId = serverProps.voiceModelId;
 
   const generateTestSound = api.voices.generateTestSound.useMutation();
   const updateVoiceGenerationSettings =
