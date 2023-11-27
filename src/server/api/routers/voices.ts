@@ -128,6 +128,12 @@ export const voicesRouter = createTRPCRouter({
           soundFileJoins: {
             include: { seedSound: { select: { name: true } } },
           },
+          voice: {
+            include: {
+              warcraftNpcDisplay: true,
+              uniqueWarcraftNpc: true,
+            },
+          },
         },
       });
 
@@ -144,9 +150,67 @@ export const voicesRouter = createTRPCRouter({
           active: it.active,
         }));
 
+      const warcraftDisplayName =
+        voiceModel.voice.warcraftNpcDisplay?.voiceName;
+      const uniqueWarcraftNpcName = voiceModel.voice.uniqueWarcraftNpc?.name;
+
       return {
         seedSounds: sortedSeedSounds,
+        warcraftDisplayName,
+        uniqueWarcraftNpcName,
       };
+    }),
+  updateWarcraftLink: privateProcedure
+    .input(
+      z.object({
+        voiceModelId: z.string(),
+        warcraftNpcDisplayId: z.string().optional(),
+        uniqueWarcraftNpcId: z.string().optional(),
+        clientSide: z
+          .object({
+            name: z.string().optional(), // helpful clientside for optimistic updates
+          })
+          .optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (input.warcraftNpcDisplayId && input.uniqueWarcraftNpcId) {
+        throw new Error(
+          "Both warcraftNpcDisplayId and uniqueWarcraftNpcId cannot be filled at the same time",
+        );
+      }
+      const voiceModel = await ctx.prisma.voiceModel.findFirstOrThrow({
+        where: {
+          id: input.voiceModelId,
+          voice: { ownerUserId: ctx.userId },
+        },
+      });
+
+      await ctx.prisma.voice.update({
+        where: {
+          id: voiceModel.voiceId,
+          ownerUserId: ctx.userId,
+          modelVersions: {
+            none: { published: true },
+          },
+        },
+        data: {
+          warcraftNpcDisplay: input.warcraftNpcDisplayId
+            ? {
+                connect: { id: input.warcraftNpcDisplayId },
+              }
+            : {
+                disconnect: true,
+              },
+          uniqueWarcraftNpc: input.uniqueWarcraftNpcId
+            ? {
+                connect: { id: input.uniqueWarcraftNpcId },
+              }
+            : {
+                disconnect: true,
+              },
+        },
+      });
     }),
 
   postVoiceModel: privateProcedure

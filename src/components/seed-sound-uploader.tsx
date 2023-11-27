@@ -38,6 +38,9 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
       await utils.voices.getVoiceModelWorkspace.cancel();
 
       utils.voices.getVoiceModelWorkspace.setData({ voiceModelId }, (old) => {
+        if (!old) {
+          return old;
+        }
         const newSounds = old?.seedSounds.map((sound) => {
           if (sound.id != seedSoundId) {
             return sound;
@@ -68,6 +71,9 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
     async onSuccess(data) {
       await utils.voices.getVoiceModelWorkspace.cancel();
       utils.voices.getVoiceModelWorkspace.setData({ voiceModelId }, (old) => {
+        if (!old) {
+          return old;
+        }
         return {
           ...old,
           seedSounds: [
@@ -115,11 +121,6 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
   const numActiveSounds = useMemo(
     () => activeSeedSounds?.length ?? 0,
     [activeSeedSounds?.length],
-  );
-
-  const numInactiveSounds = useMemo(
-    () => inactiveSeedSounds?.length ?? 0,
-    [inactiveSeedSounds?.length],
   );
 
   const onDropAccepted = useCallback(
@@ -221,9 +222,6 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
             </div>
           )}
         </div>
-        <span className="select-none text-center text-sm text-slate-500">
-          {numInactiveSounds} inactive samples
-        </span>
       </div>
       <div className="col-span-2 flex h-full flex-col space-y-2 overflow-hidden">
         <div ref={activeDrop} className="relative h-full rounded-md border p-2">
@@ -239,10 +237,6 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
               ))}
           </div>
         </div>
-        <span className="select-none text-center text-sm text-slate-500">
-          {numActiveSounds} / {env.NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES}{" "}
-          samples active
-        </span>
       </div>
     </div>
   );

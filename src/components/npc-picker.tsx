@@ -2,8 +2,9 @@
 
 import { useDebounce } from "@uidotdev/usehooks";
 import { User } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
+import ThreeDotsFade from "~/components/spinner";
 import {
   CommandDialog,
   CommandEmpty,
@@ -13,55 +14,38 @@ import {
   CommandList,
   CommandSeparator,
 } from "~/components/ui/command";
-import { useOpenSearch } from "~/hooks/open-search-hook";
 import { api } from "~/utils/api";
 import { isEmpty } from "~/utils/array-util";
-import ThreeDotsFade from "~/components/spinner";
-import { useRouter } from "next/router";
 
-const CommandBar: React.FC = () => {
-  const router = useRouter();
-  const { open, setOpen } = useOpenSearch();
+type Props = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  onSelectNPC: (id: string, name: string) => void;
+  onSelectCharacterModel: (id: string, name: string) => void;
+};
 
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "p" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpen((open) => !open);
-      }
-    };
-
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
-  }, [setOpen]);
-
+const NPCPicker: React.FC<Props> = (props) => {
   const [input, setInput] = useState("");
   const debouncedInput = useDebounce(input, 400);
   const isDebouncedInputEmpty = debouncedInput == "";
   const search = api.search.search.useQuery(
     { query: debouncedInput },
-    { enabled: open && !isDebouncedInputEmpty, staleTime: Infinity },
+    { enabled: props.open && !isDebouncedInputEmpty, staleTime: Infinity },
   );
 
   const hasNPCs = !isEmpty(search.data?.npcs);
   const hasModels = !isEmpty(search.data?.characterModels);
 
-  const onSelectNPC = (id: string) => {
-    void router.push(`/npcs/${id}`);
-    setOpen(false);
-  };
-
-  const onSelectCharacterModel = (id: string) => {
-    void router.push(`/charactermodels/${id}`);
-    setOpen(false);
-  };
-
   return (
-    <CommandDialog shouldFilter={false} open={open} onOpenChange={setOpen}>
+    <CommandDialog
+      shouldFilter={false}
+      open={props.open}
+      onOpenChange={props.setOpen}
+    >
       <CommandInput
         value={input}
         onValueChange={setInput}
-        placeholder="Type a command or search..."
+        placeholder="Link a new NPC or Character Model"
       />
       <CommandList>
         {/* {search.isFetching && (
@@ -81,7 +65,7 @@ const CommandBar: React.FC = () => {
               <CommandItem
                 key={npc.id}
                 value={npc.name}
-                onSelect={() => onSelectNPC(npc.id)}
+                onSelect={() => props.onSelectNPC(npc.id, npc.name)}
               >
                 <User className="mr-2 h-4 w-4" />
                 <span>{npc.name}</span>
@@ -97,7 +81,12 @@ const CommandBar: React.FC = () => {
               <CommandItem
                 key={characterModel.id}
                 value={characterModel.voiceName}
-                onSelect={() => onSelectCharacterModel(characterModel.id)}
+                onSelect={() =>
+                  props.onSelectCharacterModel(
+                    characterModel.id,
+                    characterModel.voiceName,
+                  )
+                }
               >
                 <User className="mr-2 h-4 w-4" />
                 <span>{characterModel.voiceName}</span>
@@ -110,4 +99,4 @@ const CommandBar: React.FC = () => {
   );
 };
 
-export default CommandBar;
+export default NPCPicker;

@@ -3,7 +3,7 @@ import { type AppType } from "next/app";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { AudioSeekBar } from "~/components/audio-seek-bar";
-import { CommandBar } from "~/components/command-bar";
+import CommandBar from "~/components/command-bar";
 import { Toaster } from "~/components/ui/toaster";
 import { OpenSearchProvider } from "~/hooks/open-search-hook";
 import "~/styles/globals.css";
