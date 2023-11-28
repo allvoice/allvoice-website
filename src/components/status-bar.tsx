@@ -4,9 +4,23 @@ import { env } from "~/env.mjs";
 import { api } from "~/utils/api";
 import { Button } from "./ui/button";
 import NPCPicker from "./npc-picker";
+import { Pause, Play } from "lucide-react";
+import { AudioSeekBar } from "./audio-seek-bar";
+import { useGlobalAudioPlayer } from "react-use-audio-player";
+import { cn } from "~/utils/ui";
 
-const EditorStatusBar: React.FC = () => {
+type Props = {
+  className?: string;
+};
+
+const StatusBar: React.FC<Props> = ({ className }) => {
   const router = useRouter();
+
+  const isVoiceModelEditPage =
+    router.pathname === "/voicemodels/[voiceModelId]/edit";
+  const isVoiceModelPostPage =
+    router.pathname === "/voicemodels/[voiceModelId]/post";
+
   const voiceModelId = (router.query.voiceModelId ?? "") as string;
   const workspace = api.voices.getVoiceModelWorkspace.useQuery(
     {
@@ -47,6 +61,7 @@ const EditorStatusBar: React.FC = () => {
   );
   const utils = api.useUtils();
 
+  const getUserDetails = api.users.getUserDetails.useQuery();
   const updateWarcraftLink = api.voices.updateWarcraftLink.useMutation({
     onMutate: async ({
       voiceModelId,
@@ -105,6 +120,8 @@ const EditorStatusBar: React.FC = () => {
     setOpen(false);
   };
 
+  const { playing, togglePlayPause } = useGlobalAudioPlayer();
+
   return (
     <>
       <NPCPicker
@@ -113,20 +130,53 @@ const EditorStatusBar: React.FC = () => {
         onSelectNPC={onSelectNPC}
         onSelectCharacterModel={onSelectCharacterModel}
       />
-      <div className="flex h-6 w-full justify-between overflow-hidden  border-t bg-slate-50 px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center">
-          <Button
-            className="w-fit select-none px-1 font-normal text-slate-500 hover:bg-slate-200"
-            variant={"ghost"}
-            onClick={() => setOpen(true)}
-            disabled={updateWarcraftLink.isPending}
-          >
-            {pickerText}
-          </Button>
+      <div
+        className={cn(
+          "flex h-6 w-full items-center justify-between space-x-6 overflow-hidden border-t bg-slate-50 px-3 sm:px-6 lg:px-8",
+          className,
+        )}
+      >
+        <div className="flex ">
+          {(isVoiceModelEditPage || isVoiceModelPostPage) && (
+            <Button
+              className="w-fit select-none whitespace-nowrap px-1 font-normal text-slate-500 hover:bg-slate-200"
+              variant={"ghost"}
+              onClick={() => setOpen(true)}
+              disabled={updateWarcraftLink.isPending}
+            >
+              {pickerText}
+            </Button>
+          )}
         </div>
-        <div className="flex items-center">
-          <span className="w-fit select-none text-center text-sm text-slate-500">
-            {`Samples: ${numInactiveSounds} inactive, ${numActiveSounds}/${env.NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES} active`}
+
+        <div className="flex h-full w-full max-w-lg items-center">
+          <Button
+            onClick={togglePlayPause}
+            variant={"ghost"}
+            className="w-fit select-none px-2 hover:bg-slate-200"
+          >
+            {playing ? (
+              <Pause className="h-2 w-2 fill-slate-500 text-slate-500" />
+            ) : (
+              <Play className="h-2 w-2 fill-slate-500 text-slate-500" />
+            )}
+          </Button>
+
+          <AudioSeekBar className="grow" />
+        </div>
+        <div className="flex space-x-6">
+          {isVoiceModelEditPage && (
+            <span className="w-fit whitespace-nowrap text-center text-sm text-slate-500">
+              {`Samples: ${numInactiveSounds} inactive, ${numActiveSounds}/${env.NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES} active`}
+            </span>
+          )}
+          <span className="w-fit whitespace-nowrap text-center text-sm text-slate-500">
+            {!getUserDetails.data
+              ? "Remaining Characters: Loading..."
+              : `Remaining Characters: ${
+                  getUserDetails.data?.characterQuota -
+                  getUserDetails.data?.characterQuotaUsed
+                }`}
           </span>
         </div>
       </div>
@@ -134,4 +184,4 @@ const EditorStatusBar: React.FC = () => {
   );
 };
 
-export default EditorStatusBar;
+export default StatusBar;

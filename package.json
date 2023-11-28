@@ -54,6 +54,7 @@
     "cmdk": "^0.2.0",
     "csv-parser": "^3.0.0",
     "form-data": "^4.0.0",
+    "lodash": "^4.17.21",
     "lru-cache": "^10.1.0",
     "lucide-react": "^0.293.0",
     "next": "^14.0.3",
@@ -74,6 +75,7 @@
   "devDependencies": {
     "@types/cli-progress": "^3.11.5",
     "@types/eslint": "^8.44.7",
+    "@types/lodash": "^4.14.202",
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.39",
     "@types/react-dom": "^18.2.17",

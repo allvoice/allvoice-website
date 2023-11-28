@@ -19,8 +19,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  username                 String? @unique
-  elevenlabsCharacterQuota Int     @default(30000) @db.UnsignedInt
+  username String? @unique
+
+  elevenlabsCharacterQuotaUsed Int @default(0)
+  elevenlabsCharacterQuota     Int @default(30000)
 
   favorites  Favorite[]
   votes      Vote[]

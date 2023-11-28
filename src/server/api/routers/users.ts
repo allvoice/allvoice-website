@@ -8,7 +8,11 @@ export const usersRouter = createTRPCRouter({
       where: { id: ctx.userId },
     });
 
-    return { username: user.username };
+    return {
+      username: user.username,
+      characterQuota: user.elevenlabsCharacterQuota,
+      characterQuotaUsed: user.elevenlabsCharacterQuotaUsed,
+    };
   }),
 
   updateUser: privateProcedure

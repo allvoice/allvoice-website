@@ -18,3 +18,35 @@ export const prisma =
   });
 
 if (env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+export async function recordUsedCharacterQuota(
+  userId: string,
+  charactersUsed: number,
+) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      elevenlabsCharacterQuotaUsed: {
+        increment: charactersUsed,
+      },
+    },
+  });
+}
+
+export async function checkCharacterQuota(
+  userId: string,
+  charactersToGenerate: number,
+) {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: {
+      elevenlabsCharacterQuota: true,
+      elevenlabsCharacterQuotaUsed: true,
+    },
+  });
+
+  return (
+    user.elevenlabsCharacterQuota - user.elevenlabsCharacterQuotaUsed >=
+    charactersToGenerate
+  );
+}

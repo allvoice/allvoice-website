@@ -7,10 +7,15 @@ import {
   privateProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
+import { checkCharacterQuota, recordUsedCharacterQuota } from "~/server/db";
 import { elevenLabsManager } from "~/server/elevenlabs-api";
 import { PREVIEW_TEXTS } from "~/server/preview-text";
 import { getPublicUrl, s3Client } from "~/server/s3";
 import { voiceEditFormSchema } from "~/utils/schema";
+import {
+  getFirstNSentences,
+  renderWarcraftTemplate,
+} from "~/utils/warcraft-template-util";
 
 export const voicesRouter = createTRPCRouter({
   listVoices: publicProcedure
@@ -272,6 +277,8 @@ export const voicesRouter = createTRPCRouter({
           },
         );
 
+        await recordUsedCharacterQuota(ctx.userId, previewText.text.length);
+
         const genKey = `preview/${uuidv4()}`;
 
         const putObjectCommand = new PutObjectCommand({
@@ -318,11 +325,22 @@ export const voicesRouter = createTRPCRouter({
         },
       });
 
+      const updateVoiceModelParamsPromise = ctx.prisma.voiceModel.update({
+        where: { id: input.voiceModelId },
+        data: {
+          elevenLabsModelId: input.formData.modelName,
+          elevenLabsSimilarityBoost: input.formData.similarity,
+          elevenLabsStability: input.formData.stability,
+          elevenLabsSpeakerBoost: input.formData.speakerBoost,
+          elevenLabsStyle: input.formData.style,
+        },
+      });
+
       const seedBucketKeys = voiceModel.soundFileJoins.map(
         (join) => join.seedSound.bucketKey,
       );
 
-      let textToGenerate;
+      let warcraftTemplate;
       if (voiceModel.voice.uniqueWarcraftNpcId) {
         const uniqueNpc = await ctx.prisma.uniqueWarcraftNpc.findUnique({
           where: { id: voiceModel.voice.uniqueWarcraftNpcId },
@@ -333,7 +351,7 @@ export const voicesRouter = createTRPCRouter({
             },
           },
         });
-        textToGenerate = uniqueNpc?.npcs?.[0]?.rawVoicelines?.[0]?.text;
+        warcraftTemplate = uniqueNpc?.npcs?.[0]?.rawVoicelines?.[0]?.text;
       } else if (voiceModel.voice.wacraftNpcDisplayId) {
         const warcraftNpcDisplay =
           await ctx.prisma.wacraftNpcDisplay.findUnique({
@@ -351,40 +369,41 @@ export const voicesRouter = createTRPCRouter({
               },
             },
           });
-        textToGenerate =
+        warcraftTemplate =
           warcraftNpcDisplay?.npcs?.[0]?.npc?.rawVoicelines?.[0]?.text;
       }
 
-      if (!textToGenerate) {
+      if (!warcraftTemplate) {
         throw new Error(
           "Could not find text to generate. Select a character model or npc.",
         );
       }
-      const firstSentence = textToGenerate.split(/(?<=[.!?])\s/)[0];
 
-      if (!firstSentence) {
+      const renderedTexts = renderWarcraftTemplate(warcraftTemplate);
+      const renderedText = renderedTexts.text;
+
+      const textToGenerate = getFirstNSentences(renderedText, 2);
+
+      if (!textToGenerate) {
         throw new Error(
-          "First sentence regex failed for text: " + textToGenerate,
+          "First sentence regex failed for text: " + renderedText,
         );
       }
-      await ctx.prisma.voiceModel.update({
-        where: { id: input.voiceModelId },
-        data: {
-          elevenLabsModelId: input.formData.modelName,
-          elevenLabsSimilarityBoost: input.formData.similarity,
-          elevenLabsStability: input.formData.stability,
-          elevenLabsSpeakerBoost: input.formData.speakerBoost,
-          elevenLabsStyle: input.formData.style,
-        },
-      });
 
+      const hasEnoughQuota = await checkCharacterQuota(
+        ctx.userId,
+        textToGenerate.length,
+      );
+      if (!hasEnoughQuota) {
+        throw new Error("Not enough quota to generate");
+      }
       const ttsResponse = await elevenLabsManager.textToSpeechStream(
         {
           name: input.voiceModelId,
           bucketKeys: seedBucketKeys,
         },
         {
-          text: firstSentence,
+          text: textToGenerate,
           modelId: input.formData.modelName,
           generationSettings: {
             similarity_boost: input.formData.similarity,
@@ -393,6 +412,10 @@ export const voicesRouter = createTRPCRouter({
             use_speaker_boost: input.formData.speakerBoost,
           },
         },
+      );
+      const recordQuotaPromise = recordUsedCharacterQuota(
+        ctx.userId,
+        textToGenerate.length,
       );
 
       const genKey = `testgen/${uuidv4()}`;
@@ -406,6 +429,8 @@ export const voicesRouter = createTRPCRouter({
       });
 
       await s3Client.send(putObjectCommand);
+      await updateVoiceModelParamsPromise;
+      await recordQuotaPromise;
 
       return getPublicUrl(genKey);
     }),
@@ -414,7 +439,7 @@ export const voicesRouter = createTRPCRouter({
     .input(
       z.object({
         voiceModelId: z.string(),
-        formData: voiceEditFormSchema,
+        formData: voiceEditFormSchema.deepPartial(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

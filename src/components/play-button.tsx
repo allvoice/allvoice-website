@@ -8,7 +8,8 @@ import { cn } from "~/utils/ui";
 export const PlayButton: React.FC<{
   soundUrl: string;
   className?: string;
-}> = ({ soundUrl, className }) => {
+  dark?: boolean;
+}> = ({ soundUrl, className, dark = false }) => {
   const { load, src, stop, playing } = useGlobalAudioPlayer();
 
   const isPlayingThis = useMemo(
@@ -25,12 +26,12 @@ export const PlayButton: React.FC<{
     <Button
       className={cn("rounded-md px-2 py-2 ", className)}
       onClick={isPlayingThis ? stopSound : playSound}
-      variant="ghost"
+      variant={dark ? undefined : "ghost"}
     >
       {isPlayingThis ? (
-        <Pause className="h-5 w-5 text-black" />
+        <Pause className={cn("h-5 w-5", dark ? "text-white" : "text-black")} />
       ) : (
-        <Play className="h-5 w-5 text-black" />
+        <Play className={cn("h-5 w-5", dark ? "text-white" : "text-black")} />
       )}
     </Button>
   );

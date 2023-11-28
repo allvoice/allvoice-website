@@ -1,12 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { throttle } from "lodash";
 import { type GetServerSideProps, type NextPage } from "next";
 import { useRouter } from "next/router";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { type DeepPartial, useForm } from "react-hook-form";
+import { useGlobalAudioPlayer } from "react-use-audio-player";
 import { z } from "zod";
 import { InfoPopover } from "~/components/info-popover";
-import SidebarLayout from "~/components/sidebar-layout";
+import { PlayButton } from "~/components/play-button";
 import SeedSoundUploader from "~/components/seed-sound-uploader";
+import SidebarLayout from "~/components/sidebar-layout";
+import ThreeDotsFade from "~/components/spinner";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
 import {
@@ -26,12 +30,9 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Slider } from "~/components/ui/slider";
+import { prisma } from "~/server/db";
 import { api } from "~/utils/api";
 import { voiceEditFormSchema } from "~/utils/schema";
-import { prisma } from "~/server/db";
-import { PlayButton } from "~/components/play-button";
-import ThreeDotsFade from "~/components/spinner";
-import { useGlobalAudioPlayer } from "react-use-audio-player";
 
 type ServerProps = {
   voiceModelId: string;
@@ -98,8 +99,13 @@ export const getServerSideProps: GetServerSideProps<ServerProps> = async (
 const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
   const router = useRouter();
   const voiceModelId = serverProps.voiceModelId;
+  const utils = api.useUtils();
 
-  const generateTestSound = api.voices.generateTestSound.useMutation();
+  const generateTestSound = api.voices.generateTestSound.useMutation({
+    onSettled() {
+      void utils.users.getUserDetails.invalidate(undefined);
+    },
+  });
   const updateVoiceGenerationSettings =
     api.voices.updateVoiceGenerationSettings.useMutation();
   const { load } = useGlobalAudioPlayer();
@@ -137,6 +143,23 @@ const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
     });
     await router.push(`/voicemodels/${voiceModelId}/post`);
   });
+
+  useEffect(() => {
+    const throttledCb = throttle(
+      (data: DeepPartial<z.infer<typeof voiceEditFormSchema>>) => {
+        updateVoiceGenerationSettings.mutate({
+          voiceModelId: voiceModelId,
+          formData: data,
+        });
+      },
+      1000,
+    );
+
+    const subscription = form.watch((value) => throttledCb(value));
+
+    return () => subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.watch, updateVoiceGenerationSettings.mutate, voiceModelId]);
 
   return (
     <SidebarLayout
@@ -332,7 +355,7 @@ const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
               </Button>
               {testGeneratedSoundUrl && (
                 <div>
-                  <PlayButton soundUrl={testGeneratedSoundUrl} />
+                  <PlayButton soundUrl={testGeneratedSoundUrl} dark={true} />
                 </div>
               )}
             </div>
@@ -366,6 +389,3 @@ const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
 };
 
 export default VoiceEdit;
-{
-  /* <div className="px-4 sm:px-6 lg:px-8"></div> */
-}
