@@ -161,7 +161,7 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
             </Link>
 
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
-              by Author&apos;s Name
+              by {voice.ownerUser.username ?? "unknown"}
             </p>
 
             {voice.uniqueWarcraftNpc && (

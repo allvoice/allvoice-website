@@ -26,6 +26,12 @@ export const voicesRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const voices = await ctx.prisma.voice.findMany({
         include: {
+          ownerUser: {
+            select: {
+              id: true,
+              username: true,
+            },
+          },
           modelVersions: {
             include: {
               previewSounds: true,
