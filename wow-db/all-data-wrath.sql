@@ -56,7 +56,7 @@ creature_data AS (
         cdie.DisplayRaceID
     FROM creature_template ct
         JOIN db_CreatureDisplayInfo cdi ON ct.ModelId1 = cdi.ID
-        JOIN db_CreatureDisplayInfoExtra cdie ON cdi.ExtendedDisplayInfoID = cdie.ID
+        left JOIN db_CreatureDisplayInfoExtra cdie ON cdi.ExtendedDisplayInfoID = cdie.ID
         LEFT JOIN collected_gossip_menus cgm ON cgm.base_menu_id = ct.GossipMenuId
 ),
 gameobject_data AS (
@@ -107,13 +107,7 @@ FROM
 JOIN quest_template qt ON qr.quest = qt.entry
 JOIN creature_template ct ON qr.creature_id = ct.entry
 JOIN db_CreatureDisplayInfo cdi ON ct.ModelId1 = cdi.ID
-JOIN db_CreatureDisplayInfoExtra cdie ON cdi.ExtendedDisplayInfoID = cdie.ID
-WHERE
-    (
-        (qr.source = 'accept' AND qt.Details IS NOT NULL AND qt.Details != '')
-        OR (qr.source = 'progress' AND qt.RequestItemsText IS NOT NULL AND qt.RequestItemsText != '')
-        OR (qr.source = 'complete' AND qt.OfferRewardText IS NOT NULL AND qt.OfferRewardText != '')
-    )
+left JOIN db_CreatureDisplayInfoExtra cdie ON cdi.ExtendedDisplayInfoID = cdie.ID
 
 -- GameObject QuestGivers
 
@@ -137,12 +131,6 @@ FROM
     gameobject_quest_relations qr
 JOIN quest_template qt ON qr.quest = qt.entry
 JOIN gameobject_template gt ON qr.gameobject_id = gt.entry
-WHERE
-    (
-        (qr.source = 'accept' AND qt.Details IS NOT NULL AND qt.Details != '')
-        OR (qr.source = 'progress' AND qt.RequestItemsText IS NOT NULL AND qt.RequestItemsText != '')
-        OR (qr.source = 'complete' AND qt.OfferRewardText IS NOT NULL AND qt.OfferRewardText != '')
-    )
 
 -- Item QuestGivers
 
@@ -162,10 +150,7 @@ FROM
     item_quest_relations qr
 JOIN quest_template qt ON qr.quest = qt.entry
 JOIN item_template it ON qr.item_id = it.entry
-WHERE
-    (
-        (qr.source = 'accept' AND qt.Details IS NOT NULL AND qt.Details != '')
-    )
+
 
 -- Creature Gossip
 
@@ -175,15 +160,31 @@ SELECT
     'gossip' as source,
     '' as quest,
     '' as quest_title,
-      ELT(numbers.n + 1,
-        IF(creature_data.DisplaySexID = 0, nt.text0_0, nt.text0_1),
-        IF(creature_data.DisplaySexID = 0, nt.text1_0, nt.text1_1),
-        IF(creature_data.DisplaySexID = 0, nt.text2_0, nt.text2_1),
-        IF(creature_data.DisplaySexID = 0, nt.text3_0, nt.text3_1),
-        IF(creature_data.DisplaySexID = 0, nt.text4_0, nt.text4_1),
-        IF(creature_data.DisplaySexID = 0, nt.text5_0, nt.text5_1),
-        IF(creature_data.DisplaySexID = 0, nt.text6_0, nt.text6_1),
-        IF(creature_data.DisplaySexID = 0, nt.text7_0, nt.text7_1)
+    ELT(numbers.n + 1,
+        IF(creature_data.DisplaySexID IS NULL,
+           COALESCE(NULLIF(nt.text0_0, ''), NULLIF(nt.text0_1, '')),
+           IF(creature_data.DisplaySexID = 0, nt.text0_0, nt.text0_1)),
+        IF(creature_data.DisplaySexID IS NULL,
+           COALESCE(NULLIF(nt.text1_0, ''), NULLIF(nt.text1_1, '')),
+           IF(creature_data.DisplaySexID = 0, nt.text1_0, nt.text1_1)),
+        IF(creature_data.DisplaySexID IS NULL,
+           COALESCE(NULLIF(nt.text2_0, ''), NULLIF(nt.text2_1, '')),
+           IF(creature_data.DisplaySexID = 0, nt.text2_0, nt.text2_1)),
+        IF(creature_data.DisplaySexID IS NULL,
+           COALESCE(NULLIF(nt.text3_0, ''), NULLIF(nt.text3_1, '')),
+           IF(creature_data.DisplaySexID = 0, nt.text3_0, nt.text3_1)),
+        IF(creature_data.DisplaySexID IS NULL,
+           COALESCE(NULLIF(nt.text4_0, ''), NULLIF(nt.text4_1, '')),
+           IF(creature_data.DisplaySexID = 0, nt.text4_0, nt.text4_1)),
+        IF(creature_data.DisplaySexID IS NULL,
+           COALESCE(NULLIF(nt.text5_0, ''), NULLIF(nt.text5_1, '')),
+           IF(creature_data.DisplaySexID = 0, nt.text5_0, nt.text5_1)),
+        IF(creature_data.DisplaySexID IS NULL,
+           COALESCE(NULLIF(nt.text6_0, ''), NULLIF(nt.text6_1, '')),
+           IF(creature_data.DisplaySexID = 0, nt.text6_0, nt.text6_1)),
+        IF(creature_data.DisplaySexID IS NULL,
+           COALESCE(NULLIF(nt.text7_0, ''), NULLIF(nt.text7_1, '')),
+           IF(creature_data.DisplaySexID = 0, nt.text7_0, nt.text7_1))
     ) AS text,
     creature_data.DisplayRaceID,
     creature_data.DisplaySexID,
@@ -193,27 +194,7 @@ SELECT
 FROM creature_data
     CROSS JOIN numbers
     JOIN npc_text nt ON nt.ID = creature_data.text_id
-WHERE
-    ELT(numbers.n + 1,
-        IF(creature_data.DisplaySexID = 0, nt.text0_0, nt.text0_1),
-        IF(creature_data.DisplaySexID = 0, nt.text1_0, nt.text1_1),
-        IF(creature_data.DisplaySexID = 0, nt.text2_0, nt.text2_1),
-        IF(creature_data.DisplaySexID = 0, nt.text3_0, nt.text3_1),
-        IF(creature_data.DisplaySexID = 0, nt.text4_0, nt.text4_1),
-        IF(creature_data.DisplaySexID = 0, nt.text5_0, nt.text5_1),
-        IF(creature_data.DisplaySexID = 0, nt.text6_0, nt.text6_1),
-        IF(creature_data.DisplaySexID = 0, nt.text7_0, nt.text7_1)
-    ) IS NOT NULL AND
-    ELT(numbers.n + 1,
-        IF(creature_data.DisplaySexID = 0, nt.text0_0, nt.text0_1),
-        IF(creature_data.DisplaySexID = 0, nt.text1_0, nt.text1_1),
-        IF(creature_data.DisplaySexID = 0, nt.text2_0, nt.text2_1),
-        IF(creature_data.DisplaySexID = 0, nt.text3_0, nt.text3_1),
-        IF(creature_data.DisplaySexID = 0, nt.text4_0, nt.text4_1),
-        IF(creature_data.DisplaySexID = 0, nt.text5_0, nt.text5_1),
-        IF(creature_data.DisplaySexID = 0, nt.text6_0, nt.text6_1),
-        IF(creature_data.DisplaySexID = 0, nt.text7_0, nt.text7_1)
-    ) != ''
+
 -- GameObject Gossip
 
 UNION ALL
@@ -239,27 +220,6 @@ SELECT DISTINCT
 FROM gameobject_data
     CROSS JOIN numbers
     JOIN npc_text nt ON nt.ID = gameobject_data.text_id
-WHERE
-    ELT(numbers.n + 1,
-        IF(nt.text0_0 IS NOT NULL AND nt.text0_0 != '', nt.text0_0, nt.text0_1),
-        IF(nt.text1_0 IS NOT NULL AND nt.text1_0 != '', nt.text1_0, nt.text1_1),
-        IF(nt.text2_0 IS NOT NULL AND nt.text2_0 != '', nt.text2_0, nt.text2_1),
-        IF(nt.text3_0 IS NOT NULL AND nt.text3_0 != '', nt.text3_0, nt.text3_1),
-        IF(nt.text4_0 IS NOT NULL AND nt.text4_0 != '', nt.text4_0, nt.text4_1),
-        IF(nt.text5_0 IS NOT NULL AND nt.text5_0 != '', nt.text5_0, nt.text5_1),
-        IF(nt.text6_0 IS NOT NULL AND nt.text6_0 != '', nt.text6_0, nt.text6_1),
-        IF(nt.text7_0 IS NOT NULL AND nt.text7_0 != '', nt.text7_0, nt.text7_1)
-    ) IS NOT NULL AND
-    ELT(numbers.n + 1,
-        IF(nt.text0_0 IS NOT NULL AND nt.text0_0 != '', nt.text0_0, nt.text0_1),
-        IF(nt.text1_0 IS NOT NULL AND nt.text1_0 != '', nt.text1_0, nt.text1_1),
-        IF(nt.text2_0 IS NOT NULL AND nt.text2_0 != '', nt.text2_0, nt.text2_1),
-        IF(nt.text3_0 IS NOT NULL AND nt.text3_0 != '', nt.text3_0, nt.text3_1),
-        IF(nt.text4_0 IS NOT NULL AND nt.text4_0 != '', nt.text4_0, nt.text4_1),
-        IF(nt.text5_0 IS NOT NULL AND nt.text5_0 != '', nt.text5_0, nt.text5_1),
-        IF(nt.text6_0 IS NOT NULL AND nt.text6_0 != '', nt.text6_0, nt.text6_1),
-        IF(nt.text7_0 IS NOT NULL AND nt.text7_0 != '', nt.text7_0, nt.text7_1)
-    ) != ''
 
 -- Creature QuestGreetings
 
@@ -314,3 +274,5 @@ SELECT
     id
 
 FROM ALL_DATA
+
+where text is not null and text != ''

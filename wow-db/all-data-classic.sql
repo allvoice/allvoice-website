@@ -56,7 +56,7 @@ creature_data AS (
         cdie.DisplayRaceID
     FROM creature_template ct
         JOIN db_CreatureDisplayInfo cdi ON ct.display_id1 = cdi.ID
-        JOIN db_CreatureDisplayInfoExtra cdie ON cdi.ExtendedDisplayInfoID = cdie.ID
+        left JOIN db_CreatureDisplayInfoExtra cdie ON cdi.ExtendedDisplayInfoID = cdie.ID
         LEFT JOIN collected_gossip_menus cgm ON cgm.base_menu_id = ct.gossip_menu_id
 ),
 gameobject_data AS (
@@ -108,13 +108,7 @@ FROM
 JOIN quest_template qt ON qr.quest = qt.entry
 JOIN creature_template ct ON qr.creature_id = ct.entry
 JOIN db_CreatureDisplayInfo cdi ON ct.display_id1 = cdi.ID
-JOIN db_CreatureDisplayInfoExtra cdie ON cdi.ExtendedDisplayInfoID = cdie.ID
-WHERE
-    (
-        (qr.source = 'accept' AND qt.Details IS NOT NULL AND qt.Details != '')
-        OR (qr.source = 'progress' AND qt.RequestItemsText IS NOT NULL AND qt.RequestItemsText != '')
-        OR (qr.source = 'complete' AND qt.OfferRewardText IS NOT NULL AND qt.OfferRewardText != '')
-    )
+left JOIN db_CreatureDisplayInfoExtra cdie ON cdi.ExtendedDisplayInfoID = cdie.ID
 
 -- GameObject QuestGivers
 
@@ -139,12 +133,7 @@ FROM
     gameobject_quest_relations qr
 JOIN quest_template qt ON qr.quest = qt.entry
 JOIN gameobject_template gt ON qr.gameobject_id = gt.entry
-WHERE
-    (
-        (qr.source = 'accept' AND qt.Details IS NOT NULL AND qt.Details != '')
-        OR (qr.source = 'progress' AND qt.RequestItemsText IS NOT NULL AND qt.RequestItemsText != '')
-        OR (qr.source = 'complete' AND qt.OfferRewardText IS NOT NULL AND qt.OfferRewardText != '')
-    )
+
 
 -- Item QuestGivers
 
@@ -165,10 +154,6 @@ FROM
     item_quest_relations qr
 JOIN quest_template qt ON qr.quest = qt.entry
 JOIN item_template it ON qr.item_id = it.entry
-WHERE
-    (
-        (qr.source = 'accept' AND qt.Details IS NOT NULL AND qt.Details != '')
-    )
 
 -- Creature Gossip
 
@@ -178,7 +163,10 @@ SELECT
     'gossip' as source,
     '' as quest,
     '' as quest_title,
-    IF(creature_data.DisplaySexID = 0, bt.male_text, bt.female_text) AS text,
+    IF(creature_data.DisplaySexID IS NULL,
+       COALESCE(NULLIF(bt.male_text, ''), NULLIF(bt.female_text, '')),
+       IF(creature_data.DisplaySexID = 0, bt.male_text, bt.female_text)
+    ) AS text,
     bt.entry as broadcast_text_id,
     creature_data.DisplayRaceID,
     creature_data.DisplaySexID,
@@ -199,9 +187,7 @@ FROM creature_data
             WHEN 6 THEN nt.BroadcastTextID6
             WHEN 7 THEN nt.BroadcastTextID7
         END = bt.entry
-WHERE
-    (DisplaySexID = 0 AND bt.male_text IS NOT NULL AND bt.male_text != '')
-    OR (DisplaySexID = 1 AND bt.female_text IS NOT NULL AND bt.female_text != '')
+
 
 -- GameObject Gossip
 
@@ -232,9 +218,6 @@ FROM gameobject_data
             WHEN 6 THEN nt.BroadcastTextID6
             WHEN 7 THEN nt.BroadcastTextID7
         END = bt.entry
-WHERE
-    bt.male_text IS NOT NULL AND bt.male_text != '' OR
-    bt.female_text IS NOT NULL AND bt.female_text != ''
 
 -- Creature QuestGreetings
 
@@ -273,11 +256,11 @@ FROM gameobject_data
     JOIN quest_greeting qg ON qg.entry=gameobject_data.id AND type=1
 
 )
-#
-#   SELECT
-#       count(*),
-#       SUM(CHAR_LENGTH(text)) as total_characters
-#   FROM ALL_DATA
+
+# SELECT
+#   count(*),
+#   SUM(CHAR_LENGTH(text)) as total_characters
+# FROM ALL_DATA
 
 
 SELECT
@@ -291,3 +274,5 @@ SELECT
     type,
     id
 FROM ALL_DATA
+
+where text is not null and text != ''
