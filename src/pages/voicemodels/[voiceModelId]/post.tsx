@@ -1,11 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { GetServerSideProps, type NextPage } from "next";
+import { type GetServerSideProps, type NextPage } from "next";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import MainLayout from "~/components/main-layout";
 import SetUsernameDialog from "~/components/set-username-dialog";
-import { Button } from "~/components/ui/button";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "~/components/ui/alert";
+import { Button, LoadingButton } from "~/components/ui/button";
 import {
   Form,
   FormControl,
@@ -16,6 +18,10 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { api } from "~/utils/api";
+import { createServerSideHelpers } from "@trpc/react-query/server";
+import { appRouter } from "~/server/api/root";
+import superjson from "superjson";
+import { createTRPCSSRContext } from "~/server/api/trpc";
 
 const voicePostFormSchema = z.object({
   voiceTitle: z.string(),
@@ -39,9 +45,17 @@ export const getServerSideProps: GetServerSideProps<ServerProps> = async (
     };
   }
 
+  const helpers = createServerSideHelpers({
+    router: appRouter,
+    ctx: createTRPCSSRContext(context.req),
+    transformer: superjson,
+  });
+  await helpers.users.getUserDetails.prefetch()
+
   return {
     props: {
       voiceModelId: voiceModelId.data,
+      trpcState: helpers.dehydrate(),
     },
   };
 };
@@ -49,7 +63,16 @@ export const getServerSideProps: GetServerSideProps<ServerProps> = async (
 const VoicePost: NextPage<ServerProps> = ({ voiceModelId }) => {
   const router = useRouter();
 
-  const postVoice = api.voices.postVoiceModel.useMutation();
+  const postVoice = api.voices.postVoiceModel.useMutation(
+    {
+      onSuccess: async (respUrl) => {
+        await router.push(respUrl);
+      },
+    }
+  );
+  const getUserDetails = api.users.getUserDetails.useQuery();
+  const isUsernameSet = !!getUserDetails.data?.username;
+  const isPostable = !postVoice.isPending && isUsernameSet;
 
   const form = useForm<z.infer<typeof voicePostFormSchema>>({
     resolver: zodResolver(voicePostFormSchema),
@@ -57,17 +80,33 @@ const VoicePost: NextPage<ServerProps> = ({ voiceModelId }) => {
       voiceTitle: "",
     },
   });
-  const onSubmit = async (data: z.infer<typeof voicePostFormSchema>) => {
-    const url = await postVoice.mutateAsync({
+  const onSubmit = (data: z.infer<typeof voicePostFormSchema>) => {
+    if (!isPostable) return;
+    postVoice.mutate({
       voiceModelId: voiceModelId,
       voiceTitle: data.voiceTitle,
     });
-
-    await router.push(url);
   };
 
   return (
     <MainLayout>
+      {!isUsernameSet && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            <p className="mb-2">
+              You don&apos;t have a username. Set one before posting.
+            </p>
+            <SetUsernameDialog
+              triggerContent={
+                <Button variant="outline" className="text-black">
+                  Set Username
+                </Button>
+              }
+            />
+          </AlertDescription>
+        </Alert>
+      )}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
@@ -85,10 +124,16 @@ const VoicePost: NextPage<ServerProps> = ({ voiceModelId }) => {
             )}
           />
 
-          <Button type="submit">Post</Button>
+          <LoadingButton
+            loading={postVoice.isPending}
+            disabled={!isPostable}
+            disabledStyle={!isPostable}
+            type="submit"
+          >
+            Post
+          </LoadingButton>
         </form>
       </Form>
-      <SetUsernameDialog />
     </MainLayout>
   );
 };

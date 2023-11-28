@@ -15,7 +15,7 @@ import { api, type VoiceListElement, type VoiceListInput } from "~/utils/api";
 
 import Link from "next/link";
 import { PlayButton } from "./play-button";
-import { VoteType, type Vote, type UserFavorites } from "@prisma/client";
+import { VoteType, type Vote, type Favorite } from "@prisma/client";
 import { cn } from "~/utils/ui";
 import { useRouter } from "next/router";
 import ThreeDotsFade from "./spinner";
@@ -30,7 +30,7 @@ type Props = {
 
 const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
   const utils = api.useUtils();
-  const isBookmarked = voice.userFavoriteJoins?.[0] != null;
+  const isBookmarked = voice.favorites?.[0] != null;
   const currVote = voice.votes?.[0];
   const isUpvoted = currVote?.type == VoteType.UPVOTE;
   const isDownvoted = currVote?.type == VoteType.DOWNVOTE;
@@ -113,12 +113,12 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
           if (isBookmarked) {
             return {
               ...voice,
-              userFavoriteJoins: [],
+              favorites: [],
             };
           }
           return {
             ...voice,
-            userFavoriteJoins: [{} as UserFavorites],
+            favorites: [{} as Favorite],
           };
         });
 

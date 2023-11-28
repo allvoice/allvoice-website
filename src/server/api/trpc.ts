@@ -16,6 +16,7 @@
  */
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 
+import { type RequestLike } from "@clerk/nextjs/dist/types/server/types";
 import { getAuth } from "@clerk/nextjs/server";
 import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
@@ -30,6 +31,15 @@ import { prisma } from "~/server/db";
  */
 export const createTRPCContext = (opts: CreateNextContextOptions) => {
   const { req } = opts;
+  const { userId } = getAuth(req);
+
+  return {
+    prisma,
+    userId,
+  };
+};
+
+export const createTRPCSSRContext = (req: RequestLike) => {
   const { userId } = getAuth(req);
 
   return {

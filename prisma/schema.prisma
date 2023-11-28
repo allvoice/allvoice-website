@@ -19,7 +19,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  username String? @unique
+  username                 String? @unique
 
   favorites  Favorite[]
   votes      Vote[]

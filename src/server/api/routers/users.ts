@@ -1,9 +1,18 @@
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 import { z } from "zod";
+import { usernameSchema } from "~/utils/schema";
 
 export const usersRouter = createTRPCRouter({
-  updateUsername: privateProcedure
-    .input(z.object({ username: z.string() }))
+  getUserDetails: privateProcedure.query(async ({ ctx }) => {
+    const user = await ctx.prisma.user.findUniqueOrThrow({
+      where: { id: ctx.userId },
+    });
+
+    return { username: user.username };
+  }),
+
+  updateUser: privateProcedure
+    .input(z.object({ username: usernameSchema }))
     .mutation(async ({ ctx, input }) => {
       const { username } = input;
       const { userId } = ctx;
@@ -13,12 +22,19 @@ export const usersRouter = createTRPCRouter({
       });
 
       if (existingUser) {
-        throw new Error("Username is already taken");
+        return {
+          error: "username",
+          message: "Username is already taken",
+        };
       }
 
-      await ctx.prisma.user.update({
+      const user = await ctx.prisma.user.update({
         where: { id: userId },
         data: { username },
       });
+
+      return {
+        username: user.username,
+      };
     }),
 });

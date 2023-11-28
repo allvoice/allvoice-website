@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import ThreeDotsFade from "~/components/spinner";
 
 import { cn } from "~/utils/ui";
 
@@ -28,7 +29,7 @@ const buttonVariants = cva(
         icon: "h-10 w-10",
       },
       disabledStyle: {
-        opacity: "disabled:pointer-events-none disabled:opacity-50",
+        true: "disabled:pointer-events-none disabled:opacity-50",
       },
     },
     defaultVariants: {
@@ -45,11 +46,16 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  (
+    { className, variant, size, disabledStyle, asChild = false, ...props },
+    ref,
+  ) => {
     const Comp = asChild ? Slot : "button";
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(
+          buttonVariants({ variant, size, disabledStyle, className }),
+        )}
         ref={ref}
         {...props}
       />
@@ -57,5 +63,41 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   },
 );
 Button.displayName = "Button";
+interface LoadingButtonProps extends ButtonProps {
+  loading?: boolean;
+  spinnerClassName?: string;
+}
 
-export { Button, buttonVariants };
+const LoadingButton = React.forwardRef<HTMLButtonElement, LoadingButtonProps>(
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      loading = false,
+      spinnerClassName,
+      ...props
+    },
+    ref,
+  ) => {
+    const Comp = asChild ? Slot : "button";
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        disabled={loading}
+        {...props}
+      >
+        {loading ? (
+          <ThreeDotsFade className={cn("w-5 fill-white", spinnerClassName)} />
+        ) : (
+          props.children
+        )}
+      </Comp>
+    );
+  },
+);
+LoadingButton.displayName = "LoadingButton";
+
+export { Button, LoadingButton, buttonVariants };
