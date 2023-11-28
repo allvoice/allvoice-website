@@ -25,11 +25,12 @@ export const PlayButton: React.FC<{
     <Button
       className={cn("rounded-md px-2 py-2 ", className)}
       onClick={isPlayingThis ? stopSound : playSound}
+      variant="ghost"
     >
       {isPlayingThis ? (
-        <Pause className="h-5 w-5 text-white" />
+        <Pause className="h-5 w-5 text-black" />
       ) : (
-        <Play className="h-5 w-5 text-white" />
+        <Play className="h-5 w-5 text-black" />
       )}
     </Button>
   );

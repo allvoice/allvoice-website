@@ -193,7 +193,7 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
       </div>
       <div className="space-y-4 p-6">
         <div className="flex items-center justify-between">
-          <div className="flex space-x-2">
+          <div className="flex space-x-1">
             {voice.modelVersions[0]?.previewSounds
               .slice(0, 1)
               .map((sound) => (
@@ -201,8 +201,8 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
               ))}
 
             <Button
-              className="rounded-md bg-gray-100 px-3 py-2 font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-              variant="outline"
+              className="rounded-md px-3 py-2 font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              variant="ghost"
               onClick={onUpvote}
               disabled={rateVoice.isPending}
             >
@@ -215,8 +215,8 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
             </Button>
 
             <Button
-              className="rounded-md bg-gray-100 px-3 py-2 font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-              variant="outline"
+              className="rounded-md px-3 py-2 font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              variant="ghost"
               onClick={onDownvote}
               disabled={rateVoice.isPending}
             >
