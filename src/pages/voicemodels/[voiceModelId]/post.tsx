@@ -50,7 +50,7 @@ export const getServerSideProps: GetServerSideProps<ServerProps> = async (
     ctx: createTRPCSSRContext(context.req),
     transformer: superjson,
   });
-  await helpers.users.getUserDetails.prefetch()
+  await helpers.users.getUserDetails.prefetch();
 
   return {
     props: {
@@ -63,13 +63,11 @@ export const getServerSideProps: GetServerSideProps<ServerProps> = async (
 const VoicePost: NextPage<ServerProps> = ({ voiceModelId }) => {
   const router = useRouter();
 
-  const postVoice = api.voices.postVoiceModel.useMutation(
-    {
-      onSuccess: async (respUrl) => {
-        await router.push(respUrl);
-      },
-    }
-  );
+  const postVoice = api.voices.postVoiceModel.useMutation({
+    onSuccess: async (respUrl) => {
+      await router.push(respUrl);
+    },
+  });
   const getUserDetails = api.users.getUserDetails.useQuery();
   const isUsernameSet = !!getUserDetails.data?.username;
   const isPostable = !postVoice.isPending && isUsernameSet;

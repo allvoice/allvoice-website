@@ -53,7 +53,7 @@ export const voicesRouter = createTRPCRouter({
             : {}),
           ...(ctx.userId
             ? {
-              favorites: { where: { userId: ctx.userId } },
+                favorites: { where: { userId: ctx.userId } },
               }
             : {}),
         },
