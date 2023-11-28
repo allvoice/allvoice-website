@@ -136,11 +136,7 @@ const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
     setTestGeneratedSoundUrl(url);
   });
 
-  const handlePost = form.handleSubmit(async (data) => {
-    await updateVoiceGenerationSettings.mutateAsync({
-      voiceModelId,
-      formData: data,
-    });
+  const handlePost = form.handleSubmit(async () => {
     await router.push(`/voicemodels/${voiceModelId}/post`);
   });
 
