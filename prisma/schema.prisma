@@ -20,6 +20,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   username                 String? @unique
+  elevenlabsCharacterQuota Int     @default(30000) @db.UnsignedInt
 
   favorites  Favorite[]
   votes      Vote[]
