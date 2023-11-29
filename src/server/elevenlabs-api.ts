@@ -59,8 +59,9 @@ type TTSSettings = {
 
 class ElevenLabsManager {
   private activeTtsRequests = 0;
+  // TODO: back this by redis for multiple replicas
   private loadedVoices: LRUCache<string, string> = new LRUCache({
-    max: env.ELEVENLABS_MAX_VOICES * 2,
+    max: 1000,
   });
   private initialization: Promise<void> | null = null;
 

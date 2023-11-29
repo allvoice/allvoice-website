@@ -16,8 +16,8 @@ export const env = createEnv({
     BUCKET_HOST: z.string(),
     BUCKET_NOTIFICATION_SECRET: z.string(),
     ELEVENLABS_API_KEY: z.string(),
-    ELEVENLABS_MAX_VOICES: z.number({ coerce: true }).min(1),
-    ELEVENLABS_MAX_CONCURRENCY: z.number({ coerce: true }).min(1),
+    ELEVENLABS_MAX_VOICES: z.coerce.number().min(1),
+    ELEVENLABS_MAX_CONCURRENCY: z.coerce.number().min(1),
     DATABASE_LOG_LEVEL: z.enum(["INFO", "WARN", "ERROR"]),
   },
 
@@ -28,9 +28,7 @@ export const env = createEnv({
    */
   client: {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
-    NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES: z
-      .number({ coerce: true })
-      .min(1),
+    NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES: z.coerce.number().min(1),
   },
 
   experimental__runtimeEnv: {
