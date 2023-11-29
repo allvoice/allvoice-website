@@ -8,6 +8,7 @@ import { Pause, Play } from "lucide-react";
 import { AudioSeekBar } from "./audio-seek-bar";
 import { useGlobalAudioPlayer } from "react-use-audio-player";
 import { cn } from "~/utils/ui";
+import { useUser } from "@clerk/nextjs";
 
 type Props = {
   className?: string;
@@ -15,6 +16,7 @@ type Props = {
 
 const StatusBar: React.FC<Props> = ({ className }) => {
   const router = useRouter();
+  const user = useUser();
 
   const isVoiceModelEditPage =
     router.pathname === "/voicemodels/[voiceModelId]/edit";
@@ -26,7 +28,7 @@ const StatusBar: React.FC<Props> = ({ className }) => {
     {
       voiceModelId,
     },
-    { enabled: !!voiceModelId },
+    { enabled: isVoiceModelEditPage || isVoiceModelPostPage },
   );
 
   const inactiveSeedSounds = useMemo(
@@ -61,7 +63,9 @@ const StatusBar: React.FC<Props> = ({ className }) => {
   );
   const utils = api.useUtils();
 
-  const getUserDetails = api.users.getUserDetails.useQuery();
+  const getUserDetails = api.users.getUserDetails.useQuery(undefined, {
+    enabled: user.isSignedIn,
+  });
   const updateWarcraftLink = api.voices.updateWarcraftLink.useMutation({
     onMutate: async ({
       voiceModelId,
@@ -168,14 +172,16 @@ const StatusBar: React.FC<Props> = ({ className }) => {
               {`Samples: ${numInactiveSounds} inactive, ${numActiveSounds}/${env.NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES} active`}
             </span>
           )}
-          <span className="w-fit whitespace-nowrap text-center text-sm text-slate-500">
-            {!getUserDetails.data
-              ? "Remaining Characters: Loading..."
-              : `Remaining Characters: ${
-                  getUserDetails.data?.characterQuota -
-                  getUserDetails.data?.characterQuotaUsed
-                }`}
-          </span>
+          {user.isSignedIn && (
+            <span className="w-fit whitespace-nowrap text-center text-sm text-slate-500">
+              {!getUserDetails.data
+                ? "Remaining Characters: Loading..."
+                : `Remaining Characters: ${
+                    getUserDetails.data?.characterQuota -
+                    getUserDetails.data?.characterQuotaUsed
+                  }`}
+            </span>
+          )}
         </div>
       </div>
     </>

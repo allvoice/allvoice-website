@@ -1,5 +1,6 @@
 import Header from "~/components/header";
 import { type ReactNode } from "react";
+import StatusBar from "~/components/status-bar";
 type Props = {
   children?: ReactNode;
 };
@@ -14,6 +15,7 @@ const MainLayout: React.FC<Props> = ({ children }) => {
             {children}
           </div>
         </main>
+        <StatusBar className="fixed bottom-0 left-0 z-30  w-full" />
       </div>
     </>
   );

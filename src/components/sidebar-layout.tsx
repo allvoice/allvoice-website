@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import StatusBar from "~/components/status-bar";
 
 type Props = {
   children?: ReactNode;
@@ -46,6 +47,7 @@ const SidebarLayout: React.FC<Props> = ({
           <div className="h-full py-5">{children}</div>
         </div>
       </main>
+      <StatusBar className="fixed bottom-0 left-0 z-30  w-full" />
     </>
   );
 };

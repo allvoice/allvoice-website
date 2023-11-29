@@ -9,7 +9,6 @@ import "~/styles/globals.css";
 import { api } from "~/utils/api";
 import { Compose } from "~/utils/compose";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import StatusBar from "~/components/status-bar";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
@@ -20,7 +19,6 @@ const MyApp: AppType = ({ Component, pageProps }) => {
           components={[OpenSearchProvider]}
         >
           <Component {...pageProps} />
-          <StatusBar className="fixed bottom-0 left-0 z-30  w-full" />
 
           <Toaster />
           <CommandBar />
