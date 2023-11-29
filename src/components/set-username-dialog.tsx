@@ -53,7 +53,7 @@ const SetUsernameDialog: React.FC<SetUsernameDialogProps> = ({
         });
       } else {
         utils.users.getUserDetails.setData(undefined, (old) => {
-          if (!old) return;
+          if (!old) return old;
           return {
             ...old,
             username: data.username ?? variables.username,

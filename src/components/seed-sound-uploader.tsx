@@ -38,9 +38,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
       await utils.voices.getVoiceModelWorkspace.cancel();
 
       utils.voices.getVoiceModelWorkspace.setData({ voiceModelId }, (old) => {
-        if (!old) {
-          return old;
-        }
+        if (!old) return old;
         const newSounds = old?.seedSounds.map((sound) => {
           if (sound.id != seedSoundId) {
             return sound;
@@ -71,9 +69,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
     async onSuccess(data) {
       await utils.voices.getVoiceModelWorkspace.cancel();
       utils.voices.getVoiceModelWorkspace.setData({ voiceModelId }, (old) => {
-        if (!old) {
-          return old;
-        }
+        if (!old) return old;
         return {
           ...old,
           seedSounds: [

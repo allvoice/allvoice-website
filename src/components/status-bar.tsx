@@ -71,9 +71,7 @@ const StatusBar: React.FC<Props> = ({ className }) => {
     }) => {
       await utils.voices.getVoiceModelWorkspace.cancel();
       utils.voices.getVoiceModelWorkspace.setData({ voiceModelId }, (old) => {
-        if (!old) {
-          return old;
-        }
+        if (!old) return old;
         return {
           ...old,
           uniqueWarcraftNpcName: uniqueWarcraftNpcId

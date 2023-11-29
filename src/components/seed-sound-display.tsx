@@ -28,6 +28,7 @@ export const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
     async onMutate({ seedSoundId: deletedSoundId }) {
       await utils.voices.getVoiceModelWorkspace.cancel();
       utils.voices.getVoiceModelWorkspace.setData({ voiceModelId }, (old) => {
+        if (!old) return old;
         return {
           ...old,
           seedSounds: [
