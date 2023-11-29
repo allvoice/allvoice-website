@@ -22,7 +22,7 @@ model User {
   username String? @unique
 
   elevenlabsCharacterQuotaUsed Int @default(0)
-  elevenlabsCharacterQuota     Int @default(30000)
+  elevenlabsCharacterQuota     Int @default(0) // when ready @default(30000)
 
   favorites  Favorite[]
   votes      Vote[]
