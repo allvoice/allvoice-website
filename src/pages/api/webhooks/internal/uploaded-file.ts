@@ -7,6 +7,7 @@ type CephEventRecord = S3EventRecord & { eventId: string; opaqueData: string };
 type CephS3Event = Omit<S3Event, "Records"> & { Records: CephEventRecord[] };
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  console.log("uploaded-file webhook hit");
   const event = req.body as CephS3Event;
 
   if (event.Records == undefined) {

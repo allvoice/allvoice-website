@@ -1,11 +1,14 @@
+import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { createServerSideHelpers } from "@trpc/react-query/server";
+import { AlertCircle } from "lucide-react";
 import { type GetServerSideProps, type NextPage } from "next";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
+import superjson from "superjson";
 import { z } from "zod";
 import MainLayout from "~/components/main-layout";
 import SetUsernameDialog from "~/components/set-username-dialog";
-import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button, LoadingButton } from "~/components/ui/button";
 import {
@@ -17,11 +20,9 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { api } from "~/utils/api";
-import { createServerSideHelpers } from "@trpc/react-query/server";
 import { appRouter } from "~/server/api/root";
-import superjson from "superjson";
 import { createTRPCSSRContext } from "~/server/api/trpc";
+import { api } from "~/utils/api";
 
 const voicePostFormSchema = z.object({
   voiceTitle: z.string(),
@@ -63,13 +64,13 @@ export const getServerSideProps: GetServerSideProps<ServerProps> = async (
 const VoicePost: NextPage<ServerProps> = ({ voiceModelId }) => {
   const router = useRouter();
 
+  const user = useUser();
   const postVoice = api.voices.postVoiceModel.useMutation({
     onSuccess: async (respUrl) => {
       await router.push(respUrl);
     },
   });
-  const getUserDetails = api.users.getUserDetails.useQuery();
-  const isUsernameSet = !!getUserDetails.data?.username;
+  const isUsernameSet = !!user.user?.username;
   const isPostable = !postVoice.isPending && isUsernameSet;
 
   const form = useForm<z.infer<typeof voicePostFormSchema>>({

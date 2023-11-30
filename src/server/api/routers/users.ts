@@ -1,6 +1,8 @@
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 import { z } from "zod";
 import { usernameSchema } from "~/utils/schema";
+import { clerkClient } from "@clerk/nextjs";
+import { env } from "process";
 
 export const usersRouter = createTRPCRouter({
   getUserDetails: privateProcedure.query(async ({ ctx }) => {
@@ -9,12 +11,13 @@ export const usersRouter = createTRPCRouter({
     });
 
     return {
-      username: user.username,
       characterQuota: user.elevenlabsCharacterQuota,
       characterQuotaUsed: user.elevenlabsCharacterQuotaUsed,
+      newthing: 5
     };
   }),
 
+  // TODO: change this to use frontend username update from useUser
   updateUser: privateProcedure
     .input(z.object({ username: usernameSchema }))
     .mutation(async ({ ctx, input }) => {
@@ -32,13 +35,20 @@ export const usersRouter = createTRPCRouter({
         };
       }
 
-      const user = await ctx.prisma.user.update({
-        where: { id: userId },
-        data: { username },
+      await clerkClient.users.updateUser(userId, {
+        username: username,
       });
 
+      // needed because development env doesnt have webhooks to sync
+      if (env.NODE_ENV === "development") {
+        await ctx.prisma.user.update({
+          where: { id: userId },
+          data: { username },
+        });
+      }
+
       return {
-        username: user.username,
+        username: username,
       };
     }),
 });

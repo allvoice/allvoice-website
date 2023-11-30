@@ -1,3 +1,4 @@
+import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
@@ -42,24 +43,17 @@ const SetUsernameDialog: React.FC<SetUsernameDialogProps> = ({
     },
   });
   const [open, setOpen] = useState(false);
-  const utils = api.useUtils();
+  const user = useUser();
 
   const updateUser = api.users.updateUser.useMutation({
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       if (data?.error == "username") {
         form.setError("username", {
           type: "manual",
           message: data.message,
         });
       } else {
-        utils.users.getUserDetails.setData(undefined, (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            username: data.username ?? variables.username,
-          };
-        });
-        void utils.users.getUserDetails.invalidate();
+        void user.user?.reload();
         setOpen(false);
       }
     },
