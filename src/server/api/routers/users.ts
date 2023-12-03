@@ -13,7 +13,6 @@ export const usersRouter = createTRPCRouter({
     return {
       characterQuota: user.elevenlabsCharacterQuota,
       characterQuotaUsed: user.elevenlabsCharacterQuotaUsed,
-      newthing: 5
     };
   }),
 

@@ -20,7 +20,7 @@ export const env = createEnv({
     ELEVENLABS_MAX_VOICES: z.coerce.number().min(1),
     ELEVENLABS_MAX_CONCURRENCY: z.coerce.number().min(1),
     DATABASE_LOG_LEVEL: z.enum(["INFO", "WARN", "ERROR"]),
-    LOG_LEVEL: z.string().default("info")
+    LOG_LEVEL: z.string().default("info"),
   },
 
   /**
