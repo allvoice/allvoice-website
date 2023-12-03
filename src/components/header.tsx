@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { isMacOs } from "react-device-detect";
 import { useOpenSearch } from "~/hooks/open-search-hook";
+import Device from "./device";
 
 const Header: React.FC = ({}) => {
   const { setOpen } = useOpenSearch();
@@ -22,7 +22,9 @@ const Header: React.FC = ({}) => {
             className="flex h-8 w-full max-w-md items-center justify-center rounded-md border hover:cursor-pointer hover:bg-gray-100"
           >
             <p className="select-none text-center text-sm text-slate-500 ">
-              {isMacOs ? "⌘P" : "Ctrl+P"} to search
+              <Device>
+                {({ isMacOs }) => <>{isMacOs ? "⌘P" : "Ctrl+P"} to search</>}
+              </Device>
             </p>
           </div>
           <div className="flex items-center">
