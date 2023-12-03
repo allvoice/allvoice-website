@@ -9,7 +9,7 @@ const Home: NextPage = () => {
   const voiceListInput = { sortType: "popular" } as VoiceListInput;
   const voiceQuery = api.voices.listVoices.useQuery(voiceListInput, {
     select(data) {
-      if (initialOrder.length === 0) {
+      if (initialOrder.length === 0 && data.length > 0) {
         setInitialOrder(data.map((voice) => voice.id));
       }
 
