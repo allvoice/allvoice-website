@@ -16,7 +16,7 @@ export const filesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const key = uuidv4();
+      const key = "seed/" + uuidv4();
 
       const command = new PutObjectCommand({
         Bucket: env.BUCKET_NAME,

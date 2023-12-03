@@ -2,12 +2,13 @@ import { type NextApiRequest, type NextApiResponse } from "next";
 import { env } from "~/env.mjs";
 import { type S3Event, type S3EventRecord } from "aws-lambda";
 import { prisma } from "~/server/db";
+import logger from "~/logger";
 
 type CephEventRecord = S3EventRecord & { eventId: string; opaqueData: string };
 type CephS3Event = Omit<S3Event, "Records"> & { Records: CephEventRecord[] };
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  console.log("uploaded-file webhook hit");
+  logger.debug("uploaded-file webhook hit");
   const event = req.body as CephS3Event;
 
   if (event.Records == undefined) {
@@ -21,21 +22,40 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     const key = record.s3.object.key;
-    // TODO: figure out what to do with generated files from voicemodel edit page
-    if (key.startsWith("testgen/") || key.startsWith("preview/")) {
-      res.status(200).end();
-      return;
-    }
 
-    console.log(
-      "/webhooks/internal/uploaded-file: received upload confirmation for: " +
-        record.s3.object.key,
+    logger.info(
+      "/webhooks/internal/uploaded-file: received upload confirmation",
+      {
+        key,
+      },
     );
 
-    await prisma.seedSound.update({
-      where: { bucketKey: record.s3.object.key },
-      data: { uploadComplete: true, fileSize: record.s3.object.size },
-    });
+    switch (true) {
+      case key.startsWith("test/"):
+        await prisma.testSound.update({
+          where: { bucketKey: record.s3.object.key },
+          data: { uploadComplete: true, fileSize: record.s3.object.size },
+        });
+        break;
+      case key.startsWith("preview/"):
+        await prisma.previewSound.update({
+          where: { bucketKey: record.s3.object.key },
+          data: { uploadComplete: true, fileSize: record.s3.object.size },
+        });
+        break;
+      case key.startsWith("seed/"):
+        await prisma.seedSound.update({
+          where: { bucketKey: record.s3.object.key },
+          data: { uploadComplete: true, fileSize: record.s3.object.size },
+        });
+        break;
+      default:
+        logger.error("invalid key prefix", { key });
+        res
+          .status(400)
+          .json({ error: "Malformed request, invalid key prefix", key: key });
+        return;
+    }
   }
 
   res.status(200).end();

@@ -418,7 +418,14 @@ export const voicesRouter = createTRPCRouter({
         textToGenerate.length,
       );
 
-      const genKey = `testgen/${uuidv4()}`;
+      const genKey = `test/${uuidv4()}`;
+
+      await ctx.prisma.testSound.create({
+        data: {
+          bucketKey: genKey,
+          voiceModel: { connect: { id: input.voiceModelId } },
+        },
+      });
 
       const putObjectCommand = new PutObjectCommand({
         Bucket: env.BUCKET_NAME,

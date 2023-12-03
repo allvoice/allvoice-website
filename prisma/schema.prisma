@@ -57,8 +57,30 @@ model PreviewSound {
   voiceModelId String
   iconEmoji    String
 
+  // uploadComplete signifies if we've received the bucket notification indicating the file has been successfully uploaded
+  uploadComplete  Boolean                @default(false)
+  fileSize        BigInt?                @db.UnsignedBigInt
+
   @@index([voiceModelId])
 }
+
+// TestSounds are semi-disposible. Theyre used for holding sounds for wip models.
+model TestSound {
+  id           String     @id @default(uuid())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  bucketKey    String     @unique
+  voiceModel   VoiceModel @relation(fields: [voiceModelId], references: [id])
+  voiceModelId String
+
+  // uploadComplete signifies if we've received the bucket notification indicating the file has been successfully uploaded
+  uploadComplete  Boolean                @default(false)
+  fileSize        BigInt?                @db.UnsignedBigInt
+
+  @@index([voiceModelId])
+}
+
+
 
 model VoiceModel {
   id             String                 @id @default(uuid())
@@ -66,6 +88,7 @@ model VoiceModel {
   updatedAt      DateTime               @updatedAt
   soundFileJoins VoiceModelSeedSounds[]
   previewSounds  PreviewSound[]
+  testSounds     TestSound[]
 
   voiceId String
   voice   Voice  @relation(fields: [voiceId], references: [id])
