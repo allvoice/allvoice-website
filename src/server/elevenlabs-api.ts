@@ -1,13 +1,13 @@
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { s3Client } from "./s3";
 import { env } from "~/env.mjs";
-import { TRPCError } from "@trpc/server";
 import axios from "axios";
 import FormData from "form-data";
 import { type Readable } from "stream";
 import crypto from "crypto";
 import { LRUCache } from "lru-cache";
 import { prisma } from "./db";
+import logger from "~/logger";
 
 const elevenLabsAxios = axios.create({
   baseURL: "https://api.elevenlabs.io",
@@ -24,6 +24,13 @@ type GetVoicesResponse = {
   voices: {
     voice_id: string;
     name: string;
+    samples?: {
+      sample_id: string;
+      file_name: string;
+      mime_type: string;
+      size_bytes: number;
+      hash: string;
+    }[];
   }[];
 };
 async function getVoices() {
@@ -70,9 +77,14 @@ class ElevenLabsManager {
       this.initialization = new Promise<void>(async (resolve, reject) => {
         try {
           await this.getAlreadyLoadedVoicesFromElevenLabs();
-          // for (const el of this.loadedVoices.entries()) {
-          //  console.log(el);
-          // }
+          if (this.loadedVoices.size > 0) {
+            logger.debug(
+              "matched elevenlabs voices to db",
+              this.loadedVoices.entries(),
+            );
+          } else {
+            logger.debug("no matched voices found in elevenlabs");
+          }
           resolve();
         } catch (error) {
           reject(error);
@@ -89,7 +101,11 @@ class ElevenLabsManager {
       where: {
         id: { in: existingVoices.data.voices.map((voice) => voice.name) },
       },
-      include: { soundFileJoins: { include: { seedSound: true } } },
+      include: {
+        soundFileJoins: {
+          include: { seedSound: { select: { bucketKey: true } } },
+        },
+      },
     });
 
     for (const voiceModel of voiceModels) {
@@ -106,12 +122,31 @@ class ElevenLabsManager {
       );
 
       if (!elevenVoice) {
-        throw new TRPCError({
-          message: `Failed to link existing elevenlabs voice to db voice`,
-          code: "INTERNAL_SERVER_ERROR",
-        });
+        throw new Error(
+          `Failed to link existing elevenlabs voice to db voice: ${voiceModel.id}`,
+        );
       }
       this.loadedVoices.set(reproducedArgsHash, elevenVoice.voice_id);
+    }
+
+    // delete unmatched voices
+    const loadedVoiceIds = new Set(this.loadedVoices.values());
+    const voicesToDelete = existingVoices.data.voices.filter(
+      (voice) =>
+        !loadedVoiceIds.has(voice.voice_id) &&
+        voice.samples &&
+        voice.samples.length > 0,
+    );
+
+    if (voicesToDelete.length > 0) {
+      logger.info("starting to delete voices");
+    }
+    for (const voice of voicesToDelete) {
+      logger.info("deleting elevenlabs voiceid: " + voice.voice_id);
+      await deleteVoice(voice.voice_id);
+    }
+    if (voicesToDelete.length > 0) {
+      logger.info("done deleting voices");
     }
   }
   private async addVoice(args: AddVoiceArgs): Promise<string> {
@@ -130,10 +165,7 @@ class ElevenLabsManager {
       const fileStream = response.Body;
 
       if (fileStream == null) {
-        throw new TRPCError({
-          message: `Failed to get seed sound: ${key}`,
-          code: "INTERNAL_SERVER_ERROR",
-        });
+        throw new Error(`Failed to get seed sound: ${key}`);
       }
 
       form.append("files", fileStream, {
@@ -157,10 +189,7 @@ class ElevenLabsManager {
     if (response.status === 200) {
       return response.data.voice_id;
     } else {
-      throw new TRPCError({
-        message: `Error adding voice: ${response.statusText}`,
-        code: "INTERNAL_SERVER_ERROR",
-      });
+      throw new Error(`Error adding voice: ${response.statusText}`);
     }
   }
 
@@ -237,18 +266,14 @@ class ElevenLabsManager {
           contentType: contentType,
         };
       } else {
-        throw new TRPCError({
-          message: `Error generating speech audio: code: ${
+        throw new Error(
+          `Error generating speech audio: code: ${
             response.status
           }, content-length: ${contentLength ?? 0}`,
-          code: "INTERNAL_SERVER_ERROR",
-        });
+        );
       }
     } catch (error) {
-      throw new TRPCError({
-        message: `Error in elevenlabs TTS call`,
-        code: "INTERNAL_SERVER_ERROR",
-      });
+      throw new Error(`Error in elevenlabs TTS call`);
     } finally {
       this.activeTtsRequests--;
     }
