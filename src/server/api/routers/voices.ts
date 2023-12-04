@@ -50,6 +50,7 @@ export const voicesRouter = createTRPCRouter({
             take: 1,
           },
           uniqueWarcraftNpc: true,
+          warcraftNpcDisplay: true,
 
           ...(ctx.userId
             ? {

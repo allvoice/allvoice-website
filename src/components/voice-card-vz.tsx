@@ -171,6 +171,14 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
                 </p>
               </Link>
             )}
+
+            {voice.warcraftNpcDisplay && (
+              <Link href={`/charactermodels/${voice.warcraftNpcDisplay?.id}`}>
+                <p className="mt-1 text-sm text-gray-500 hover:underline dark:text-gray-300">
+                  Model: {voice.warcraftNpcDisplay.voiceName}
+                </p>
+              </Link>
+            )}
           </div>
           <Button
             className="rounded-md bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
