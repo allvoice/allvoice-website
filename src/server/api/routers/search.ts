@@ -30,7 +30,7 @@ export const searchRouter = createTRPCRouter({
           },
         },
       });
-      const characterModelsPromise = ctx.prisma.wacraftNpcDisplay.findMany({
+      const characterModelsPromise = ctx.prisma.warcraftNpcDisplay.findMany({
         where: {
           OR: [
             {

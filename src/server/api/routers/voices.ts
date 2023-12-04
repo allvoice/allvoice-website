@@ -80,7 +80,7 @@ export const voicesRouter = createTRPCRouter({
             : {}),
           ...(input?.characterModelId
             ? {
-                wacraftNpcDisplayId: input.characterModelId,
+                warcraftNpcDisplayId: input.characterModelId,
               }
             : {}),
         },
@@ -352,10 +352,10 @@ export const voicesRouter = createTRPCRouter({
           },
         });
         warcraftTemplate = uniqueNpc?.npcs?.[0]?.rawVoicelines?.[0]?.text;
-      } else if (voiceModel.voice.wacraftNpcDisplayId) {
+      } else if (voiceModel.voice.warcraftNpcDisplayId) {
         const warcraftNpcDisplay =
-          await ctx.prisma.wacraftNpcDisplay.findUnique({
-            where: { id: voiceModel.voice.wacraftNpcDisplayId },
+          await ctx.prisma.warcraftNpcDisplay.findUnique({
+            where: { id: voiceModel.voice.warcraftNpcDisplayId },
             include: {
               npcs: {
                 include: {
@@ -653,10 +653,10 @@ export const voicesRouter = createTRPCRouter({
                 },
               }
             : {}),
-          ...(voiceToBeForked.wacraftNpcDisplayId
+          ...(voiceToBeForked.warcraftNpcDisplayId
             ? {
-                wacraftNpcDisplay: {
-                  connect: { id: voiceToBeForked.wacraftNpcDisplayId },
+                warcraftNpcDisplay: {
+                  connect: { id: voiceToBeForked.warcraftNpcDisplayId },
                 },
               }
             : {}),

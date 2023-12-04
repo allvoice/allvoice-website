@@ -148,8 +148,8 @@ model Voice {
   // score is upvotes minus downvotes
   score Int @default(0)
 
-  warcraftNpcDisplay  WacraftNpcDisplay? @relation(fields: [wacraftNpcDisplayId], references: [id])
-  wacraftNpcDisplayId String?
+  warcraftNpcDisplay  WarcraftNpcDisplay? @relation(fields: [warcraftNpcDisplayId], references: [id])
+  warcraftNpcDisplayId String? 
 
   uniqueWarcraftNpc   UniqueWarcraftNpc? @relation(fields: [uniqueWarcraftNpcId], references: [id])
   uniqueWarcraftNpcId String?
@@ -162,7 +162,7 @@ model Voice {
   votes     Vote[]
 
   @@index([ownerUserId])
-  @@index([wacraftNpcDisplayId])
+  @@index([warcraftNpcDisplayId])
   @@index([uniqueWarcraftNpcId])
   @@index([forkParentId])
 }
@@ -215,7 +215,7 @@ model VoiceModelSeedSounds {
   @@index([voiceModelId])
 }
 
-model WacraftNpcDisplay {
+model WarcraftNpcDisplay {
   id            String                @id @default(uuid())
   // modelFilePath is the path of the model used to render the NPCs
   // EX: Character\BloodElf\Female\BloodElfFemale.mdx
@@ -233,6 +233,7 @@ model WacraftNpcDisplay {
   voices        Voice[]
 
   @@fulltext([voiceName])
+	@@map("WacraftNpcDisplay")
 }
 
 model WarcraftNpcDisplays {
@@ -240,7 +241,7 @@ model WarcraftNpcDisplays {
   npcId     Int
   displayId String
   npc       WarcraftNpc       @relation(fields: [npcId], references: [npcId])
-  display   WacraftNpcDisplay @relation(fields: [displayId], references: [id])
+  display   WarcraftNpcDisplay @relation(fields: [displayId], references: [id])
 
   @@index([npcId])
   @@index([displayId])
