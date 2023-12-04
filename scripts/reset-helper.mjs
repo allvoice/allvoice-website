@@ -12,6 +12,7 @@ async function deleteVoicesAndSeedSounds() {
   // Delete related records first
   await prisma.voiceModelSeedSounds.deleteMany();
   await prisma.seedSound.deleteMany();
+  await prisma.testSound.deleteMany();
   await prisma.previewSound.deleteMany();
   await prisma.voiceModel.deleteMany();
   await prisma.favorite.deleteMany();
