@@ -3,12 +3,19 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function deleteVoicesAndSeedSounds() {
-    // Set all forkParentId fields to null (doesnt work i think due to ciclical relation)
-    // await prisma.voiceModel.updateMany({
-    //   data: {
-    //     forkParentId: null,
-    //   },
-    // });
+  // Set all forkParentId fields to null
+  await prisma.$transaction([
+    prisma.voiceModel.updateMany({
+      data: {
+        forkParentId: null,
+      },
+    }),
+    prisma.voice.updateMany({
+      data: {
+        forkParentId: null,
+      },
+    }),
+  ]);
   // Delete related records first
   await prisma.voiceModelSeedSounds.deleteMany();
   await prisma.seedSound.deleteMany();
@@ -23,9 +30,9 @@ async function deleteVoicesAndSeedSounds() {
 }
 
 deleteVoicesAndSeedSounds()
-  .catch(e => {
-    throw e
+  .catch((e) => {
+    throw e;
   })
   .finally(async () => {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   });
