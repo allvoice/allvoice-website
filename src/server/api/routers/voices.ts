@@ -282,6 +282,14 @@ export const voicesRouter = createTRPCRouter({
 
         const genKey = `preview/${uuidv4()}`;
 
+        await ctx.prisma.previewSound.create({
+          data: {
+            iconEmoji: previewText.emoji,
+            bucketKey: genKey,
+            voiceModel: { connect: { id: voiceModel.id } },
+          },
+        });
+
         const putObjectCommand = new PutObjectCommand({
           Bucket: env.BUCKET_NAME,
           Key: genKey,
@@ -291,14 +299,6 @@ export const voicesRouter = createTRPCRouter({
         });
 
         await s3Client.send(putObjectCommand);
-
-        await ctx.prisma.previewSound.create({
-          data: {
-            iconEmoji: previewText.emoji,
-            bucketKey: genKey,
-            voiceModel: { connect: { id: voiceModel.id } },
-          },
-        });
       }
 
       await ctx.prisma.voiceModel.update({

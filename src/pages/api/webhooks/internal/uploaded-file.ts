@@ -33,19 +33,19 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     switch (true) {
       case key.startsWith("test/"):
         await prisma.testSound.update({
-          where: { bucketKey: record.s3.object.key },
+          where: { bucketKey: key },
           data: { uploadComplete: true, fileSize: record.s3.object.size },
         });
         break;
       case key.startsWith("preview/"):
         await prisma.previewSound.update({
-          where: { bucketKey: record.s3.object.key },
+          where: { bucketKey: key },
           data: { uploadComplete: true, fileSize: record.s3.object.size },
         });
         break;
       case key.startsWith("seed/"):
         await prisma.seedSound.update({
-          where: { bucketKey: record.s3.object.key },
+          where: { bucketKey: key },
           data: { uploadComplete: true, fileSize: record.s3.object.size },
         });
         break;
