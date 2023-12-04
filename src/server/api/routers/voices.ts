@@ -626,4 +626,123 @@ export const voicesRouter = createTRPCRouter({
         });
       }
     }),
+
+  createVoiceModel: privateProcedure
+    .input(
+      z.object({
+        forkVoiceId: z.string().optional(),
+        uniqueNPCId: z.string().optional(),
+        characterModelId: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { userId } = ctx;
+      const { forkVoiceId, uniqueNPCId, characterModelId } = input;
+
+      if (forkVoiceId) {
+        // forked flow
+        const voiceToBeForked = await ctx.prisma.voice.findUniqueOrThrow({
+          where: {
+            id: forkVoiceId,
+          },
+          include: {
+            modelVersions: {
+              orderBy: {
+                createdAt: "desc",
+              },
+              take: 1,
+              include: {
+                soundFileJoins: true,
+              },
+            },
+          },
+        });
+
+        const voiceModel = voiceToBeForked.modelVersions[0];
+        if (!voiceModel) {
+          throw new Error("Voice model not found");
+        }
+
+        const newVoiceModel = await ctx.prisma.voiceModel.create({
+          data: {
+            voice: {
+              create: {
+                ownerUser: {
+                  connectOrCreate: {
+                    where: { id: userId },
+                    create: { id: userId },
+                  },
+                },
+                forkParent: { connect: { id: voiceToBeForked.id } },
+                ...(voiceToBeForked.uniqueWarcraftNpcId
+                  ? {
+                      uniqueWarcraftNpc: {
+                        connect: { id: voiceToBeForked.uniqueWarcraftNpcId },
+                      },
+                    }
+                  : {}),
+                ...(voiceToBeForked.warcraftNpcDisplayId
+                  ? {
+                      warcraftNpcDisplay: {
+                        connect: { id: voiceToBeForked.warcraftNpcDisplayId },
+                      },
+                    }
+                  : {}),
+              },
+            },
+            forkParent: { connect: { id: voiceModel.id } },
+            elevenLabsModelId: voiceModel.elevenLabsModelId,
+            elevenLabsStability: voiceModel.elevenLabsStability,
+            elevenLabsSimilarityBoost: voiceModel.elevenLabsSimilarityBoost,
+            elevenLabsStyle: voiceModel.elevenLabsStyle,
+            elevenLabsSpeakerBoost: voiceModel.elevenLabsSpeakerBoost,
+            published: false,
+          },
+        });
+
+        for (const seedSoundJoin of voiceModel.soundFileJoins) {
+          await ctx.prisma.voiceModelSeedSounds.create({
+            data: {
+              voiceModel: { connect: { id: newVoiceModel.id } },
+              seedSound: { connect: { id: seedSoundJoin.seedSoundId } },
+              active: seedSoundJoin.active,
+            },
+          });
+        }
+
+        return newVoiceModel.id;
+      } else {
+        // non forked flow
+        const voiceModel = await ctx.prisma.voiceModel.create({
+          data: {
+            voice: {
+              create: {
+                ownerUser: {
+                  connectOrCreate: {
+                    where: { id: userId },
+                    create: { id: userId },
+                  },
+                },
+                uniqueWarcraftNpc: uniqueNPCId
+                  ? {
+                      connect: {
+                        id: uniqueNPCId,
+                      },
+                    }
+                  : undefined,
+                warcraftNpcDisplay: characterModelId
+                  ? {
+                      connect: {
+                        id: characterModelId,
+                      },
+                    }
+                  : undefined,
+              },
+            },
+          },
+        });
+
+        return voiceModel.id;
+      }
+    }),
 });

@@ -1,154 +1,47 @@
-import { getAuth } from "@clerk/nextjs/server";
-import { type NextPage, type GetServerSideProps } from "next";
-import Error from "next/error";
-import { prisma } from "~/server/db";
+import { type NextPage } from "next";
+import { useRouter } from "next/router";
+import { useEffect, useRef, useState } from "react";
+import ThreeDotsFade from "~/components/spinner";
+import { api } from "~/utils/api";
 
-type Props = {
-  statusCode?: number;
-};
+const CreatePage: NextPage = () => {
+  const router = useRouter();
+  const uniqueNPCId = (router.query.uniqueNPCId ?? "") as string;
+  const characterModelId = router.query.characterModelId as string | undefined;
+  const forkVoiceId = router.query.fork as string | undefined;
 
-const createForkedVoice = async (forkVoiceId: string, userId: string) => {
-  const voiceToBeForked = await prisma.voice.findUniqueOrThrow({
-    where: {
-      id: forkVoiceId,
+  const hasMutated = useRef(false);
+  const [error, setError] = useState("");
+  const createVoiceModel = api.voices.createVoiceModel.useMutation({
+    onSuccess: async (voiceModelId) => {
+      await router.push(`/voicemodels/${voiceModelId}/edit`);
+    },
+    onError: (error) => {
+      setError(error.message);
     },
   });
 
-  const newVoice = await prisma.voice.create({
-    data: {
-      ownerUser: {
-        connectOrCreate: { where: { id: userId }, create: { id: userId } },
-      },
-      forkParent: { connect: { id: voiceToBeForked.id } },
-      ...(voiceToBeForked.uniqueWarcraftNpcId
-        ? {
-            uniqueWarcraftNpc: {
-              connect: { id: voiceToBeForked.uniqueWarcraftNpcId },
-            },
-          }
-        : {}),
-      ...(voiceToBeForked.warcraftNpcDisplayId
-        ? {
-            warcraftNpcDisplay: {
-              connect: { id: voiceToBeForked.warcraftNpcDisplayId },
-            },
-          }
-        : {}),
-    },
-  });
+  useEffect(() => {
+    if (hasMutated.current) return; // stop double mutate due to strict mode
+    if (createVoiceModel.isPending) return;
+    if (uniqueNPCId == null && characterModelId == null && forkVoiceId == null) return;
 
-  const voiceModels = await prisma.voiceModel.findMany({
-    where: {
-      voiceId: forkVoiceId,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 1,
-    include: {
-      soundFileJoins: true,
-    },
-  });
-
-  const voiceModel = voiceModels[0];
-  if (!voiceModel) {
-    return {
-      props: {
-        statusCode: 500,
-      },
-    };
-  }
-
-  const newVoiceModel = await prisma.voiceModel.create({
-    data: {
-      voice: { connect: { id: newVoice.id } },
-      forkParent: { connect: { id: voiceModel.id } },
-      elevenLabsModelId: voiceModel.elevenLabsModelId,
-      elevenLabsStability: voiceModel.elevenLabsStability,
-      elevenLabsSimilarityBoost: voiceModel.elevenLabsSimilarityBoost,
-      elevenLabsStyle: voiceModel.elevenLabsStyle,
-      elevenLabsSpeakerBoost: voiceModel.elevenLabsSpeakerBoost,
-      published: false,
-    },
-  });
-
-  for (const seedSoundJoin of voiceModel.soundFileJoins) {
-    await prisma.voiceModelSeedSounds.create({
-      data: {
-        voiceModel: { connect: { id: newVoiceModel.id } },
-        seedSound: { connect: { id: seedSoundJoin.seedSoundId } },
-        active: seedSoundJoin.active,
-      },
+    createVoiceModel.mutate({
+      characterModelId: characterModelId,
+      uniqueNPCId: uniqueNPCId,
+      forkVoiceId: forkVoiceId,
     });
-  }
+    hasMutated.current = true
+  }, [characterModelId, createVoiceModel, forkVoiceId, uniqueNPCId]);
 
-  return {
-    redirect: {
-      destination: `/voicemodels/${newVoiceModel.id}/edit`,
-      permanent: false,
-    },
-  };
-};
-
-export const getServerSideProps: GetServerSideProps<Props> = async (ctx) => {
-  const { userId } = getAuth(ctx.req);
-  if (!userId) {
-    return {
-      props: {
-        statusCode: 403,
-      },
-    };
-  }
-
-  const uniqueNPCId = ctx.query.uniqueNPCId as string | undefined;
-  const characterModelId = ctx.query.characterModelId as string | undefined;
-  const forkVoiceId = ctx.query.fork as string | undefined;
-
-  if (forkVoiceId) {
-    return await createForkedVoice(forkVoiceId, userId);
-  }
-
-  const voiceModel = await prisma.voiceModel.create({
-    data: {
-      voice: {
-        create: {
-          ownerUser: {
-            connectOrCreate: {
-              where: { id: userId },
-              create: { id: userId },
-            },
-          },
-          uniqueWarcraftNpc: uniqueNPCId
-            ? {
-                connect: {
-                  id: uniqueNPCId,
-                },
-              }
-            : {},
-          warcraftNpcDisplay: characterModelId
-            ? {
-                connect: {
-                  id: characterModelId,
-                },
-              }
-            : {},
-        },
-      },
-    },
-  });
-
-  return {
-    redirect: {
-      destination: `/voicemodels/${voiceModel.id}/edit`,
-      permanent: false,
-    },
-  };
-};
-
-const CreatePage: NextPage<Props> = ({ statusCode }) => {
-  if (statusCode) {
-    return <Error statusCode={statusCode} />;
-  }
-  return <div>Failed to create new voice</div>;
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      {createVoiceModel.isPending ? (
+        <ThreeDotsFade className="w-10 text-blue-500" />
+      ) : error ? (
+        <p>{error}</p>
+      ) : null}
+    </div>
+  );
 };
 export default CreatePage;
