@@ -129,24 +129,25 @@ class ElevenLabsManager {
       this.loadedVoices.set(reproducedArgsHash, elevenVoice.voice_id);
     }
 
-    // delete unmatched voices
-    const loadedVoiceIds = new Set(this.loadedVoices.values());
-    const voicesToDelete = existingVoices.data.voices.filter(
-      (voice) =>
-        !loadedVoiceIds.has(voice.voice_id) &&
-        voice.samples &&
-        voice.samples.length > 0,
-    );
-
-    if (voicesToDelete.length > 0) {
-      logger.info("starting to delete voices");
-    }
-    for (const voice of voicesToDelete) {
-      logger.info("deleting elevenlabs voiceid: " + voice.voice_id);
-      await deleteVoice(voice.voice_id);
-    }
-    if (voicesToDelete.length > 0) {
-      logger.info("done deleting voices");
+    // delete unmatched voices in prod
+    if (env.NODE_ENV === "production") {
+      const loadedVoiceIds = new Set(this.loadedVoices.values());
+      const voicesToDelete = existingVoices.data.voices.filter(
+        (voice) =>
+          !loadedVoiceIds.has(voice.voice_id) &&
+          voice.samples &&
+          voice.samples.length > 0,
+      );
+      if (voicesToDelete.length > 0) {
+        logger.info("starting to delete voices");
+      }
+      for (const voice of voicesToDelete) {
+        logger.info("deleting elevenlabs voiceid: " + voice.voice_id);
+        await deleteVoice(voice.voice_id);
+      }
+      if (voicesToDelete.length > 0) {
+        logger.info("done deleting voices");
+      }
     }
   }
   private async addVoice(args: AddVoiceArgs): Promise<string> {
@@ -273,7 +274,10 @@ class ElevenLabsManager {
         );
       }
     } catch (error) {
-      throw new Error(`Error in elevenlabs TTS call`);
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      const errorMessage = `error in elevenlabs TTS call: ${error}`;
+      logger.error(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       this.activeTtsRequests--;
     }

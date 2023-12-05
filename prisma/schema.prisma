@@ -213,6 +213,7 @@ model VoiceModelSeedSounds {
   @@id([voiceModelId, seedSoundId])
   @@index([seedSoundId])
   @@index([voiceModelId])
+  @@index([active])
 }
 
 model WarcraftNpcDisplay {

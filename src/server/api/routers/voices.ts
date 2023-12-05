@@ -188,7 +188,7 @@ export const voicesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       if (input.warcraftNpcDisplayId && input.uniqueWarcraftNpcId) {
         throw new Error(
-          "Both warcraftNpcDisplayId and uniqueWarcraftNpcId cannot be filled at the same time",
+          "both warcraftNpcDisplayId and uniqueWarcraftNpcId cannot be filled at the same time",
         );
       }
       const voiceModel = await ctx.prisma.voiceModel.findFirstOrThrow({
@@ -239,7 +239,12 @@ export const voicesRouter = createTRPCRouter({
           published: false,
           voice: { ownerUserId: ctx.userId },
         },
-        include: { soundFileJoins: { include: { seedSound: true } } },
+        include: {
+          soundFileJoins: {
+            where: { active: true },
+            include: { seedSound: true },
+          },
+        },
       });
 
       // make auto-preview noises
@@ -321,7 +326,10 @@ export const voicesRouter = createTRPCRouter({
       const voiceModel = await ctx.prisma.voiceModel.findFirstOrThrow({
         where: { id: input.voiceModelId, voice: { ownerUserId: ctx.userId } },
         include: {
-          soundFileJoins: { include: { seedSound: true } },
+          soundFileJoins: {
+            where: { active: true },
+            include: { seedSound: true },
+          },
           voice: true,
         },
       });
@@ -340,6 +348,10 @@ export const voicesRouter = createTRPCRouter({
       const seedBucketKeys = voiceModel.soundFileJoins.map(
         (join) => join.seedSound.bucketKey,
       );
+
+      if (seedBucketKeys.length > env.NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES) {
+        throw new Error("exceeded maximum active samples limit");
+      }
 
       let warcraftTemplate;
       if (voiceModel.voice.uniqueWarcraftNpcId) {
@@ -376,7 +388,7 @@ export const voicesRouter = createTRPCRouter({
 
       if (!warcraftTemplate) {
         throw new Error(
-          "Could not find text to generate. Select a character model or npc.",
+          "could not find text to generate. Select a character model or npc.",
         );
       }
 
@@ -387,7 +399,7 @@ export const voicesRouter = createTRPCRouter({
 
       if (!textToGenerate) {
         throw new Error(
-          "First sentence regex failed for text: " + renderedText,
+          "first sentence regex failed for text: " + renderedText,
         );
       }
 
@@ -396,7 +408,7 @@ export const voicesRouter = createTRPCRouter({
         textToGenerate.length,
       );
       if (!hasEnoughQuota) {
-        throw new Error("Not enough quota to generate");
+        throw new Error("not enough quota to generate");
       }
       const ttsResponse = await elevenLabsManager.textToSpeechStream(
         {
@@ -660,7 +672,7 @@ export const voicesRouter = createTRPCRouter({
 
         const voiceModel = voiceToBeForked.modelVersions[0];
         if (!voiceModel) {
-          throw new Error("Voice model not found");
+          throw new Error("voice model not found");
         }
 
         const newVoiceModel = await ctx.prisma.voiceModel.create({
