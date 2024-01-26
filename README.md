@@ -29,7 +29,7 @@ Game developers should be able to manage voiceover for their games by inserting 
 
 The site will record when the game requests voiceover and display the requests in a dashboard. The developer will be able to see the suggested voice models given the logged request. When the developer selects which model they'd like to use, a commision + potential upfront payment is given to the voice author whenever its used for generation.
 
-None of the Warcraft models will ever be used for this purpose. I am personally not as invested in this long term vision as I used to be but will support those that wish to take on the vision. If you're interested, message @mrthinger in the [discord](https://discord.gg/bwJFfRRcMB).
+None of the Warcraft models will ever be used for this purpose. I am personally not as invested in this long term vision anymore, but I will support those that wish to take it on. If you're interested, message @mrthinger in the [discord](https://discord.gg/bwJFfRRcMB).
 
 ## [cursor](https://cursor.sh/) prompt
 ```im using typescript, functional react 18, nextjs page router, tailwind, trpc, prisma, and react query 5 with the trpc integration. T3 stack is the name of the stack im using. use env instead of process.env```
