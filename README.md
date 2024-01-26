@@ -14,7 +14,7 @@ allvoice will feature a robust voice editor that makes it easy for anyone to con
 
 ### Rating Voices
 
-allvoice will populate which voices need to be rated by the community to ensure each NPC has the highest quality voice model available for it.
+allvoice will allow the community to rate voices, ensuring each NPC has the highest quality voice model selected for it. allvoice should order which voices are most important for the community to rate.
 
 
 ## Contributing
