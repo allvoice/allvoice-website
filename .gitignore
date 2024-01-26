@@ -41,6 +41,12 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# misc
 .aider*
 combined.log
 error.log
+
+# internal deployment secret stuff ;)
+bucket-config
+kubernetes
