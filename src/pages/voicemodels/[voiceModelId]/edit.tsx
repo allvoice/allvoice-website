@@ -46,10 +46,7 @@ type ServerProps = {
 export const getServerSideProps: GetServerSideProps<ServerProps> = async (
   ctx,
 ) => {
-  const voiceModelId = z
-    .string()
-    .uuid()
-    .safeParse(ctx.query?.voiceModelId);
+  const voiceModelId = z.string().uuid().safeParse(ctx.query?.voiceModelId);
   if (!voiceModelId.success) {
     return {
       notFound: true,

@@ -24,14 +24,15 @@ const CreatePage: NextPage = () => {
   useEffect(() => {
     if (hasMutated.current) return; // stop double mutate due to strict mode
     if (createVoiceModel.isPending) return;
-    if (uniqueNPCId == null && characterModelId == null && forkVoiceId == null) return;
+    if (uniqueNPCId == null && characterModelId == null && forkVoiceId == null)
+      return;
 
     createVoiceModel.mutate({
       characterModelId: characterModelId,
       uniqueNPCId: uniqueNPCId,
       forkVoiceId: forkVoiceId,
     });
-    hasMutated.current = true
+    hasMutated.current = true;
   }, [characterModelId, createVoiceModel, forkVoiceId, uniqueNPCId]);
 
   return (

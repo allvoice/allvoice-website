@@ -349,7 +349,9 @@ export const voicesRouter = createTRPCRouter({
         (join) => join.seedSound.bucketKey,
       );
 
-      if (seedBucketKeys.length > env.NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES) {
+      if (
+        seedBucketKeys.length > env.NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES
+      ) {
         throw new Error("exceeded maximum active samples limit");
       }
 
