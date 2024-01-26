@@ -13,7 +13,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "~/components/ui/command";
-import { useOpenSearch } from "~/hooks/open-search-hook";
+import { useOpenSearch } from "~/contexts/open-search-hook";
 import { api } from "~/utils/api";
 import { isEmpty } from "~/utils/array-util";
 import ThreeDotsFade from "~/components/spinner";

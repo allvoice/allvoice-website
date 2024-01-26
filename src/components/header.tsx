@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { useOpenSearch } from "~/hooks/open-search-hook";
+import { useOpenSearch } from "~/contexts/open-search-hook";
 import Device from "./device";
 
 const Header: React.FC = ({}) => {

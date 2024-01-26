@@ -4,7 +4,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import CommandBar from "~/components/command-bar";
 import { Toaster } from "~/components/ui/toaster";
-import { OpenSearchProvider } from "~/hooks/open-search-hook";
+import { OpenSearchProvider } from "~/contexts/open-search-hook";
 import "~/styles/globals.css";
 import { api } from "~/utils/api";
 import { Compose } from "~/utils/compose";

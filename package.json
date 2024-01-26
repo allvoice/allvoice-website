@@ -71,6 +71,7 @@
     "svix": "^1.16.0",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
+    "typesafe-context-hook": "^1.0.3",
     "uuid": "^9.0.1",
     "winston": "^3.11.0",
     "zod": "^3.22.4"

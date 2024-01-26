@@ -1,7 +1,7 @@
 import { useState } from "react";
-import createContextHook from "~/utils/createContextHook";
+import createContextHook from "typesafe-context-hook";
 
-export const [useOpenSearch, OpenSearchProvider] = createContextHook(
+export const { useOpenSearch, OpenSearchProvider } = createContextHook(
   "OpenSearch",
   () => {
     const [open, setOpen] = useState(false);
