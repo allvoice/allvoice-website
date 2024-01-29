@@ -194,8 +194,9 @@ class ElevenLabsManager {
 
     if (existingVoiceId) {
       await deleteVoice(existingVoiceId);
-      const keyToDelete = Array.from(this.loadedVoices.entries())
-        .find(([_, voiceIds]) => voiceIds.elevenLabsVoiceId === existingVoiceId)?.[0];
+      const keyToDelete = Array.from(this.loadedVoices.entries()).find(
+        ([_, voiceIds]) => voiceIds.elevenLabsVoiceId === existingVoiceId,
+      )?.[0];
       if (keyToDelete) {
         this.loadedVoices.delete(keyToDelete);
       }
