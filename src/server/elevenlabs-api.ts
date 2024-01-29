@@ -64,10 +64,15 @@ type TTSSettings = {
   optimizeStreamingLatency?: number;
 };
 
+type VoiceIds = {
+  elevenLabsVoiceId: string;
+  prismaVoiceId: string;
+};
+
 class ElevenLabsManager {
   private activeTtsRequests = 0;
   // TODO: back this by redis for multiple replicas
-  private loadedVoices: LRUCache<string, string> = new LRUCache({
+  private loadedVoices: LRUCache<string, VoiceIds> = new LRUCache({
     max: 1000,
   });
   private initialization: Promise<void> | null = null;
@@ -126,12 +131,20 @@ class ElevenLabsManager {
           `Failed to link existing elevenlabs voice to db voice: ${voiceModel.id}`,
         );
       }
-      this.loadedVoices.set(reproducedArgsHash, elevenVoice.voice_id);
+      this.loadedVoices.set(reproducedArgsHash, {
+        elevenLabsVoiceId: elevenVoice.voice_id,
+        prismaVoiceId: voiceModel.id,
+      });
     }
 
     // delete unmatched voices in prod
     if (env.NODE_ENV === "production") {
-      const loadedVoiceIds = new Set(this.loadedVoices.values());
+      const loadedVoiceIds = new Set(
+        Array.from(
+          this.loadedVoices.values(),
+          (voice) => voice.elevenLabsVoiceId,
+        ),
+      );
       const voicesToDelete = existingVoices.data.voices.filter(
         (voice) =>
           !loadedVoiceIds.has(voice.voice_id) &&
@@ -150,7 +163,7 @@ class ElevenLabsManager {
       }
     }
   }
-  private async addVoice(args: AddVoiceArgs): Promise<string> {
+  private async upsertVoice(args: AddVoiceArgs): Promise<string> {
     const { name, bucketKeys } = args;
     const form = new FormData();
 
@@ -175,22 +188,38 @@ class ElevenLabsManager {
         filename: key,
       });
     }
+    const existingVoiceId = Array.from(this.loadedVoices.values()).find(
+      (voice) => voice.prismaVoiceId === args.name,
+    )?.elevenLabsVoiceId;
 
-    const response = await elevenLabsAxios.post<{ voice_id: string }>(
-      "/v1/voices/add",
-      form,
-      {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "multipart/form-data",
+    if (existingVoiceId) {
+      await deleteVoice(existingVoiceId);
+      const keyToDelete = Array.from(this.loadedVoices.entries())
+        .find(([_, voiceIds]) => voiceIds.elevenLabsVoiceId === existingVoiceId)?.[0];
+      if (keyToDelete) {
+        this.loadedVoices.delete(keyToDelete);
+      }
+    }
+
+    try {
+      const response = await elevenLabsAxios.post<{ voice_id: string }>(
+        "/v1/voices/add",
+        form,
+        {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "multipart/form-data",
+          },
         },
-      },
-    );
-
-    if (response.status === 200) {
-      return response.data.voice_id;
-    } else {
-      throw new Error(`Error adding voice: ${response.statusText}`);
+      );
+      if (response.status === 200) {
+        return response.data.voice_id;
+      } else {
+        throw new Error(`Error adding voice: ${response.statusText}`);
+      }
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      throw new Error(`Error adding voice: ${error}`);
     }
   }
 
@@ -199,7 +228,7 @@ class ElevenLabsManager {
     const argHash = hashAddVoiceArgs(args);
     if (this.loadedVoices.has(argHash)) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return this.loadedVoices.get(argHash)!;
+      return this.loadedVoices.get(argHash)!.elevenLabsVoiceId;
     }
 
     // subtract ELEVENLABS_MAX_CONCURRENCY for safety buffer
@@ -209,14 +238,18 @@ class ElevenLabsManager {
     ) {
       const voiceIdToDelete = this.loadedVoices.pop();
       if (voiceIdToDelete) {
-        await deleteVoice(voiceIdToDelete);
+        await deleteVoice(voiceIdToDelete.elevenLabsVoiceId);
       }
     }
 
-    const newVoiceId = await this.addVoice(args);
-    this.loadedVoices.set(argHash, newVoiceId);
+    const newVoiceId = await this.upsertVoice(args);
+    this.loadedVoices.set(argHash, {
+      elevenLabsVoiceId: newVoiceId,
+      prismaVoiceId: args.name,
+    });
     return newVoiceId;
   }
+
   async textToSpeechStream(
     voiceArgs: AddVoiceArgs,
 
