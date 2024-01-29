@@ -209,10 +209,9 @@ const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
                     <FormLabel>Similarity</FormLabel>
                     <InfoPopover>
                       <p className="text-sm">
-                        High similarity boosts overall voice clarity and target
-                        speaker similarity. Very high values can cause
-                        artifacts, so adjusting this setting to find the optimal
-                        value is encouraged.
+                        High similarity boosts target speaker similarity. Very
+                        high values can cause crackling and other compression
+                        artifacts to be replicated.
                       </p>
                     </InfoPopover>
                   </div>
