@@ -1,5 +1,6 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { TRPCError } from "@trpc/server";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { env } from "~/env.mjs";
@@ -16,6 +17,33 @@ export const filesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.voiceModel.findUniqueOrThrow({
+        where: {
+          voice: {
+            ownerUserId: ctx.userId,
+          },
+          id: input.voiceModelId,
+        },
+      });
+
+      const existingFile = await ctx.prisma.seedSound.findFirst({
+        where: {
+          name: input.fileName,
+          voiceModelJoins: {
+            some: {
+              voiceModelId: input.voiceModelId,
+            },
+          },
+        },
+      });
+
+      if (existingFile) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `file with the name "${input.fileName}" already exists for this voice model.`,
+        });
+      }
+
       const key = "seed/" + uuidv4();
 
       const command = new PutObjectCommand({
@@ -69,6 +97,15 @@ export const filesRouter = createTRPCRouter({
   deleteSeedSoundForVoiceModel: privateProcedure
     .input(z.object({ seedSoundId: z.string(), voiceModelId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.voiceModel.findUniqueOrThrow({
+        where: {
+          voice: {
+            ownerUserId: ctx.userId,
+          },
+          id: input.voiceModelId,
+        },
+      });
+
       await ctx.prisma.voiceModelSeedSounds.delete({
         where: {
           voiceModelId_seedSoundId: {

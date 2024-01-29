@@ -82,23 +82,24 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
   });
   const uploadFile = useMutation({
     async mutationFn({ file, active }: { file: File; active: boolean }) {
-      const { uploadUrl, fileId } = await createUploadUrl.mutateAsync({
-        fileName: file.name,
-        voiceModelId: voiceModelId,
-        active: active,
-      });
-      await uploadFileFn(file, uploadUrl);
-      return { fileId };
+      try {
+        const { uploadUrl, fileId } = await createUploadUrl.mutateAsync({
+          fileName: file.name,
+          voiceModelId: voiceModelId,
+          active: active,
+        });
+        await uploadFileFn(file, uploadUrl);
+        return { fileId };
+      } catch (error) {
+        toast({
+          title: "Upload Error",
+          description: `There was an error uploading: ${error instanceof Error ? error.message : String(error)}`,
+        });
+      }
     },
     onSettled(data) {
       void utils.voices.getVoiceModelWorkspace.invalidate({ voiceModelId });
       void utils.files.getSeedSound.invalidate({ id: data?.fileId });
-    },
-    onError(error, variables) {
-      toast({
-        title: "File Upload Error",
-        description: `${variables.file.name} did not upload. Error: ${error.message}`,
-      });
     },
   });
 
