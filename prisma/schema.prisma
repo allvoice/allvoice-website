@@ -22,7 +22,7 @@ model User {
   username String? @unique
 
   elevenlabsCharacterQuotaUsed Int @default(0)
-  elevenlabsCharacterQuota     Int @default(0) // when ready @default(30000)
+  elevenlabsCharacterQuota     Int @default(0)
 
   favorites  Favorite[]
   votes      Vote[]
@@ -58,8 +58,8 @@ model PreviewSound {
   iconEmoji    String
 
   // uploadComplete signifies if we've received the bucket notification indicating the file has been successfully uploaded
-  uploadComplete  Boolean                @default(false)
-  fileSize        BigInt?                @db.UnsignedBigInt
+  uploadComplete Boolean @default(false)
+  fileSize       BigInt? @db.UnsignedBigInt
 
   @@index([voiceModelId])
 }
@@ -74,13 +74,11 @@ model TestSound {
   voiceModelId String
 
   // uploadComplete signifies if we've received the bucket notification indicating the file has been successfully uploaded
-  uploadComplete  Boolean                @default(false)
-  fileSize        BigInt?                @db.UnsignedBigInt
+  uploadComplete Boolean @default(false)
+  fileSize       BigInt? @db.UnsignedBigInt
 
   @@index([voiceModelId])
 }
-
-
 
 model VoiceModel {
   id             String                 @id @default(uuid())
@@ -148,8 +146,8 @@ model Voice {
   // score is upvotes minus downvotes
   score Int @default(0)
 
-  warcraftNpcDisplay  WarcraftNpcDisplay? @relation(fields: [warcraftNpcDisplayId], references: [id])
-  warcraftNpcDisplayId String? 
+  warcraftNpcDisplay   WarcraftNpcDisplay? @relation(fields: [warcraftNpcDisplayId], references: [id])
+  warcraftNpcDisplayId String?
 
   uniqueWarcraftNpc   UniqueWarcraftNpc? @relation(fields: [uniqueWarcraftNpcId], references: [id])
   uniqueWarcraftNpcId String?
@@ -234,14 +232,14 @@ model WarcraftNpcDisplay {
   voices        Voice[]
 
   @@fulltext([voiceName])
-	@@map("WacraftNpcDisplay")
+  @@map("WacraftNpcDisplay")
 }
 
 model WarcraftNpcDisplays {
-  id        String            @id @default(uuid())
+  id        String             @id @default(uuid())
   npcId     Int
   displayId String
-  npc       WarcraftNpc       @relation(fields: [npcId], references: [npcId])
+  npc       WarcraftNpc        @relation(fields: [npcId], references: [npcId])
   display   WarcraftNpcDisplay @relation(fields: [displayId], references: [id])
 
   @@index([npcId])

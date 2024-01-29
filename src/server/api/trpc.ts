@@ -100,12 +100,20 @@ const enforceUserIsAuthenticated = t.middleware(async ({ ctx, next }) => {
     });
   }
 
-  const user = await ctx.prisma.user.findUnique({ where: { id: ctx.userId } });
+  let user = await ctx.prisma.user.findUnique({ where: { id: ctx.userId } });
   if (!user) {
-    await ctx.prisma.user.create({
+    user = await ctx.prisma.user.create({
       data: {
         id: ctx.userId,
+        elevenlabsCharacterQuota: 30000,
       },
+    });
+  }
+
+  if (user.elevenlabsCharacterQuota === 0) {
+    user = await ctx.prisma.user.update({
+      where: { id: ctx.userId },
+      data: { elevenlabsCharacterQuota: 30000 },
     });
   }
 
