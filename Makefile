@@ -1,11 +1,11 @@
-VERSION=v0.3.1
+VERSION=v0.4.0
 
 push: build
 	docker push us-west1-docker.pkg.dev/allvoice/allvoice-docker/allvoice-website:latest
 	docker push us-west1-docker.pkg.dev/allvoice/allvoice-docker/allvoice-website:$(VERSION)
 
 build:
-	docker build \
+	docker build --platform linux/amd64 \
 	-t us-west1-docker.pkg.dev/allvoice/allvoice-docker/allvoice-website:latest \
 	-t us-west1-docker.pkg.dev/allvoice/allvoice-docker/allvoice-website:$(VERSION) \
 	--build-arg "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_Y2xlcmsuYWxsdm9pY2UuYWkk" \
