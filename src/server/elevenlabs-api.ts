@@ -16,6 +16,16 @@ const elevenLabsAxios = axios.create({
   },
 });
 
+// elevenLabsAxios.interceptors.request.use((request) => {
+//   console.log('Sending Request', request.method, request.url)
+//   return request
+// })
+
+// elevenLabsAxios.interceptors.response.use((response) => {
+//   console.log('Responsed')
+//   return response
+// })
+
 async function deleteVoice(voiceId: string) {
   await elevenLabsAxios.delete(`/v1/voices/${voiceId}`);
 }
