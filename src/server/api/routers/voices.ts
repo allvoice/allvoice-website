@@ -1,4 +1,5 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { clerkClient } from "@clerk/nextjs";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { env } from "~/env.mjs";
@@ -16,6 +17,7 @@ import {
   getFirstNSentences,
   renderWarcraftTemplate,
 } from "~/utils/warcraft-template-util";
+import logger from "~/logger";
 
 export const voicesRouter = createTRPCRouter({
   listVoices: publicProcedure
@@ -247,6 +249,22 @@ export const voicesRouter = createTRPCRouter({
         },
       });
 
+      try {
+        const user = await ctx.prisma.user.findUnique({
+          where: { id: ctx.userId },
+        });
+        if (!user?.username) {
+          const clerkUser = await clerkClient.users.getUser(ctx.userId);
+          if (clerkUser.username) {
+            await ctx.prisma.user.update({
+              where: { id: ctx.userId },
+              data: { username: clerkUser.username },
+            });
+          }
+        }
+      } catch (error) {
+        logger.warn("updating user username", error);
+      }
       // make auto-preview noises
 
       const voice = await ctx.prisma.voice.update({
