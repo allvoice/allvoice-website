@@ -137,7 +137,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDropAccepted: onDropAccepted,
-    accept: { "audio/mpeg": [], "audio/ogg": [] },
+    accept: { "audio/*": [],},
     maxFiles: 0,
     maxSize: 10000000,
   });
@@ -195,7 +195,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
             <div className="flex h-full w-full flex-col">
               <UploadCloud className="h-full w-full stroke-slate-200" />
               <span className="mx-auto select-none text-sm text-slate-500">
-                Click or drag mp3 or ogg files to upload.
+                Click or drag audio files to upload.
               </span>
             </div>
           )}
