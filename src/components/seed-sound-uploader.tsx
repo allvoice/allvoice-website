@@ -137,7 +137,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDropAccepted: onDropAccepted,
-    accept: { "audio/*": [],},
+    accept: { "audio/*": [] },
     maxFiles: 0,
     maxSize: 10000000,
   });
@@ -194,8 +194,10 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
           ) : (
             <div className="flex h-full w-full flex-col">
               <UploadCloud className="h-full w-full stroke-slate-200" />
-              <span className="mx-auto select-none text-sm text-slate-500">
+              <span className="mx-auto select-none text-sm text-center text-slate-500">
                 Click or drag audio files to upload.
+                <br />
+                Per file max 10MB. No limit on # of files.
               </span>
             </div>
           )}
