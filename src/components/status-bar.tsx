@@ -64,7 +64,7 @@ const StatusBar: React.FC<Props> = ({ className }) => {
   const utils = api.useUtils();
 
   const getUserDetails = api.users.getUserDetails.useQuery(undefined, {
-    enabled: user.isSignedIn,
+    enabled: user.isSignedIn ?? false, // fixes this fetching for a public user. user.isSignedIn could be undefined for a few renders i think.
   });
   const updateWarcraftLink = api.voices.updateWarcraftLink.useMutation({
     onMutate: async ({
