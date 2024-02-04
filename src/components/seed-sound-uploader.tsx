@@ -137,11 +137,34 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDropAccepted: onDropAccepted,
-    accept: { "audio/*": [] },
+    onDropRejected(fileRejections) {
+      const rejectionDescriptions = fileRejections
+        .map((rejection) => {
+          const sizeInKB = rejection.file.size / 1024;
+          const sizeInMB = sizeInKB / 1024;
+          const humanReadableSize =
+            sizeInMB > 1
+              ? `${sizeInMB.toFixed(2)} MB`
+              : `${sizeInKB.toFixed(2)} KB`;
+          const errorMessages = rejection.errors
+            .map((error) => error.message)
+            .join(", ");
+          return `${rejection.file.name} type(${rejection.file.type}) size(${humanReadableSize}) errors(${errorMessages})`;
+        })
+        .join(", ");
+      // TODO: switch to sonner https://ui.shadcn.com/docs/components/sonner for toast
+      // https://sonner.emilkowal.ski/
+      toast({
+        title: "File Rejected",
+        description: `Rejected files:\n${rejectionDescriptions}.`,
+        duration: 10000,
+        variant: "destructive",
+      });
+    },
+    accept: { "audio/*": [], 'video/ogg': [] },
     maxFiles: 0,
     maxSize: 10000000,
   });
-
   const [, activeDrop] = useDrop(
     () => ({
       accept: ItemTypes.SOURCE_SOUND,
@@ -194,7 +217,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
           ) : (
             <div className="flex h-full w-full flex-col">
               <UploadCloud className="h-full w-full stroke-slate-200" />
-              <span className="mx-auto select-none text-sm text-center text-slate-500">
+              <span className="mx-auto select-none text-center text-sm text-slate-500">
                 Click or drag audio files to upload.
                 <br />
                 Per file max 10MB. No limit on # of files.
