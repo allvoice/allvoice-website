@@ -61,6 +61,7 @@ note: this will be missing voicelines, but contain npcs
 ### setup s3 bucket
 
 - ensure the containers are up from docker compose
+- run `./bucket-config/apply-bucket-configs.sh`. (if the script is not executable, use `chmod +x ./bucket-config/apply-bucket-configs.sh`)
 - navigate to <http://localhost:9001> and make a bucket and access key
 - update .env with BUCKET_NAME, AWS_ACCESS_KEY_ID, and AWS_SECRET_ACCESS_KEY
 
