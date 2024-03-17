@@ -11,6 +11,7 @@
     "start": "next start",
     "db:gen": "prisma generate",
     "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "postinstall": "pnpm db:gen",
     "lint": "next lint",

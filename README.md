@@ -27,11 +27,13 @@ I am going to try to populate this README and github issues with modular pieces 
 All of the setup is required to run.
 
 ### setup software
+
 - node lts v20 (i use [nvm](https://github.com/nvm-sh/nvm) / [nvm-windows](https://github.com/coreybutler/nvm-windows) to manage my node installs)
 - [pnpm](https://pnpm.io/installation) (performant npm)
 - [docker](https://www.docker.com/) (manages local db + s3 bucket from docker-compose)
 
 ### setup project
+
 - clone project
 - open in vscode or [cursor](https://cursor.sh/)
 - `pnpm install`
@@ -39,28 +41,34 @@ All of the setup is required to run.
 - copy .env.example to .env `cp .env.example .env`
 
 ### setup mysql db
-- run `pnpm seed`
+
+- run `pnpm db:push` to push the Database schema.
+- run `pnpm db:seed`
 - this might take a few mins so move on
 
 note: this will be missing voicelines, but contain npcs
 
 ### setup clerk
+
 - setup a [clerk](https://clerk.com) account for auth (should take less than 2 mins)
 - update .env with NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY
 
 ### setup elevenlabs
+
 - setup an [elevenlabs](https://elevenlabs.io) account for voice generation (need at least the $1 paid tier)
 - update .env with ELEVENLABS_API_KEY
 
 ### setup s3 bucket
-- ensure the containers are up from docker compose
-- navigate to http://localhost:9001 and make a bucket and access key
-- update .env with BUCKET_NAME, AWS_ACCESS_KEY_ID, and AWS_SECRET_ACCESS_KEY
 
+- ensure the containers are up from docker compose
+- run `./bucket-config/apply-bucket-configs.sh`. (if the script is not executable, use `chmod +x ./bucket-config/apply-bucket-configs.sh`)
+- navigate to <http://localhost:9001> and make a bucket and access key
+- update .env with BUCKET_NAME, AWS_ACCESS_KEY_ID, and AWS_SECRET_ACCESS_KEY
 
 ### run the website
 
 - `pnpm dev`
 
 ## [cursor](https://cursor.sh/) prompt
+
 ```im using typescript, functional react 18, nextjs page router, tailwind, trpc, prisma, and react query 5 with the trpc integration. T3 stack is the name of the stack im using. use env instead of process.env```

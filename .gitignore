@@ -48,6 +48,5 @@ combined.log
 error.log
 
 # internal deployment secret stuff ;)
-bucket-config
 kubernetes
 docker-data
