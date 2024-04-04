@@ -6,7 +6,7 @@ import { api, type VoiceListInput } from "~/utils/api";
 
 const Home: NextPage = () => {
   const [initialOrder, setInitialOrder] = useState<string[]>([]);
-  const voiceListInput = { sortType: "popular" } as VoiceListInput;
+  const voiceListInput = { sortType: "newest" } as VoiceListInput;
   const voiceQuery = api.voices.listVoices.useQuery(voiceListInput, {
     select(data) {
       if (initialOrder.length === 0 && data.length > 0) {
