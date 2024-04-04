@@ -19,19 +19,30 @@ export const { useAllvoiceUser, AllvoiceUserProvider } = createContextHook(
   "AllvoiceUser",
   () => {
     const clerk = useUser();
-    const [tempUserId, setTempUserId] = useState<string | null>(null);
+    const [tempUserId, setTempUserId] = useState<string | null>(() => {
+      if (typeof window !== "undefined") {
+        return localStorage.getItem("tempUserId");
+      }
+      return null;
+    });
 
     useEffect(() => {
-      if (typeof window !== "undefined") {
-        const storedTempUserId = localStorage.getItem("tempUserId");
-        if (storedTempUserId) {
-          setTempUserId(storedTempUserId);
-        } else {
-          const newTempUserId = createId();
-          localStorage.setItem("tempUserId", newTempUserId);
-          setTempUserId(newTempUserId);
-        }
+      if (typeof window !== "undefined" && tempUserId === null) {
+        const newTempUserId = createId();
+        localStorage.setItem("tempUserId", newTempUserId);
+        setTempUserId(newTempUserId);
       }
+    }, [tempUserId]);
+
+    useEffect(() => {
+      const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === "tempUserId") {
+          setTempUserId(event.newValue);
+        }
+      };
+
+      window.addEventListener("storage", handleStorageChange);
+      return () => window.removeEventListener("storage", handleStorageChange);
     }, []);
 
     const user = api.users.syncUser.useQuery(
