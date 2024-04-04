@@ -7,9 +7,12 @@ const VoicePage: NextPage = () => {
   const router = useRouter();
   // validate this better later, possibly serverside before rendering the page
   const voiceId = (router.query.voiceId ?? "") as string;
-  const voiceDetails = api.voices.getVoiceDetails.useQuery({
-    voiceId: voiceId,
-  });
+  const voiceDetails = api.voices.getVoiceDetails.useQuery(
+    {
+      voiceId: voiceId,
+    },
+    { enabled: voiceId != "" },
+  );
   if (voiceDetails.isLoading) return <h2>Loading...</h2>;
   return (
     <MainLayout>
