@@ -1,4 +1,4 @@
-VERSION=v0.4.8
+VERSION=v0.4.9
 
 push: build
 	docker push us-west1-docker.pkg.dev/allvoice/allvoice-docker/allvoice-website:latest

@@ -17,6 +17,8 @@ import Link from "next/link";
 import { PlayButton } from "./play-button";
 import { VoteType, type Vote, type Favorite } from "@prisma/client";
 import { cn } from "~/utils/ui";
+import { useRouter } from "next/router";
+import { useUser } from "@clerk/nextjs";
 
 type Props = {
   voice: VoiceListElement;
@@ -26,6 +28,9 @@ type Props = {
 };
 
 const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
+  const { isSignedIn } = useUser();
+  const router = useRouter();
+
   const utils = api.useUtils();
   const isBookmarked = voice.favorites?.[0] != null;
   const currVote = voice.votes?.[0];
@@ -104,17 +109,38 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
     },
   });
 
-  const onUpvote = () => {
+  const onUpvote = async () => {
+    if (!isSignedIn) {
+      await router.push("/sign-in");
+      return;
+    }
+
     rateVoice.mutate({
       voiceId: voice.id,
       action: "upvote",
     });
   };
 
-  const onDownvote = () => {
+  const onDownvote = async () => {
+    if (!isSignedIn) {
+      await router.push("/sign-in");
+      return;
+    }
+
     rateVoice.mutate({
       voiceId: voice.id,
       action: "downvote",
+    });
+  };
+
+  const onBookmark = async () => {
+    if (!isSignedIn) {
+      await router.push("/sign-in");
+      return;
+    }
+
+    bookmarkVoice.mutate({
+      voiceId: voice.id,
     });
   };
 
@@ -157,11 +183,7 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
           <Button
             className="rounded-md bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
             variant="ghost"
-            onClick={() =>
-              bookmarkVoice.mutate({
-                voiceId: voice.id,
-              })
-            }
+            onClick={onBookmark}
             disabled={bookmarkVoice.isPending}
           >
             <Bookmark
@@ -225,15 +247,6 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
             </PopoverTrigger>
             <PopoverContent>
               <div className="w-full space-y-2">
-                {/* <Button
-                  className="flex w-full items-center justify-start rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                  variant="outline"
-                >
-                  <Bookmark className="mr-2 h-5 w-5 text-gray-500" />
-                  <span className="text-sm text-gray-500 dark:text-gray-300">
-                    Bookmark
-                  </span>
-                  </Button> */}
                 <Link href={`/voicemodels/create?fork=${voice.id}`}>
                   <Button
                     className="flex w-full items-center justify-start rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
