@@ -1,5 +1,6 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { clerkClient } from "@clerk/nextjs";
+import { TRPCError } from "@trpc/server";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { env } from "~/env.mjs";
@@ -12,7 +13,6 @@ import {
 } from "~/server/api/trpc";
 import { checkCharacterQuota, recordUsedCharacterQuota } from "~/server/db";
 import { elevenLabsManager } from "~/server/elevenlabs-api";
-import { PREVIEW_TEXTS } from "~/server/preview-text";
 import { getPublicUrl, s3Client } from "~/server/s3";
 import { voiceEditFormSchema } from "~/utils/schema";
 import {
@@ -284,46 +284,96 @@ export const voicesRouter = createTRPCRouter({
         bucketKeys: seedBucketKeys,
       });
 
-      for (const previewText of PREVIEW_TEXTS) {
-        const ttsResponse = await elevenLabsManager.textToSpeechStream(
-          {
-            name: input.voiceModelId,
-            bucketKeys: seedBucketKeys,
-          },
-          {
-            text: previewText.text,
-            modelId: voiceModel.elevenLabsModelId,
-            generationSettings: {
-              similarity_boost: voiceModel.elevenLabsSimilarityBoost,
-              stability: voiceModel.elevenLabsStability,
-              style: voiceModel.elevenLabsStyle,
-              use_speaker_boost: voiceModel.elevenLabsSpeakerBoost,
+      // Get a random voiceline related to the linked charactermodel or NPC
+      let randomVoiceline: string | undefined;
+      if (voice.uniqueWarcraftNpcId) {
+        const uniqueNpc = await ctx.prisma.uniqueWarcraftNpc.findUnique({
+          where: { id: voice.uniqueWarcraftNpcId },
+          include: {
+            npcs: {
+              include: {
+                rawVoicelines: true,
+              },
             },
           },
-        );
-
-        await recordUsedCharacterQuota(ctx.userId, previewText.text.length);
-
-        const genKey = `preview/${uuidv4()}`;
-
-        await ctx.prisma.previewSound.create({
-          data: {
-            iconEmoji: previewText.emoji,
-            bucketKey: genKey,
-            voiceModel: { connect: { id: voiceModel.id } },
-          },
         });
-
-        const putObjectCommand = new PutObjectCommand({
-          Bucket: env.BUCKET_NAME,
-          Key: genKey,
-          Body: ttsResponse.stream,
-          ContentLength: ttsResponse.contentLength,
-          ContentType: ttsResponse.contentType,
-        });
-
-        await s3Client.send(putObjectCommand);
+        const allVoicelines =
+          uniqueNpc?.npcs.flatMap((npc) =>
+            npc.rawVoicelines.map((voiceline) => voiceline.text),
+          ) ?? [];
+        randomVoiceline =
+          allVoicelines[Math.floor(Math.random() * allVoicelines.length)];
+      } else if (voice.warcraftNpcDisplayId) {
+        const warcraftNpcDisplay =
+          await ctx.prisma.warcraftNpcDisplay.findUnique({
+            where: { id: voice.warcraftNpcDisplayId },
+            include: {
+              npcs: {
+                include: {
+                  npc: {
+                    include: {
+                      rawVoicelines: true,
+                    },
+                  },
+                },
+              },
+            },
+          });
+        const allVoicelines =
+          warcraftNpcDisplay?.npcs.flatMap((npc) =>
+            npc.npc.rawVoicelines.map((voiceline) => voiceline.text),
+          ) ?? [];
+        randomVoiceline =
+          allVoicelines[Math.floor(Math.random() * allVoicelines.length)];
       }
+
+      if (!randomVoiceline) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No voiceline could be found for the linked entity.",
+        });
+      }
+      const renderedTexts = renderWarcraftTemplate(randomVoiceline);
+      const renderedText = renderedTexts.text;
+
+      const ttsResponse = await elevenLabsManager.textToSpeechStream(
+        {
+          name: input.voiceModelId,
+          bucketKeys: seedBucketKeys,
+        },
+        {
+          text: renderedText,
+          modelId: voiceModel.elevenLabsModelId,
+          generationSettings: {
+            similarity_boost: voiceModel.elevenLabsSimilarityBoost,
+            stability: voiceModel.elevenLabsStability,
+            style: voiceModel.elevenLabsStyle,
+            use_speaker_boost: voiceModel.elevenLabsSpeakerBoost,
+          },
+        },
+      );
+
+      await recordUsedCharacterQuota(ctx.userId, renderedText.length);
+
+      const genKey = `preview/${uuidv4()}`;
+
+      await ctx.prisma.previewSound.create({
+        data: {
+          iconEmoji: "🗣️",
+          bucketKey: genKey,
+          voiceModel: { connect: { id: voiceModel.id } },
+        },
+      });
+
+      const putObjectCommand = new PutObjectCommand({
+        Bucket: env.BUCKET_NAME,
+        Key: genKey,
+        Body: ttsResponse.stream,
+        ContentLength: ttsResponse.contentLength,
+        ContentType: ttsResponse.contentType,
+      });
+
+      await s3Client.send(putObjectCommand);
 
       await ctx.prisma.voiceModel.update({
         where: { id: voiceModel.id },
