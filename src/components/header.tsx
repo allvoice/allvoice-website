@@ -1,12 +1,15 @@
 /* eslint-disable @next/next/no-img-element */
-import { UserButton } from "@clerk/nextjs";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { useOpenSearch } from "~/contexts/open-search-hook";
 import Device from "./device";
 import { PlusIcon } from "@heroicons/react/20/solid";
+import { Button } from "./ui/button";
+import { useRouter } from "next/router";
 
 const Header: React.FC = ({}) => {
   const { setOpen } = useOpenSearch();
+  const router = useRouter();
 
   return (
     <nav className="border-b bg-white">
@@ -39,7 +42,16 @@ const Header: React.FC = ({}) => {
               </Link>
             </div>
             <div className="ml-4">
-              <UserButton />
+              <SignedOut>
+                <SignInButton mode="modal" redirectUrl={router.asPath}>
+                  <Button variant="ghost" className="px-3 py-2">
+                    Sign in
+                  </Button>
+                </SignInButton>
+              </SignedOut>
+              <SignedIn>
+                <UserButton afterSignOutUrl={router.asPath} />
+              </SignedIn>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
-import { type ReactNode } from "react";
-import { UserButton } from "@clerk/nextjs";
+import { SignedIn, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { type ReactNode } from "react";
 import StatusBar from "~/components/status-bar";
 
 type Props = {
@@ -14,6 +15,8 @@ const SidebarLayout: React.FC<Props> = ({
   sidebarChildren,
   sidebarPosition = "right",
 }) => {
+  const router = useRouter();
+
   return (
     <>
       <nav className="h-10 border-b bg-white">
@@ -27,7 +30,9 @@ const SidebarLayout: React.FC<Props> = ({
             <div className="flex items-center">
               <div className="flex-shrink-0"></div>
               <div className="ml-4">
-                <UserButton />
+                <SignedIn>
+                  <UserButton afterSignOutUrl={router.asPath} />
+                </SignedIn>
               </div>
             </div>
           </div>

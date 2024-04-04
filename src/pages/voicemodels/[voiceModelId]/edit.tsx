@@ -1,10 +1,10 @@
-import { useUser } from "@clerk/nextjs";
+import { SignInButton, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { throttle } from "lodash";
 import { type GetServerSideProps, type NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
-import { type DeepPartial, useForm } from "react-hook-form";
+import { useForm, type DeepPartial } from "react-hook-form";
 import { useGlobalAudioPlayer } from "react-use-audio-player";
 import { z } from "zod";
 import { InfoPopover } from "~/components/info-popover";
@@ -144,10 +144,8 @@ const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
   >();
   const handleGenerate = form.handleSubmit(async (data) => {
     if (!isSignedIn) {
-      await router.push("/sign-in");
       return;
     }
-
     if (!isNPCSelected) {
       setIsNPCPickerOpen(true);
       return;
@@ -163,6 +161,9 @@ const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
   });
 
   const handlePost = form.handleSubmit(async () => {
+    if (!isSignedIn) {
+      return;
+    }
     await router.push(`/voicemodels/${voiceModelId}/post`);
   });
 
@@ -367,33 +368,48 @@ const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
               />
             </form>
             <div className="flex flex-1 flex-col justify-end space-y-2">
-              <div className="flex space-x-1">
+              <SignedIn>
+                <div className="flex space-x-1">
+                  <Button
+                    className="flex-grow"
+                    type="button"
+                    onClick={handleGenerate}
+                    disabled={generateTestSound.isPending}
+                  >
+                    {generateTestSound.isPending ? (
+                      <ThreeDotsFade className="w-5 fill-white" />
+                    ) : (
+                      "Generate"
+                    )}
+                  </Button>
+                  {testGeneratedSoundUrl && (
+                    <div>
+                      <PlayButton
+                        soundUrl={testGeneratedSoundUrl}
+                        dark={true}
+                      />
+                    </div>
+                  )}
+                </div>
                 <Button
-                  className="flex-grow"
+                  className="w-full"
                   type="button"
-                  onClick={handleGenerate}
+                  onClick={handlePost}
                   disabled={generateTestSound.isPending}
                 >
-                  {generateTestSound.isPending ? (
-                    <ThreeDotsFade className="w-5 fill-white" />
-                  ) : (
-                    "Generate"
-                  )}
+                  Post
                 </Button>
-                {testGeneratedSoundUrl && (
-                  <div>
-                    <PlayButton soundUrl={testGeneratedSoundUrl} dark={true} />
-                  </div>
-                )}
-              </div>
-              <Button
-                className="w-full"
-                type="button"
-                onClick={handlePost}
-                disabled={generateTestSound.isPending}
-              >
-                Post
-              </Button>
+              </SignedIn>
+              <SignedOut>
+                <SignInButton mode="modal" redirectUrl={router.asPath}>
+                  <Button className="w-full" type="button">
+                    Sign in to Generate
+                  </Button>
+                </SignInButton>
+                <p className="mt-2 text-center text-sm text-gray-500">
+                  Signing in helps prevent abuse and ensures fair use of the AI.
+                </p>
+              </SignedOut>
             </div>
           </Form>
         }

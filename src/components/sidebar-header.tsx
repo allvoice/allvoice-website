@@ -2,8 +2,11 @@
 import { UserButton } from "@clerk/nextjs";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const SidebarHeader: React.FC = ({}) => {
+  const router = useRouter();
+
   return (
     <nav className="bg-white shadow">
       <div className="px-4 sm:px-6 lg:px-8">
@@ -20,7 +23,7 @@ const SidebarHeader: React.FC = ({}) => {
               </Link>
             </div>
             <div className="ml-4">
-              <UserButton />
+              <UserButton afterSignOutUrl={router.asPath} />
             </div>
           </div>
         </div>
