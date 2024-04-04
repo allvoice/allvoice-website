@@ -164,6 +164,10 @@ const VoiceEdit: NextPage<ServerProps> = (serverProps) => {
     if (!isSignedIn) {
       return;
     }
+    if (!isNPCSelected) {
+      setIsNPCPickerOpen(true);
+      return;
+    }
     await router.push(`/voicemodels/${voiceModelId}/post`);
   });
 
