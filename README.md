@@ -12,11 +12,11 @@ This website is going to support [World of Warcraft VoiceOver](https://github.co
 
 ### Creating Voices
 
-allvoice will feature a robust voice editor that makes it easy for anyone to contribute voice models for NPCs.
+allvoice features a robust voice editor that makes it easy for anyone to contribute voice models for NPCs.
 
 ### Rating Voices
 
-allvoice will allow the community to rate voices, ensuring each NPC has the highest quality voice model selected for it. allvoice should order which voices are most important for the community to rate.
+allvoice allows the community to rate voices, ensuring each NPC has the highest quality voice model selected for it. allvoice should order which voices are most important for the community to rate.
 
 ## Contributing
 
