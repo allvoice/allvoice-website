@@ -62,7 +62,7 @@ const NPCPicker: React.FC<Props> = (props) => {
             {search.data?.npcs.slice(0, 3).map((npc) => (
               <CommandItem
                 key={npc.id}
-                value={npc.name}
+                value={npc.name.replace(/"/g, "")}
                 onSelect={() => props.onSelectNPC(npc.id, npc.name)}
               >
                 <User className="mr-2 h-4 w-4" />
@@ -78,7 +78,7 @@ const NPCPicker: React.FC<Props> = (props) => {
             {search.data?.characterModels.slice(0, 3).map((characterModel) => (
               <CommandItem
                 key={characterModel.id}
-                value={characterModel.voiceName}
+                value={characterModel.voiceName.replace(/"/g, "")}
                 onSelect={() =>
                   props.onSelectCharacterModel(
                     characterModel.id,
