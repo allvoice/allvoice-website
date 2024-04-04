@@ -17,8 +17,6 @@ import Link from "next/link";
 import { PlayButton } from "./play-button";
 import { VoteType, type Vote, type Favorite } from "@prisma/client";
 import { cn } from "~/utils/ui";
-import { useRouter } from "next/router";
-import { useUser } from "@clerk/nextjs";
 
 type Props = {
   voice: VoiceListElement;
@@ -28,9 +26,6 @@ type Props = {
 };
 
 const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
-  const { isSignedIn } = useUser();
-  const router = useRouter();
-
   const utils = api.useUtils();
   const isBookmarked = voice.favorites?.[0] != null;
   const currVote = voice.votes?.[0];
@@ -109,36 +104,21 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
     },
   });
 
-  const onUpvote = async () => {
-    if (!isSignedIn) {
-      await router.push("/sign-in");
-      return;
-    }
-
+  const onUpvote = () => {
     rateVoice.mutate({
       voiceId: voice.id,
       action: "upvote",
     });
   };
 
-  const onDownvote = async () => {
-    if (!isSignedIn) {
-      await router.push("/sign-in");
-      return;
-    }
-
+  const onDownvote = () => {
     rateVoice.mutate({
       voiceId: voice.id,
       action: "downvote",
     });
   };
 
-  const onBookmark = async () => {
-    if (!isSignedIn) {
-      await router.push("/sign-in");
-      return;
-    }
-
+  const onBookmark = () => {
     bookmarkVoice.mutate({
       voiceId: voice.id,
     });

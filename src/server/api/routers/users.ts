@@ -8,58 +8,103 @@ export const usersRouter = createTRPCRouter({
   syncUser: anyUserProcedure
     .input(
       z.object({
-        clerkIsSignedIn: z.boolean().optional(), // convenient way to retrigger sync on state change
+        clerkIsSignedIn: z.boolean().optional(),
       }),
     )
     .query(async ({ ctx }) => {
       if (ctx.userVerified === true) {
         const clerkId = ctx.userId;
-        const tempId = ctx.tempId!;
+        const tempId = ctx.tempId;
+        if (!tempId) return;
 
-        let user = await ctx.prisma.user.findUnique({
+        const clerkUser = await ctx.prisma.user.findUnique({
           where: { id: clerkId },
         });
 
-        // try upgrading the tempuser
-        if (!user) {
-          user = await ctx.prisma.user.findUnique({
-            where: { id: tempId },
-          });
+        const tempUser = await ctx.prisma.user.findUnique({
+          where: { id: tempId },
+          include: {
+            favorites: true,
+            votes: true,
+            voices: true,
+            seedSounds: true,
+          },
+        });
 
-          if (user) {
-            user = await ctx.prisma.user.update({
+        if (clerkUser && tempUser) {
+          const transferData = [
+            // Transfer non-duplicate favorites
+            ctx.prisma.favorite.createMany({
+              data: tempUser.favorites.map((favorite) => ({
+                userId: clerkId,
+                voiceId: favorite.voiceId,
+              })),
+              skipDuplicates: true,
+            }),
+            ctx.prisma.favorite.deleteMany({
+              where: { userId: tempId },
+            }),
+            // Transfer non-duplicate votes
+            ctx.prisma.vote.createMany({
+              data: tempUser.votes.map((vote) => ({
+                userId: clerkId,
+                voiceId: vote.voiceId,
+                type: vote.type,
+              })),
+              skipDuplicates: true,
+            }),
+            ctx.prisma.vote.deleteMany({
+              where: { userId: tempId },
+            }),
+            // Transfer voices
+            ctx.prisma.voice.updateMany({
+              where: { ownerUserId: tempId },
+              data: { ownerUserId: clerkId },
+            }),
+            // Transfer seed sounds
+            ctx.prisma.seedSound.updateMany({
+              where: { uploaderId: tempId },
+              data: { uploaderId: clerkId },
+            }),
+            // Delete the temp user after transferring the data
+            ctx.prisma.user.delete({
               where: { id: tempId },
-              data: {
-                id: clerkId,
-                elevenlabsCharacterQuota: 100_000,
-              },
-            });
-          }
-        }
+            }),
+          ];
 
-        // there was no tempuser, make a new user
-        if (!user) {
-          user = await ctx.prisma.user.create({
+          await ctx.prisma.$transaction(transferData);
+
+          return await ctx.prisma.user.findUnique({
+            where: { id: clerkId },
+          });
+        } else if (tempUser) {
+          // Only temp user exists, upgrade the temp user
+          const upgradedUser = await ctx.prisma.user.update({
+            where: { id: tempId },
             data: {
               id: clerkId,
               elevenlabsCharacterQuota: 100_000,
             },
           });
-        }
 
-        if (
-          user.elevenlabsCharacterQuota === 0 ||
-          user.elevenlabsCharacterQuota === 30_000
-        ) {
-          user = await ctx.prisma.user.update({
-            where: { id: clerkId },
-            data: { elevenlabsCharacterQuota: 100_000 }, // everyones getting 100,000 characters to play with <3
+          return upgradedUser;
+        } else if (clerkUser) {
+          // Clerk user exists but temp user doesn't
+          return clerkUser;
+        } else {
+          // Neither Clerk user nor temp user exists, create a new user
+          const newUser = await ctx.prisma.user.create({
+            data: {
+              id: clerkId,
+              elevenlabsCharacterQuota: 100_000,
+            },
           });
-        }
 
-        return user;
+          return newUser;
+        }
       }
 
+      // User is not verified, handle temp user logic
       const tempId = ctx.userId;
       let user = await ctx.prisma.user.findUnique({
         where: { id: tempId },
