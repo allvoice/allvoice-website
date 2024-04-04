@@ -1,6 +1,6 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { clerkClient } from "@clerk/nextjs";
-import { RawVoiceline } from "@prisma/client";
+import { type RawVoiceline } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";

@@ -61,7 +61,6 @@ export const renderWarcraftTemplate = (
   };
 };
 
-
 export const getGenderSpecificRenderedText = (renderedTexts: {
   text?: string;
   maleText?: string;
@@ -87,6 +86,6 @@ export const getGenderSpecificRenderedText = (renderedTexts: {
     renderedText = renderedTexts.femaleText;
     femaleOnly = true;
   }
-  
+
   return { renderedText: renderedText!, maleOnly, femaleOnly };
 };
