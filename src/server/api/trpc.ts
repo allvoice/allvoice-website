@@ -15,8 +15,6 @@
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
-
-import { type RequestLike } from "@clerk/nextjs/dist/types/server/types";
 import { getAuth } from "@clerk/nextjs/server";
 import { TRPCError, initTRPC } from "@trpc/server";
 import superjson from "superjson";
@@ -31,21 +29,30 @@ import { prisma } from "~/server/db";
  */
 export const createTRPCContext = (opts: CreateNextContextOptions) => {
   const { req } = opts;
-  const { userId } = getAuth(req);
+  const clerk = getAuth(req);
+  const tempUserId = req.headers["x-temp-user-id"] as string | undefined;
 
-  return {
-    prisma,
-    userId,
-  };
-};
-
-export const createTRPCSSRContext = (req: RequestLike) => {
-  const { userId } = getAuth(req);
-
-  return {
-    prisma,
-    userId,
-  };
+  if (clerk.userId) {
+    // Verified user
+    return {
+      prisma,
+      userId: clerk.userId,
+      tempId: tempUserId,
+      userVerified: true,
+    };
+  } else if (tempUserId) {
+    // Temporary user
+    return {
+      prisma,
+      userId: tempUserId,
+      userVerified: false,
+    };
+  } else {
+    // No user
+    return {
+      prisma,
+    };
+  }
 };
 
 /**
@@ -84,44 +91,49 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
  */
 export const createTRPCRouter = t.router;
 
-/**
- * Public (unauthenticated) procedure
- *
- * This is the base piece you use to build new queries and mutations on your tRPC API. It does not
- * guarantee that a user querying is authorized, but you can still access user session data if they
- * are logged in.
- */
 export const publicProcedure = t.procedure;
 
-const enforceUserIsAuthenticated = t.middleware(async ({ ctx, next }) => {
-  if (!ctx.userId) {
+const enforceAnyUser = t.middleware(async ({ ctx, next }) => {
+  if (ctx.userVerified == undefined) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
     });
   }
 
-  let user = await ctx.prisma.user.findUnique({ where: { id: ctx.userId } });
-  if (!user) {
-    user = await ctx.prisma.user.create({
-      data: {
-        id: ctx.userId,
-        elevenlabsCharacterQuota: 30000,
+  if (ctx.userVerified == false) {
+    return next({
+      ctx: {
+        userId: ctx.userId,
+        userVerified: false,
       },
     });
   }
 
-  if (user.elevenlabsCharacterQuota === 0) {
-    user = await ctx.prisma.user.update({
-      where: { id: ctx.userId },
-      data: { elevenlabsCharacterQuota: 30000 },
+  // user is verified
+  return next({
+    ctx: {
+      userId: ctx.userId,
+      tempId: ctx.tempId as string,
+      userVerified: true,
+    },
+  });
+});
+export const anyUserProcedure = t.procedure.use(enforceAnyUser);
+
+const enforceVerifiedUser = t.middleware(async ({ ctx, next }) => {
+  if (ctx.userVerified == undefined || ctx.userVerified == false) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
     });
   }
 
   return next({
     ctx: {
       userId: ctx.userId,
+      tempId: ctx.tempId,
+      userVerified: true,
     },
   });
 });
 
-export const privateProcedure = t.procedure.use(enforceUserIsAuthenticated);
+export const verifiedUserProcedure = t.procedure.use(enforceVerifiedUser);

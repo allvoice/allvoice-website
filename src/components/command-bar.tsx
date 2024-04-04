@@ -1,9 +1,10 @@
 "use client";
 
-import { useDebounce } from "@uidotdev/usehooks";
 import { User } from "lucide-react";
-import React, { useEffect, useState } from "react";
-
+import { useRouter } from "next/router";
+import React, { useEffect } from "react";
+import { useDebounceValue } from "usehooks-ts";
+import ThreeDotsFade from "~/components/spinner";
 import {
   CommandDialog,
   CommandEmpty,
@@ -16,8 +17,6 @@ import {
 import { useOpenSearch } from "~/contexts/open-search-hook";
 import { api } from "~/utils/api";
 import { isEmpty } from "~/utils/array-util";
-import ThreeDotsFade from "~/components/spinner";
-import { useRouter } from "next/router";
 
 const CommandBar: React.FC = () => {
   const router = useRouter();
@@ -35,8 +34,7 @@ const CommandBar: React.FC = () => {
     return () => document.removeEventListener("keydown", down);
   }, [setOpen]);
 
-  const [input, setInput] = useState("");
-  const debouncedInput = useDebounce(input, 400);
+  const [debouncedInput, setInput] = useDebounceValue("", 400);
   const isDebouncedInputEmpty = debouncedInput == "";
   const search = api.search.search.useQuery(
     { query: debouncedInput },
@@ -59,7 +57,6 @@ const CommandBar: React.FC = () => {
   return (
     <CommandDialog shouldFilter={false} open={open} onOpenChange={setOpen}>
       <CommandInput
-        value={input}
         onValueChange={setInput}
         placeholder="Type a command or search..."
       />

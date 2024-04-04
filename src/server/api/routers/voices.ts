@@ -3,10 +3,12 @@ import { clerkClient } from "@clerk/nextjs";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { env } from "~/env.mjs";
+import logger from "~/logger";
 import {
+  anyUserProcedure,
   createTRPCRouter,
-  privateProcedure,
   publicProcedure,
+  verifiedUserProcedure,
 } from "~/server/api/trpc";
 import { checkCharacterQuota, recordUsedCharacterQuota } from "~/server/db";
 import { elevenLabsManager } from "~/server/elevenlabs-api";
@@ -17,7 +19,6 @@ import {
   getFirstNSentences,
   renderWarcraftTemplate,
 } from "~/utils/warcraft-template-util";
-import logger from "~/logger";
 
 export const voicesRouter = createTRPCRouter({
   listVoices: publicProcedure
@@ -133,7 +134,7 @@ export const voicesRouter = createTRPCRouter({
       return { voiceName: voice.name, previewSounds: previewSounds };
     }),
 
-  getVoiceModelWorkspace: privateProcedure
+  getVoiceModelWorkspace: anyUserProcedure
     .input(z.object({ voiceModelId: z.string() }))
     .query(async ({ ctx, input }) => {
       const voiceModel = await ctx.prisma.voiceModel.findFirstOrThrow({
@@ -174,7 +175,7 @@ export const voicesRouter = createTRPCRouter({
         uniqueWarcraftNpcName,
       };
     }),
-  updateWarcraftLink: privateProcedure
+  updateWarcraftLink: anyUserProcedure
     .input(
       z.object({
         voiceModelId: z.string(),
@@ -227,7 +228,7 @@ export const voicesRouter = createTRPCRouter({
       });
     }),
 
-  postVoiceModel: privateProcedure
+  postVoiceModel: verifiedUserProcedure
     .input(
       z.object({
         voiceModelId: z.string(),
@@ -333,7 +334,7 @@ export const voicesRouter = createTRPCRouter({
 
       return `/voices/${voice.id}`;
     }),
-  generateTestSound: privateProcedure
+  generateTestSound: verifiedUserProcedure
     .input(
       z.object({
         voiceModelId: z.string(),
@@ -475,7 +476,7 @@ export const voicesRouter = createTRPCRouter({
       return getPublicUrl(genKey);
     }),
 
-  updateVoiceGenerationSettings: privateProcedure
+  updateVoiceGenerationSettings: anyUserProcedure
     .input(
       z.object({
         voiceModelId: z.string(),
@@ -495,7 +496,7 @@ export const voicesRouter = createTRPCRouter({
       });
     }),
 
-  updateSeedSound: privateProcedure
+  updateSeedSound: anyUserProcedure
     .input(
       z.object({
         voiceModelId: z.string(),
@@ -504,7 +505,7 @@ export const voicesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // idk if this is absuse, but this effectively checks user perms
+      // idk if this is abuse, but this effectively checks user perms
       await ctx.prisma.voiceModel.findFirstOrThrow({
         where: {
           id: input.voiceModelId,
@@ -526,7 +527,7 @@ export const voicesRouter = createTRPCRouter({
       });
     }),
 
-  rateVoice: privateProcedure
+  rateVoice: anyUserProcedure
     .input(
       z.object({
         voiceId: z.string(),
@@ -621,7 +622,7 @@ export const voicesRouter = createTRPCRouter({
       }
     }),
 
-  bookmarkVoice: privateProcedure
+  bookmarkVoice: anyUserProcedure
     .input(
       z.object({
         voiceId: z.string(),
@@ -659,7 +660,7 @@ export const voicesRouter = createTRPCRouter({
       }
     }),
 
-  createVoiceModel: privateProcedure
+  createVoiceModel: anyUserProcedure
     .input(
       z.object({
         forkVoiceId: z.string().optional(),

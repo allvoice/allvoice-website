@@ -1,11 +1,9 @@
 import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createServerSideHelpers } from "@trpc/react-query/server";
 import { AlertCircle } from "lucide-react";
 import { type GetServerSideProps, type NextPage } from "next";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
-import superjson from "superjson";
 import { z } from "zod";
 import MainLayout from "~/components/main-layout";
 import SetUsernameDialog from "~/components/set-username-dialog";
@@ -20,8 +18,6 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
-import { appRouter } from "~/server/api/root";
-import { createTRPCSSRContext } from "~/server/api/trpc";
 import { api } from "~/utils/api";
 
 const voicePostFormSchema = z.object({
@@ -46,31 +42,22 @@ export const getServerSideProps: GetServerSideProps<ServerProps> = async (
     };
   }
 
-  const helpers = createServerSideHelpers({
-    router: appRouter,
-    ctx: createTRPCSSRContext(context.req),
-    transformer: superjson,
-  });
-  await helpers.users.getUserDetails.prefetch();
-
   return {
     props: {
       voiceModelId: voiceModelId.data,
-      trpcState: helpers.dehydrate(),
     },
   };
 };
 
 const VoicePost: NextPage<ServerProps> = ({ voiceModelId }) => {
   const router = useRouter();
-
-  const user = useUser();
+  const clerk = useUser();
   const postVoice = api.voices.postVoiceModel.useMutation({
-    onSuccess: async (respUrl) => {
-      await router.push(respUrl);
+    onSuccess: async (resUrl) => {
+      await router.push(resUrl);
     },
   });
-  const isUsernameSet = !!user.user?.username;
+  const isUsernameSet = !!clerk.user?.username;
   const isPostable = !postVoice.isPending && isUsernameSet;
 
   const form = useForm<z.infer<typeof voicePostFormSchema>>({

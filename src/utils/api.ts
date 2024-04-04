@@ -41,6 +41,15 @@ export const api = createTRPCNext<AppRouter>({
         }),
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`,
+          headers() {
+            const tempUserId = localStorage.getItem("tempUserId");
+            if (!tempUserId) {
+              return {};
+            }
+            return {
+              "x-temp-user-id": tempUserId,
+            };
+          },
         }),
       ],
     };

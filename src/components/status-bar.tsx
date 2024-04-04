@@ -1,14 +1,15 @@
+import { useUser } from "@clerk/nextjs";
+import { Pause, Play } from "lucide-react";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
+import { useGlobalAudioPlayer } from "react-use-audio-player";
 import { env } from "~/env.mjs";
 import { api } from "~/utils/api";
-import { Button } from "./ui/button";
-import NPCPicker from "./npc-picker";
-import { Pause, Play } from "lucide-react";
-import { AudioSeekBar } from "./audio-seek-bar";
-import { useGlobalAudioPlayer } from "react-use-audio-player";
 import { cn } from "~/utils/ui";
-import { useUser } from "@clerk/nextjs";
+import { AudioSeekBar } from "./audio-seek-bar";
+import NPCPickerEdit from "./npc-picker-edit";
+import { Button } from "./ui/button";
+import { useAllvoiceUser } from "~/contexts/allvoice-user";
 
 type Props = {
   className?: string;
@@ -16,7 +17,7 @@ type Props = {
 
 const StatusBar: React.FC<Props> = ({ className }) => {
   const router = useRouter();
-  const user = useUser();
+  const clerk = useUser();
 
   const isVoiceModelEditPage =
     router.pathname === "/voicemodels/[voiceModelId]/edit";
@@ -51,86 +52,29 @@ const StatusBar: React.FC<Props> = ({ className }) => {
     [inactiveSeedSounds?.length],
   );
 
-  const objectName = useMemo(
+  const pickerText = useMemo(
     () =>
       workspace.data?.uniqueWarcraftNpcName ??
       workspace.data?.warcraftDisplayName ??
-      "Unselected",
+      "click to select npc",
     [
       workspace.data?.uniqueWarcraftNpcName,
       workspace.data?.warcraftDisplayName,
     ],
   );
-  const utils = api.useUtils();
 
-  const getUserDetails = api.users.getUserDetails.useQuery(undefined, {
-    enabled: user.isSignedIn ?? false, // fixes this fetching for a public user. user.isSignedIn could be undefined for a few renders i think.
-  });
-  const updateWarcraftLink = api.voices.updateWarcraftLink.useMutation({
-    onMutate: async ({
-      voiceModelId,
-      uniqueWarcraftNpcId,
-      warcraftNpcDisplayId,
-      clientSide,
-    }) => {
-      await utils.voices.getVoiceModelWorkspace.cancel();
-      utils.voices.getVoiceModelWorkspace.setData({ voiceModelId }, (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          uniqueWarcraftNpcName: uniqueWarcraftNpcId
-            ? clientSide?.name ?? undefined
-            : undefined,
-          warcraftDisplayName: warcraftNpcDisplayId
-            ? clientSide?.name ?? undefined
-            : undefined,
-        };
-      });
-    },
-    onSettled: () => {
-      void utils.voices.getVoiceModelWorkspace.invalidate({ voiceModelId });
-    },
-  });
-  const pickerText = useMemo(
-    () =>
-      `${
-        workspace.data?.warcraftDisplayName ? "Character Model" : "NPC"
-      }: ${objectName}`,
-    [workspace.data?.warcraftDisplayName, objectName],
-  );
+  const { user } = useAllvoiceUser();
+
   const [open, setOpen] = useState(false);
-
-  const onSelectNPC = (id: string, name: string) => {
-    updateWarcraftLink.mutate({
-      voiceModelId,
-      uniqueWarcraftNpcId: id,
-      clientSide: {
-        name: name,
-      },
-    });
-    setOpen(false);
-  };
-
-  const onSelectCharacterModel = (id: string, name: string) => {
-    updateWarcraftLink.mutate({
-      voiceModelId,
-      warcraftNpcDisplayId: id,
-      clientSide: {
-        name: name,
-      },
-    });
-    setOpen(false);
-  };
 
   const { playing, togglePlayPause } = useGlobalAudioPlayer();
 
   return (
     <>
-      <NPCPicker
-        open={open}
-        setOpen={setOpen}
-        onSelectNPC={onSelectNPC}
-        onSelectCharacterModel={onSelectCharacterModel}
+      <NPCPickerEdit
+        voiceModelId={voiceModelId}
+        isOpen={open}
+        onClose={() => setOpen(false)}
       />
       <div
         className={cn(
@@ -144,7 +88,6 @@ const StatusBar: React.FC<Props> = ({ className }) => {
               className="w-fit select-none whitespace-nowrap px-1 font-normal text-slate-500 hover:bg-slate-200"
               variant={"ghost"}
               onClick={() => setOpen(true)}
-              disabled={updateWarcraftLink.isPending}
             >
               {pickerText}
             </Button>
@@ -169,16 +112,16 @@ const StatusBar: React.FC<Props> = ({ className }) => {
         <div className="flex space-x-6">
           {isVoiceModelEditPage && (
             <span className="w-fit whitespace-nowrap text-center text-sm text-slate-500">
-              {`Samples: ${numInactiveSounds} inactive, ${numActiveSounds}/${env.NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES} active`}
+              {`samples: ${numInactiveSounds} inactive, ${numActiveSounds}/${env.NEXT_PUBLIC_ELEVENLABS_MAX_ACTIVE_SAMPLES} active`}
             </span>
           )}
-          {user.isSignedIn && (
+          {clerk.isSignedIn && (
             <span className="w-fit whitespace-nowrap text-center text-sm text-slate-500">
-              {!getUserDetails.data
-                ? "Remaining Characters: Loading..."
-                : `Remaining Characters: ${
-                    getUserDetails.data?.characterQuota -
-                    getUserDetails.data?.characterQuotaUsed
+              {!user.data
+                ? "remaining characters: loading..."
+                : `remaining characters: ${
+                    user.data.elevenlabsCharacterQuota -
+                    user.data.elevenlabsCharacterQuotaUsed
                   }`}
             </span>
           )}

@@ -1,8 +1,8 @@
 "use client";
 
-import { useDebounce } from "@uidotdev/usehooks";
 import { User } from "lucide-react";
-import React, { useState } from "react";
+import React from "react";
+import { useDebounceValue } from "usehooks-ts";
 
 import ThreeDotsFade from "~/components/spinner";
 import {
@@ -25,8 +25,7 @@ type Props = {
 };
 
 const NPCPicker: React.FC<Props> = (props) => {
-  const [input, setInput] = useState("");
-  const debouncedInput = useDebounce(input, 400);
+  const [debouncedInput, setInput] = useDebounceValue("", 400);
   const isDebouncedInputEmpty = debouncedInput == "";
   const search = api.search.search.useQuery(
     { query: debouncedInput },
@@ -43,7 +42,6 @@ const NPCPicker: React.FC<Props> = (props) => {
       onOpenChange={props.setOpen}
     >
       <CommandInput
-        value={input}
         onValueChange={setInput}
         placeholder="Link a new NPC or Character Model"
       />

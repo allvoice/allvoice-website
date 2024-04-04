@@ -4,11 +4,11 @@ import { TRPCError } from "@trpc/server";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { env } from "~/env.mjs";
-import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
+import { anyUserProcedure, createTRPCRouter } from "~/server/api/trpc";
 import { getPublicUrl, s3Client } from "~/server/s3";
 
 export const filesRouter = createTRPCRouter({
-  createUploadUrl: privateProcedure
+  createUploadUrl: anyUserProcedure
     .input(
       z.object({
         fileName: z.string().max(191),
@@ -77,7 +77,7 @@ export const filesRouter = createTRPCRouter({
       };
     }),
 
-  getSeedSound: privateProcedure
+  getSeedSound: anyUserProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const seedSound = await ctx.prisma.seedSound.findUniqueOrThrow({
@@ -94,7 +94,7 @@ export const filesRouter = createTRPCRouter({
       };
     }),
 
-  deleteSeedSoundForVoiceModel: privateProcedure
+  deleteSeedSoundForVoiceModel: anyUserProcedure
     .input(z.object({ seedSoundId: z.string(), voiceModelId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.prisma.voiceModel.findUniqueOrThrow({

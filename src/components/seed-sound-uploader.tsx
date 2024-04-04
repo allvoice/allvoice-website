@@ -161,7 +161,7 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
         variant: "destructive",
       });
     },
-    accept: { "audio/*": [], 'video/ogg': [] },
+    accept: { "audio/*": [], "video/ogg": [] },
     maxFiles: 0,
     maxSize: 10000000,
   });

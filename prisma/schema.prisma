@@ -14,7 +14,9 @@ datasource db {
 }
 
 model User {
-  // id is the user's id in clerk
+  // id can either be
+  // - (temporary) 256 random bits base64 encoded 
+  // - (verified)  user's clerk id 
   id        String   @id
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -28,6 +30,9 @@ model User {
   votes      Vote[]
   voices     Voice[]
   seedSounds SeedSound[]
+
+  @@index([id])
+  @@index([username])
 }
 
 model SeedSound {

@@ -15,6 +15,8 @@ export default authMiddleware({
     "/voices/:voiceId",
     "/npcs/:uniqueNPCId",
     "/charactermodels/:characterModelId",
+    "/voicemodels/create",
+    "/voicemodels/:voiceModelId/edit",
   ],
 });
 

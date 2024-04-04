@@ -44,12 +44,14 @@ All of the setup is required to run.
 
 #### short term easy shortcut
 
-Run the allvoice.sql script found here: https://github.com/allvoice/allvoice-website/releases/tag/db-v1.0.0
+- run allvoice.sql script found here: https://github.com/allvoice/allvoice-website/releases/tag/db-v1.0.0
+- run `pnpm db:push` to update the database schema.
 
-The schema for this dump will eventually drift from master.
+The schema for this dump will eventually drift from master. Using db:push should let this work in the medium term as long as we have backwards compatible schema updates.
 
 #### long term instructions
-- run `pnpm db:push` to push the Database schema.
+
+- run `pnpm db:push` to push the database schema.
 - run `pnpm db:seed`
 - note: this might take a few mins so move on
 - note: this method is missing voiceline content
@@ -66,10 +68,10 @@ The schema for this dump will eventually drift from master.
 
 ### setup s3 bucket
 
-- ensure the containers are up from docker compose
-- run `./bucket-config/apply-bucket-configs.sh`. (if the script is not executable, use `chmod +x ./bucket-config/apply-bucket-configs.sh`)
-- navigate to <http://localhost:9001> and make a bucket and access key
+- navigate to <http://localhost:9001> to make a local s3 bucket and access key
 - update .env with BUCKET_NAME, AWS_ACCESS_KEY_ID, and AWS_SECRET_ACCESS_KEY
+- install [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- run `./bucket-config/apply-bucket-configs.sh`
 
 ### run the website
 
@@ -77,4 +79,4 @@ The schema for this dump will eventually drift from master.
 
 ## [cursor](https://cursor.sh/) prompt
 
-```im using typescript, functional react 18, nextjs page router, tailwind, trpc, prisma, and react query 5 with the trpc integration. T3 stack is the name of the stack im using. use env instead of process.env```
+`im using typescript, functional react 18, nextjs page router, tailwind, trpc, prisma, and react query 5 with the trpc integration. T3 stack is the name of the stack im using. use env instead of process.env`
