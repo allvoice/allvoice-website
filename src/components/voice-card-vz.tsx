@@ -160,19 +160,47 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
               </Link>
             )}
           </div>
-          <Button
-            className="rounded-md bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-            variant="ghost"
-            onClick={onBookmark}
-            disabled={bookmarkVoice.isPending}
-          >
-            <Bookmark
-              className={cn(
-                "h-5 w-5 text-gray-500",
-                isBookmarked ? "fill-gray-500" : "",
-              )}
-            />
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                className="rounded-md bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                variant="ghost"
+              >
+                <MoreHorizontal className="h-5 w-5 text-gray-500" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent>
+              <div className="flex w-full flex-col space-y-2">
+                <Button
+                  className="flex w-full items-center justify-start rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                  variant="outline"
+                  onClick={onBookmark}
+                  disabled={bookmarkVoice.isPending}
+                >
+                  <Bookmark
+                    className={cn(
+                      "mr-2 h-5 w-5 text-gray-500",
+                      isBookmarked ? "fill-gray-500" : "",
+                    )}
+                  />
+                  <span className="text-sm text-gray-500 dark:text-gray-300">
+                    Bookmark
+                  </span>
+                </Button>
+                <Link href={`/voicemodels/create?fork=${voice.id}`}>
+                  <Button
+                    className="flex w-full items-center justify-start rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    variant="outline"
+                  >
+                    <GitFork className="mr-2 h-5 w-5 text-gray-500" />
+                    <span className="text-sm text-gray-500 dark:text-gray-300">
+                      Fork
+                    </span>
+                  </Button>
+                </Link>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
       <div className="space-y-4 p-6">
@@ -211,36 +239,10 @@ const VoiceCardVZ: React.FC<Props> = ({ className, voice, voiceListInput }) => {
                 )}
               />
             </Button>
-            <p className="rounded-md bg-gray-100 px-3 py-2 text-center text-gray-500 dark:text-gray-300">
-              {voice.score}
-            </p>
           </div>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                className="rounded-md bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                variant="ghost"
-              >
-                <MoreHorizontal className="h-5 w-5 text-gray-500" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <div className="w-full space-y-2">
-                <Link href={`/voicemodels/create?fork=${voice.id}`}>
-                  <Button
-                    className="flex w-full items-center justify-start rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                    variant="outline"
-                  >
-                    <GitFork className="mr-2 h-5 w-5 text-gray-500" />
-                    <span className="text-sm text-gray-500 dark:text-gray-300">
-                      Fork
-                    </span>
-                  </Button>
-                </Link>
-              </div>
-            </PopoverContent>
-          </Popover>
+          <p className="rounded-md px-3 py-2 text-center text-gray-500 dark:text-gray-300">
+            {voice.score}
+          </p>
         </div>
       </div>
     </div>
