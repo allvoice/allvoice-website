@@ -42,11 +42,17 @@ All of the setup is required to run.
 
 ### setup mysql db
 
+#### short term easy shortcut
+
+Run the allvoice.sql script found here: https://github.com/allvoice/allvoice-website/releases/tag/db-v1.0.0
+
+The schema for this dump will eventually drift from master.
+
+#### long term instructions
 - run `pnpm db:push` to push the Database schema.
 - run `pnpm db:seed`
-- this might take a few mins so move on
-
-note: this will be missing voicelines, but contain npcs
+- note: this might take a few mins so move on
+- note: this method is missing voiceline content
 
 ### setup clerk
 
