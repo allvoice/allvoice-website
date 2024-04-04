@@ -76,7 +76,7 @@ export const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
   const deleteSound = () => {
     void deleteSeedSound.mutateAsync({ seedSoundId, voiceModelId });
   };
-  return (
+  return drag(
     <div
       className={cn(
         "flex h-12 cursor-grab items-center space-x-2 rounded-md border p-2",
@@ -85,7 +85,6 @@ export const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
         },
         className,
       )}
-      ref={drag}
     >
       <div
         onClick={isPlayingThis ? stopSound : playSound}
@@ -101,6 +100,6 @@ export const SeedSoundDisplay: FC<SeedSoundDisplayProps> = ({
       <button onClick={deleteSound}>
         <X className="h-4 w-4" />
       </button>
-    </div>
+    </div>,
   );
 };

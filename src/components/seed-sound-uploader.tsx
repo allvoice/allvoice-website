@@ -226,39 +226,41 @@ const SeedSoundUploader: FC<Props> = ({ voiceModelId }) => {
           )}
           {uploadInProgress && <p>Uploading...</p>}
         </div>
-        <div
-          ref={inactiveDrop}
-          className="flex flex-1 flex-col space-y-2 overflow-y-auto rounded-md border p-2"
-        >
-          {inactiveSeedSounds != null && inactiveSeedSounds.length > 0 ? (
-            inactiveSeedSounds.map((sound) => (
-              <SeedSoundDisplay
-                key={sound.id}
-                seedSoundId={sound.id}
-                voiceModelId={voiceModelId}
-              />
-            ))
-          ) : (
-            <div className="flex h-full w-full items-center justify-center p-4 text-center text-sm text-slate-500">
-              Drag samples here to stop them from being used during generation.
-            </div>
-          )}
-        </div>
-      </div>
-      <div className="col-span-2 flex h-full flex-col space-y-2 overflow-hidden">
-        <div ref={activeDrop} className="relative h-full rounded-md border p-2">
-          <div className="grid grid-cols-3 gap-2">
-            {activeSeedSounds &&
-              activeSeedSounds.map((sound) => (
+        {inactiveDrop(
+          <div className="flex flex-1 flex-col space-y-2 overflow-y-auto rounded-md border p-2">
+            {inactiveSeedSounds != null && inactiveSeedSounds.length > 0 ? (
+              inactiveSeedSounds.map((sound) => (
                 <SeedSoundDisplay
-                  className="z-10"
                   key={sound.id}
                   seedSoundId={sound.id}
                   voiceModelId={voiceModelId}
                 />
-              ))}
-          </div>
-        </div>
+              ))
+            ) : (
+              <div className="flex h-full w-full items-center justify-center p-4 text-center text-sm text-slate-500">
+                Drag samples here to stop them from being used during
+                generation.
+              </div>
+            )}
+          </div>,
+        )}
+      </div>
+      <div className="col-span-2 flex h-full flex-col space-y-2 overflow-hidden">
+        {activeDrop(
+          <div className="relative h-full rounded-md border p-2">
+            <div className="grid grid-cols-3 gap-2">
+              {activeSeedSounds &&
+                activeSeedSounds.map((sound) => (
+                  <SeedSoundDisplay
+                    className="z-10"
+                    key={sound.id}
+                    seedSoundId={sound.id}
+                    voiceModelId={voiceModelId}
+                  />
+                ))}
+            </div>
+          </div>,
+        )}
       </div>
     </div>
   );
