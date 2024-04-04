@@ -86,12 +86,13 @@ model TestSound {
 }
 
 model VoiceModel {
-  id             String                 @id @default(uuid())
-  createdAt      DateTime               @default(now())
-  updatedAt      DateTime               @updatedAt
-  soundFileJoins VoiceModelSeedSounds[]
-  previewSounds  PreviewSound[]
-  testSounds     TestSound[]
+  id                 String                 @id @default(uuid())
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  soundFileJoins     VoiceModelSeedSounds[]
+  previewSounds      PreviewSound[]
+  testSounds         TestSound[]
+  renderedVoicelines RenderedVoiceline[]
 
   voiceId String
   voice   Voice  @relation(fields: [voiceId], references: [id])
@@ -296,6 +297,8 @@ model RawVoiceline {
   // 0 classic, 2 wrath, 99 turtle
   expansion Int
 
+  RenderedVoiceline RenderedVoiceline[]
+
   // possible fields
   // gameobjects + item support
   // npc_type	Type of the NPC involved ('creature', 'gameobject', or 'item')	addon (probably)
@@ -303,4 +306,29 @@ model RawVoiceline {
   // language	Language  // of the text collected	addon (all english for now)
 
   @@index([npcId])
+}
+
+model RenderedVoiceline {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  text String @db.Text
+
+  rawVoiceline   RawVoiceline @relation(fields: [rawVoicelineId], references: [id])
+  rawVoicelineId String
+
+  voiceModel   VoiceModel @relation(fields: [voiceModelId], references: [id])
+  voiceModelId String
+
+  bucketKey String @unique
+
+  race       String
+  class      String
+  name       String
+  maleOnly   Boolean @default(false)
+  femaleOnly Boolean @default(false)
+
+  @@index([rawVoicelineId])
+  @@index([voiceModelId])
 }

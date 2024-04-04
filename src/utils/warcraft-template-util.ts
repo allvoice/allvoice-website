@@ -1,4 +1,4 @@
-const DEFAULT_REPLACE_DICT = {
+export const DEFAULT_REPLACE_DICT = {
   $b: "\n",
   $B: "\n",
   $n: "adventurer",
@@ -51,7 +51,6 @@ export const renderWarcraftTemplate = (
     const { maleText, femaleText } = renderGenderOptions(cleanedText);
 
     return {
-      text: maleText,
       maleText: maleText,
       femaleText: femaleText,
     };
@@ -60,4 +59,34 @@ export const renderWarcraftTemplate = (
   return {
     text: cleanedText,
   };
+};
+
+
+export const getGenderSpecificRenderedText = (renderedTexts: {
+  text?: string;
+  maleText?: string;
+  femaleText?: string;
+}) => {
+  let renderedText = renderedTexts.text;
+  let maleOnly = false;
+  let femaleOnly = false;
+
+  if (renderedTexts.maleText && renderedTexts.femaleText) {
+    // If both male and female texts are present, randomly choose one
+    if (Math.random() < 0.5) {
+      renderedText = renderedTexts.maleText;
+      maleOnly = true;
+    } else {
+      renderedText = renderedTexts.femaleText;
+      femaleOnly = true;
+    }
+  } else if (renderedTexts.maleText) {
+    renderedText = renderedTexts.maleText;
+    maleOnly = true;
+  } else if (renderedTexts.femaleText) {
+    renderedText = renderedTexts.femaleText;
+    femaleOnly = true;
+  }
+  
+  return { renderedText: renderedText!, maleOnly, femaleOnly };
 };

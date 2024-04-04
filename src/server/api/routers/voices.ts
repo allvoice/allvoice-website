@@ -1,5 +1,6 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { clerkClient } from "@clerk/nextjs";
+import { RawVoiceline } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
@@ -16,7 +17,9 @@ import { elevenLabsManager } from "~/server/elevenlabs-api";
 import { getPublicUrl, s3Client } from "~/server/s3";
 import { voiceEditFormSchema } from "~/utils/schema";
 import {
+  DEFAULT_REPLACE_DICT,
   getFirstNSentences,
+  getGenderSpecificRenderedText,
   renderWarcraftTemplate,
 } from "~/utils/warcraft-template-util";
 
@@ -285,7 +288,7 @@ export const voicesRouter = createTRPCRouter({
       });
 
       // Get a random voiceline related to the linked charactermodel or NPC
-      let randomVoiceline: string | undefined;
+      let randomVoiceline: RawVoiceline | undefined;
       if (voice.uniqueWarcraftNpcId) {
         const uniqueNpc = await ctx.prisma.uniqueWarcraftNpc.findUnique({
           where: { id: voice.uniqueWarcraftNpcId },
@@ -298,9 +301,7 @@ export const voicesRouter = createTRPCRouter({
           },
         });
         const allVoicelines =
-          uniqueNpc?.npcs.flatMap((npc) =>
-            npc.rawVoicelines.map((voiceline) => voiceline.text),
-          ) ?? [];
+          uniqueNpc?.npcs.flatMap((npc) => npc.rawVoicelines) ?? [];
         randomVoiceline =
           allVoicelines[Math.floor(Math.random() * allVoicelines.length)];
       } else if (voice.warcraftNpcDisplayId) {
@@ -320,9 +321,8 @@ export const voicesRouter = createTRPCRouter({
             },
           });
         const allVoicelines =
-          warcraftNpcDisplay?.npcs.flatMap((npc) =>
-            npc.npc.rawVoicelines.map((voiceline) => voiceline.text),
-          ) ?? [];
+          warcraftNpcDisplay?.npcs.flatMap((npc) => npc.npc.rawVoicelines) ??
+          [];
         randomVoiceline =
           allVoicelines[Math.floor(Math.random() * allVoicelines.length)];
       }
@@ -333,8 +333,14 @@ export const voicesRouter = createTRPCRouter({
           message: "No voiceline could be found for the linked entity.",
         });
       }
-      const renderedTexts = renderWarcraftTemplate(randomVoiceline);
-      const renderedText = renderedTexts.text;
+      const renderedTexts = renderWarcraftTemplate(randomVoiceline.text, {
+        class: DEFAULT_REPLACE_DICT.$c,
+        name: DEFAULT_REPLACE_DICT.$n,
+        race: DEFAULT_REPLACE_DICT.$r,
+      });
+
+      const { renderedText, maleOnly, femaleOnly } =
+        getGenderSpecificRenderedText(renderedTexts);
 
       const ttsResponse = await elevenLabsManager.textToSpeechStream(
         {
@@ -357,14 +363,6 @@ export const voicesRouter = createTRPCRouter({
 
       const genKey = `preview/${uuidv4()}`;
 
-      await ctx.prisma.previewSound.create({
-        data: {
-          iconEmoji: "🗣️",
-          bucketKey: genKey,
-          voiceModel: { connect: { id: voiceModel.id } },
-        },
-      });
-
       const putObjectCommand = new PutObjectCommand({
         Bucket: env.BUCKET_NAME,
         Key: genKey,
@@ -374,6 +372,29 @@ export const voicesRouter = createTRPCRouter({
       });
 
       await s3Client.send(putObjectCommand);
+
+      await ctx.prisma.previewSound.create({
+        data: {
+          iconEmoji: "🗣️",
+          bucketKey: genKey,
+          voiceModel: { connect: { id: voiceModel.id } },
+        },
+      });
+
+      await ctx.prisma.renderedVoiceline.create({
+        data: {
+          voiceModel: { connect: { id: voiceModel.id } },
+          rawVoiceline: { connect: { id: randomVoiceline.id } },
+          text: renderedText,
+          bucketKey: genKey,
+
+          race: DEFAULT_REPLACE_DICT.$r,
+          class: DEFAULT_REPLACE_DICT.$c,
+          name: DEFAULT_REPLACE_DICT.$n,
+          maleOnly: maleOnly,
+          femaleOnly: femaleOnly,
+        },
+      });
 
       await ctx.prisma.voiceModel.update({
         where: { id: voiceModel.id },
@@ -464,7 +485,7 @@ export const voicesRouter = createTRPCRouter({
       }
 
       const renderedTexts = renderWarcraftTemplate(warcraftTemplate);
-      const renderedText = renderedTexts.text;
+      const { renderedText } = getGenderSpecificRenderedText(renderedTexts);
 
       const textToGenerate = getFirstNSentences(renderedText, 2);
 
