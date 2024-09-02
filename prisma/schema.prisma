@@ -3,12 +3,12 @@
 
 generator client {
   provider        = "prisma-client-js"
-  binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
-  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
-  provider     = "mysql"
+  provider     = "postgresql"
   url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
@@ -43,7 +43,7 @@ model SeedSound {
   name            String
   // uploadComplete signifies if we've received the bucket notification indicating the file has been successfully uploaded
   uploadComplete  Boolean                @default(false)
-  fileSize        BigInt?                @db.UnsignedBigInt
+  fileSize        BigInt?
   voiceModelJoins VoiceModelSeedSounds[]
 
   uploaderId String
@@ -64,7 +64,7 @@ model PreviewSound {
 
   // uploadComplete signifies if we've received the bucket notification indicating the file has been successfully uploaded
   uploadComplete Boolean @default(false)
-  fileSize       BigInt? @db.UnsignedBigInt
+  fileSize       BigInt?
 
   @@index([voiceModelId])
 }
@@ -80,7 +80,7 @@ model TestSound {
 
   // uploadComplete signifies if we've received the bucket notification indicating the file has been successfully uploaded
   uploadComplete Boolean @default(false)
-  fileSize       BigInt? @db.UnsignedBigInt
+  fileSize       BigInt?
 
   @@index([voiceModelId])
 }
@@ -98,10 +98,10 @@ model VoiceModel {
   voice   Voice  @relation(fields: [voiceId], references: [id])
 
   forkParentId       String?
-  forkParent         VoiceModel?  @relation("VoiceModelForks", fields: [forkParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  forkParent         VoiceModel?  @relation("VoiceModelForks", fields: [forkParentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   directForkChildren VoiceModel[] @relation("VoiceModelForks")
 
-  version                Int                            @default(1) @db.UnsignedInt
+  version                Int                            @default(1)
   supportedLanguageJoins VoiceModelSupportedLanguages[]
 
   elevenLabsModelId         String  @default("eleven_english_v2")
@@ -159,7 +159,7 @@ model Voice {
   uniqueWarcraftNpcId String?
 
   forkParentId       String?
-  forkParent         Voice?  @relation("VoiceForks", fields: [forkParentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  forkParent         Voice?  @relation("VoiceForks", fields: [forkParentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   directForkChildren Voice[] @relation("VoiceForks")
 
   favorites Favorite[]
@@ -237,7 +237,6 @@ model WarcraftNpcDisplay {
   // voices refer to the user models that were made for this npc display
   voices        Voice[]
 
-  @@fulltext([voiceName])
   @@map("WacraftNpcDisplay")
 }
 
@@ -254,7 +253,7 @@ model WarcraftNpcDisplays {
 
 model WarcraftNpc {
   // npcId maps to the npcId in game
-  npcId    Int                   @id @db.UnsignedInt
+  npcId    Int                   @id
   // a npc may have multiple displays if the same npcId is shared by multiple models
   displays WarcraftNpcDisplays[]
   // name is the npc's in game display name
@@ -278,8 +277,6 @@ model UniqueWarcraftNpc {
 
   // voices refer to the user models that were made for this npc
   voices Voice[]
-
-  @@fulltext([name])
 }
 
 model RawVoiceline {
@@ -288,7 +285,7 @@ model RawVoiceline {
   source String
 
   questName String? @db.Text
-  questId   Int?    @db.UnsignedInt
+  questId   Int?
 
   text  String       @db.Text
   npc   WarcraftNpc? @relation(fields: [npcId], references: [npcId])

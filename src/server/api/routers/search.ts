@@ -19,7 +19,8 @@ export const searchRouter = createTRPCRouter({
       const npcsPromise = ctx.prisma.uniqueWarcraftNpc.findMany({
         where: {
           name: {
-            search: `*${input.query}*`,
+            search: input.query,
+            mode: "insensitive",
           },
         },
         orderBy: {
@@ -35,12 +36,14 @@ export const searchRouter = createTRPCRouter({
           OR: [
             {
               voiceName: {
-                search: `*${input.query}*`,
+                search: input.query,
+                mode: "insensitive",
               },
             },
             {
               voiceName: {
-                search: `*${input.query.replace(/\s+/g, "")}*`,
+                search: input.query.replace(/\s+/g, ""),
+                mode: "insensitive",
               },
             },
           ],

@@ -37,17 +37,17 @@ All of the setup is required to run.
 - clone project
 - open in vscode or [cursor](https://cursor.sh/)
 - `pnpm install`
-- `docker compose up -d` for mysql and s3
+- `docker compose up -d` for postgres and s3
 - copy .env.example to .env `cp .env.example .env`
 
-### setup mysql db
+### setup db
 
 #### short term easy shortcut
 
+**UPDATE** (9/1/2024): migrated off mysql planetscale to postgres. Keeping this here because it still contains NPC data that could be converted to postgres.
+
 - run allvoice.sql script found here: https://github.com/allvoice/allvoice-website/releases/tag/db-v1.0.0
 - run `pnpm db:push` to update the database schema.
-
-The schema for this dump will eventually drift from master. Using db:push should let this work in the medium term as long as we have backwards compatible schema updates.
 
 #### long term instructions
 

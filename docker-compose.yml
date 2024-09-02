@@ -1,15 +1,18 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  mysql:
-    image: mysql:8
+  db:
+    image: postgres:latest
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: password
-    volumes:
-      - ./docker-data/mysql:/var/lib/mysql
+      - POSTGRES_USER=app
+      - POSTGRES_PASSWORD=localpass
+      - POSTGRES_DB=app
     ports:
-      - "3306:3306"
-  
+      - "5432:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+
   minio:
     image: quay.io/minio/minio
     volumes:
@@ -21,3 +24,6 @@ services:
       MINIO_ROOT_USER: root
       MINIO_ROOT_PASSWORD: password
     command: server /data --console-address ":9001"
+
+volumes:
+  db:

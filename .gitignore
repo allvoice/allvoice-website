@@ -50,3 +50,5 @@ error.log
 # internal deployment secret stuff ;)
 kubernetes
 docker-data
+
+.idea
